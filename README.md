@@ -18,7 +18,7 @@ After installing the program you can run the game using an application - "RPG Ma
 
 ## Installation
 ```
-wget -qO- "" | bash
+wget -qO- "https://raw.githubusercontent.com/bakustarver/rpgmakermlinux-cicpoffs/main/installgithub.sh" | bash
 ```
 
 ## Command line Options
