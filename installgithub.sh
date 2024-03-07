@@ -5,6 +5,6 @@ link="https://github.com/bakustarver/rpgmakermlinux-cicpoffs/releases/download/v
 basenametar=$(basename "$link")
 dirtarname=$(echo "$basenametar" | sed -e 's@.tar.gz@@g')
 wget -P "/tmp/" "$link"
-tar -xf "tmp/nwjs-$version-linux-$arch.tar.gz" -C "/tmp/"
+tar -xf "/tmp/nwjs-$version-linux-$arch.tar.gz" -C "/tmp/"
 rm "/tmp/$basenametar"
 /tmp/$dirtarname/install.sh
