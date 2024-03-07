@@ -41,7 +41,7 @@ rpgmaker-linux --version
 rpgmaker-linux --updatenwjs
 ```
 
-#### Print rpg maker game libraries versions
+#### Show versions of rpg maker game libraries
 ```
 rpgmaker-linux --gamepath /path/rpg-maker-game/ --printrpgmakerlibversions
 ```
