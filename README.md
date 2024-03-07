@@ -1,12 +1,12 @@
 #  RPG Maker MV / MZ - Cicpoffs
 The project contains a collection of shell scripts that will help you run games on the RPG Maker MV/MZ engine.
 #### Contains the following functions:
-- Running any MV/MZ engine game on linux.
-- Load and select any version of NWJS (using the command line).
-- Running a game with the Japanese locale option.
-- Launching a game with a command line.
-- Show the NWJS, Nodejs, Chromium versions of your game.
-- Support of four linux architectures: x86-64, i386, armhf, arm64 
+- Running any RPG Maker MV/MZ engine game on linux.
+- Download and select any version of NWJS (using the command line).
+- Start a game with the Japanese locale option.
+- Launch a game with a command line.
+- Show the NWJS, Nodejs, Chromium versions of your downloaded game.
+- The program supports 4 architectures: x86-64, i386, armhf, arm64 
 
 
 
