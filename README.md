@@ -31,7 +31,7 @@ rpgmaker-linux
 ```
 rpgmaker-linux --gamepath /path/rpg-maker-game/
 ```
-#### Show version of the programm
+#### Show version of the program
 ```
 rpgmaker-linux --version
 ```
