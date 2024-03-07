@@ -1,5 +1,12 @@
 #  RPG Maker MV / MZ - Cicpoffs
 The project contains a collection of shell scripts that will help you run games on the RPG Maker MV/MZ engine.
+I was inspired by [m5kro](https://github.com/m5kro)'s projects and his linux/mac os builds
+
+### The software use the following dependencies:
+- nwjs - As the main engine of the game
+- cicpoffs - For mounting the game folder in windows Case-Insensitive mode (that allows nwjs to find game files better)
+- tools such as wget, ln, readlink, grep - For downloading the latest version of nwjs and viewing the files
+
 #### Contains the following features:
 - Running any RPG Maker MV/MZ game on linux.
 - Downloading and selecting any version of NWJS (using the command line).
