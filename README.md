@@ -4,7 +4,7 @@ The project contains a collection of shell scripts that will help you run games 
 - Running any RPG Maker MV/MZ game on linux.
 - Downloading and selecting any version of NWJS (using the command line).
 - Starting a game with the Japanese locale option.
-- Launching a game with a command line.
+- Launching a game using a command line.
 - Showing the NWJS, Nodejs, Chromium versions of your downloaded game.
 - The program supports 4 architectures: x86-64, i386, armhf, arm64 
 
