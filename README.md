@@ -66,7 +66,7 @@ rpgmaker-linux --jpnlocale --gamepath /path/rpg-maker-game/
 rpgmaker-linux --sourcelinks
 ```
 
-## Support the author of the program:
+## Support me:
 [Patreon](https://www.patreon.com/user/about?u=121421184)
 [Buymeacoffee](https://www.buymeacoffee.com/rpgmakerlinux)
 
