@@ -54,7 +54,7 @@ rpgmaker-linux --nwjsversion 0.40.0 --gamepath /path/rpg-maker-game/
 ```
 rpgmaker-linux --jpnlocale --gamepath /path/rpg-maker-game/
 ```
-#### Show donations links:
+#### Show donation links:
 ```
 rpgmaker-linux --sourcelinks
 ```
