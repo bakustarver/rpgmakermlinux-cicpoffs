@@ -13,7 +13,7 @@ localapplicationsfd="$HOME/.local/share/applications/"
 localbin="$HOME/.local/bin"
 
 arch=$(uname -m)
-archcheckmessage=$(echo "$arch" | sed -e 's@x86_64@pie executable, x86-64,@g' -e 's@aarch64@pie executable, ARM aarch64,@g' -e 's@i386@pie executable, Intel 80386,@g' -e 's@armhf@pie executable, ARM,@g')
+archcheckmessage=$(echo "$arch" | sed -e 's@x86_64@pie executable, x86-64,@g' -e 's@aarch64@pie executable, ARM aarch64,@g' -e 's@i686@pie executable, Intel 80386,@g' -e 's@armhf@pie executable, ARM,@g')
 
 rm -rf "$mainfd"
 
@@ -45,7 +45,7 @@ if ! file "$1" | grep -q "$archcheckmessage" ; then
 # Use $ wget -qO- installscript.sh | bash
 file "$1"
 echo "Wrong architecture!!
-Download the correct version of the program with the name rpgmakerlinux-$arch-v1.0.0.tar.gz"
+Download corrent archive with $arch"
 exit 1;
 fi
 }
