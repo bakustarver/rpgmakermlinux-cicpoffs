@@ -3,7 +3,7 @@
 gitlink="https://github.com/nwjs/nw.js"
 defp="$HOME/desktopapps/nwjs/nwjs"
 versioninstalledlist=$(ls "$defp/nwjs")
-arch=$(uname -m | sed -e 's@i386@ia32@g' -e 's@x86_64@x64@g' -e 's@armhf@arm@g' -e 's@aarch64@arm64@g')
+arch=$(uname -m | sed -e 's@i686@ia32@g' -e 's@x86_64@x64@g' -e 's@armhf@arm@g' -e 's@aarch64@arm64@g')
 
 
 
