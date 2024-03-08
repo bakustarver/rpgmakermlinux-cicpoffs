@@ -1,10 +1,10 @@
 {
-  "name": "summer_memories_plus",
+  "name": "RPG Maker MV/MZ (cicpoffs mount)",
   "main": "www/index.html",
   "js-flags": "--expose-gc",
   "chromium-args": "--disable-setuid-sandbox-enable --force-gpu-rasterization --enable-gpu-memory-buffer-video-frames --enable-native-gpu-memory-buffers --enable-zero-copy --enable-gpu-async-worker-context",
   "window": {
-    "title": "Summer Memories+ v2.03.10",
+    "title": "RPG Maker MV/MZ (cicpoffs mount)",
     "toolbar": false,
     "width": 745,
     "height": 400,
