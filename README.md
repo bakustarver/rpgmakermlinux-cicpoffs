@@ -23,7 +23,7 @@ After installing the program you can run the game using an application - "RPG Ma
 ![img](https://github.com/bakustarver/rpgmakermlinux-cicpoffs/assets/66978329/4d55e52a-fe6d-44a5-a7bb-9380218d16f1)
 
 
-## Installation / Update
+## Installation || Update
 ```
 wget -qO- "https://raw.githubusercontent.com/bakustarver/rpgmakermlinux-cicpoffs/main/installgithub.sh" | bash
 ```
