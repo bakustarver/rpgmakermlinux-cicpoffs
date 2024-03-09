@@ -1,7 +1,8 @@
 #!/bin/bash
 
 archt=$(uname -m)
-link="https://github.com/bakustarver/rpgmakermlinux-cicpoffs/releases/download/v1.0.0/rpgmakerlinux-$archt-v1.0.0.tar.gz"
+version=1.0.1
+link="https://github.com/bakustarver/rpgmakermlinux-cicpoffs/releases/download/v$version/rpgmakerlinux-$archt-v$version.tar.gz"
 basenametar=$(basename "$link")
 dirtarname=$(echo "$basenametar" | sed -e 's@.tar.gz@@g')
 wget -P "/tmp/" "$link"
