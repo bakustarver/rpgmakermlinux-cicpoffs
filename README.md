@@ -28,6 +28,15 @@ After installing the program you can run the game using an application - "RPG Ma
 wget -qO- "https://raw.githubusercontent.com/bakustarver/rpgmakermlinux-cicpoffs/main/installgithub.sh" | bash
 ```
 
+## Uninstall
+```
+wget -qO- "https://raw.githubusercontent.com/bakustarver/rpgmakermlinux-cicpoffs/main/uninstallgithub.sh" | bash
+```
+or 
+```
+rm "$HOME/desktopapps/nwjs" && rm "$HOME/.local/share/applications/nwjstest.desktop" && rm "$HOME/.local/bin/rpgmaker-linux"
+```
+
 ## Command line Options
 
 #### Run the rpg maker game
