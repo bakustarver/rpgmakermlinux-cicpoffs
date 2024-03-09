@@ -8,8 +8,8 @@ nwjsfm="$HOME/desktopapps/nwjs/nwjs"
 defp="$nwjsfm/nwjs"
 
 arch=$(uname -m)
-archcheckmessage=$(echo "$arch" | sed -e 's@x86_64@pie executable, x86-64,@g' -e 's@aarch64@pie executable, ARM aarch64,@g' -e 's@i386@pie executable, Intel 80386,@g' -e 's@armhf@pie executable, ARM,@g')
-version="1.0.0"
+archcheckmessage=$(echo "$arch" | sed -e 's@x86_64@pie executable, x86-64,@g' -e 's@aarch64@pie executable, ARM aarch64,@g' -e 's@i686@pie executable, Intel 80386,@g' -e 's@i386@pie executable, Intel 80386,@g' -e 's@armhf@pie executable, ARM,@g')
+version='1.0.1'
 latestinstallednwjsfd=$(ls -p "$defp" | grep / | sort -V | tail -n 1 )
 
 checkthebinaryarch() {
@@ -63,6 +63,13 @@ nwjsversionfunc() {
 export skipdownloadifexist=true
 . "$nwjsfm/dwnwjs.sh" "$1"
 # nwjsversion=(echo "$nwjsversion"
+}
+
+checkifexist() {
+if ! [ -f "$1" ]; then
+echo "Can't find the file $1"
+exit
+fi
 }
 
 checkgamepath() {
@@ -123,6 +130,22 @@ exit 1
 fi
 }
 
+packagejsonfunc() {
+if [ -n "$PACKAGEJSONPATH" ]; then
+packagejson="$PACKAGEJSONPATH"
+else
+packagejson="$HOME/desktopapps/nwjs/nwjs/packagefiles/package.json"
+fi
+packagejsoninfo=$(cat "$packagejson")
+newpackagejson=$(echo "$packagejsoninfo" | sed -e 's@"name": "",@"name": "RPG Maker MV/MZ (cicpoffs mount)",@g' -e 's@"main": ".*@"main": "www/index.html",@' -e 's@"title": "",@"title": "RPG Maker MV/MZ (cicpoffs mount)",@g')
+# ln -s "$packagejson" "$nwjstestpath"
+if [ -h "$nwjstestpath/package.json" ]; then
+rm "$nwjstestpath/package.json"
+fi
+echo "$newpackagejson" > "$nwjstestpath/package.json"
+cat "$nwjstestpath/package.json"
+}
+
 
 while [ $# -ne 0 ]
 do
@@ -177,8 +200,23 @@ do
         --gamepath)
             checkgamepath "$2"
             ;;
-        --usegamepackagejson)
-            usegamepackagejson=true
+        --useoriginalgamepackagejson)
+            if [ -f "$path/package.json" ]; then
+            PACKAGEJSONPATH="$path/package.json"
+            echo "$path"
+            elif [ -f "$mountpath/package.json" ]; then
+            PACKAGEJSONPATH="$mountpath/package.json"
+            elif [ -f "$PWD/package.json" ]; then
+            PACKAGEJSONPATH="$PWD/package.json"
+            else
+            echo "Can't find the original package.json"
+            fi
+            useoriginalgamepackagejson=true
+            ;;
+        --custompackagejsonpath)
+            checkifexist "$2"
+            PACKAGEJSONPATH="$2"
+            custompackagejsonpath=true
             ;;
         --nwjspath)
             checknwjspath $2
@@ -246,6 +284,11 @@ echo "You can't use those arguments together --chooselatestnwjs --choosenwjsvers
 exit 1;
 fi
 
+if [ "$useoriginalgamepackagejson" = "true" ] && [ "$custompackagejsonpath" = "true" ] ; then
+echo "You can't use those arguments together --useoriginalgamepackagejson --custompackagejsonpath"
+exit 1;
+fi
+
 if [ "$showversion" = true ]; then
 echo -e "$version"
 fi
@@ -265,7 +308,8 @@ https://github.com/bakustarver/rpgmakermlinux-cicpoffs
 --clearoldnwjs
 --unmount
 --gamepath
---usegamepackagejson
+--useoriginalgamepackagejson
+--custompackagejsonpath
 --nwjspath
 --cicpoffspath
 --printrpgmakerlibversions
@@ -317,7 +361,6 @@ fi
 if [ -z "$cicpoffspath" ]; then
 cicpoffs="$HOME/desktopapps/nwjs/nwjs/cicpoffs"
 fi
-packagejson="$HOME/desktopapps/nwjs/nwjs/packagefiles/package.json"
 
 if [ "$latestnwjs" = "true" ]; then
 nwjsf="$latestinstallednwjsfd"
@@ -367,7 +410,7 @@ rm "$nwjstestpath/www"
 }
 
 mountwww() {
-ln -s "$packagejson" "$nwjstestpath"
+packagejsonfunc
 if ! [ -d "$nwjstestpath/www" ]; then
 mkdir -p "$nwjstestpath/www"
 fi;
