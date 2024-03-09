@@ -1,7 +1,7 @@
 #!/bin/bash
 
 installpath=$(dirname "$0")
-version="1.0.0"
+version='1.0.1'
 if ! [ -d "$installpath/nwjs" ]; then
 echo "Can't find nwjs folder"
 exit 1;
