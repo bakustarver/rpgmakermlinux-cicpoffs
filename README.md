@@ -34,7 +34,7 @@ wget -qO- "https://raw.githubusercontent.com/bakustarver/rpgmakermlinux-cicpoffs
 ```
 or 
 ```
-rm "$HOME/desktopapps/nwjs" && rm "$HOME/.local/share/applications/nwjstest.desktop" && rm "$HOME/.local/bin/rpgmaker-linux"
+rm -rf "$HOME/desktopapps/nwjs" && rm "$HOME/.local/share/applications/nwjstest.desktop" && rm "$HOME/.local/bin/rpgmaker-linux"
 ```
 
 ## Command line Options
