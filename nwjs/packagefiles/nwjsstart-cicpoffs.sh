@@ -8,7 +8,7 @@ nwjsfm="$HOME/desktopapps/nwjs/nwjs"
 defp="$nwjsfm/nwjs"
 
 arch=$(uname -m)
-archcheckmessage=$(echo "$arch" | sed -e 's@x86_64@pie executable, x86-64,@g' -e 's@aarch64@pie executable, ARM aarch64,@g' -e 's@i686@pie executable, Intel 80386,@g' -e 's@i386@pie executable, Intel 80386,@g' -e 's@armhf@pie executable, ARM,@g')
+archcheckmessage=$(echo "$arch" | sed -e 's@x86_64@pie executable, x86-64,@g' -e 's@aarch64@pie executable, ARM aarch64,@g' -e 's@i386@pie executable, Intel 80386,@g' -e 's@armhf@pie executable, ARM,@g')
 version="1.0.0"
 latestinstallednwjsfd=$(ls -p "$defp" | grep / | sort -V | tail -n 1 )
 
