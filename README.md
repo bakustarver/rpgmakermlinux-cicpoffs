@@ -20,7 +20,6 @@ I was inspired by [m5kro](https://github.com/m5kro)'s project and his linux/mac 
 After installing the program you can run the game using an application - "RPG Maker MV/MZ (cicpoffs mount)"
 
 #
-![img](https://github.com/bakustarver/rpgmakermlinux-cicpoffs/assets/66978329/046e392e-6cc2-408f-9b55-9f1d59e1118f)
 ![img](https://github.com/bakustarver/rpgmakermlinux-cicpoffs/assets/66978329/4d55e52a-fe6d-44a5-a7bb-9380218d16f1)
 
 
