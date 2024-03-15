@@ -1,15 +1,39 @@
 #!/bin/bash
 
 
+# kdialog --msgbox "$CPATH"
+
 # curdesktop=$(echo "$XDG_CURRENT_DESKTOP")
 # defp="$HOME/deskappbin/nwjs/nwjs/"
+version='1.0.2'
+
 nwjsfm="$HOME/desktopapps/nwjs/nwjs"
 
 defp="$nwjsfm/nwjs"
 
+
+githubscriptwget=$(timeout 5s wget -qO- "https://raw.githubusercontent.com/bakustarver/rpgmakermlinux-cicpoffs/main/installgithub.sh" )
+
+
+
+
+if [ -n "$githubscriptwget" ]; then
+githubversion=$(echo "$githubscriptwget" | sed -n 's/version=//p')
+if [ "$version" != "$githubversion" ]; then
+if { echo "$version"; echo "$githubversion"; } | sort --version-sort -C; then
+echo "A new rpgmaker-linux update has been found, to get the latest version use
+$ rpgmaker-linux --fullupdate
+
+
+"
+fi
+fi
+fi
+
+
+
 arch=$(uname -m)
 archcheckmessage=$(echo "$arch" | sed -e 's@x86_64@pie executable, x86-64,@g' -e 's@aarch64@pie executable, ARM aarch64,@g' -e 's@i686@pie executable, Intel 80386,@g' -e 's@i386@pie executable, Intel 80386,@g' -e 's@armhf@pie executable, ARM,@g')
-version='1.0.1'
 latestinstallednwjsfd=$(ls -p "$defp" | grep / | sort -V | tail -n 1 )
 
 checkthebinaryarch() {
@@ -20,8 +44,9 @@ fi
 if ! file "$1" | grep -q "$archcheckmessage" ; then
 # Use $ wget -qO- installscript.sh | bash
 file "$1"
-echo "Wrong architecture!!
-Download corrent archive with $arch"
+echo "Wrong architecture!! Use
+$ rpgmaker-linux --fullupdate
+to get correct version"
 exit 1;
 fi
 }
@@ -54,6 +79,10 @@ echo "https://github.com/bakustarver/rpgmakermlinux-cicpoffs"
 }
 
 
+fullupdatereinstall() {
+echo "$githubscriptwget" | bash
+}
+
 updatenwjs() {
 export latestlocal=$(echo "$latestinstallednwjsfd" | sed -e 's@nwjs-@@g' -e 's@-linux.*@@g')
 "$nwjsfm/dwnwjs.sh"
@@ -72,31 +101,44 @@ exit
 fi
 }
 
-checkgamepath() {
-# path="$1"
-echo "$1"
-
+pchange() {
 if [ -f "$1" ]; then
-path=$(readlink -f "$1")
+dirname "$1"
 elif [ -d "$1" ]; then
-path=$(echo "$1")
+echo "$1"
 else
 echo "Use "$arg' "/path/rpggame/"'
 exit 1
 fi
+}
 
-if [ -d "$path/www" ] && [ -e "$path/package.json" ] && [ -e "$path/www/js/plugins.js" ]; then
-mountpath="$path/www"
+checkgamefilesfd() {
+if [ -d "$1/www" ] && [ -e "$1/package.json" ] && [ -e "$1/www/js/plugins.js" ]; then
+mountpath="$1/www"
 found=true
 gamepath=true
-elif [ -d "$path/data" ] && [ -e "$path/package.json" ] && [ -e "$path/js/plugins.js" ]; then
-mountpath="$path"
+elif [ -d "$1/data" ] && [ -e "$1/package.json" ] && [ -e "$1/js/plugins.js" ]; then
+mountpath="$1"
 gamepath=true
 found=true
 else
-echo "Can't find game with $arg"
+echo "Can't find game with $1"
 exit 1
 fi
+}
+
+
+checkgamepath() {
+# path="$1"
+echo "$1"
+
+if ! [ -n "$CPATH" ]; then
+path=$(pchange "$1")
+else
+path="$CPATH"
+fi
+# kdialog --msbox "$path"
+checkgamefilesfd "$path"
 }
 
 if [ -z "$gamepath" ]; then
@@ -108,6 +150,12 @@ mountpath="$PWD"
 found=true
 fi
 fi
+
+if [ -z "$found" ] && [ -n "$gamef" ] ; then
+checkgamefilesfd "$gamef"
+fi
+
+
 
 checknwjspath() {
 path="$1"
@@ -143,7 +191,6 @@ if [ -h "$nwjstestpath/package.json" ]; then
 rm "$nwjstestpath/package.json"
 fi
 echo "$newpackagejson" > "$nwjstestpath/package.json"
-cat "$nwjstestpath/package.json"
 }
 
 
@@ -181,6 +228,9 @@ do
         --updatenwjs)
             updatenwjs
             ;;
+        --fullupdate)
+            fullupdatereinstall
+            ;;
         --updatescripts)
             disableCopperBld=true
             incompletefeaturefunc
@@ -198,6 +248,7 @@ do
             esac
             ;;
         --gamepath)
+            echo "$@ $2"
             checkgamepath "$2"
             ;;
         --useoriginalgamepackagejson)
@@ -318,6 +369,7 @@ https://github.com/bakustarver/rpgmakermlinux-cicpoffs
 --checkreleaseupdates
 --checkbetaupdates
 --updatescripts
+--fullupdate
 --sourcelinks"
 fi
 
@@ -334,18 +386,34 @@ else
 nwdllpath="nw.dll"
 nodedllpath="node.dll"
 fi
+# echo "$mountpath"
+rpgmvcorefilepath="$mountpath/js/rpg_core.js"
+rpgmzcorefilepath="$mountpath/js/rmmz_core.js"
+
+if [ -f "$rpgmvcorefilepath" ]; then
+rpgcorefilepath="$rpgmvcorefilepath"
+elif [ -f "$rpgmzcorefilepath" ]; then
+rpgcorefilepath="$rpgmzcorefilepath"
+fi
+
 
 nwdlltext=$(strings "$nwdllpath")
+rpgcoretext=$(cat "$rpgcorefilepath")
 nodeversion=$(strings "$nodedllpath" | grep '/win-.*/node.lib' | sed -e 's@https://nodejs.org/download/release/@@g' -e 's@/win-.*/node.lib@@g')
 nwjsversiondll=$(echo "$nwdlltext" | sed -n "s/process.versions\['nw'\] = '//p" | sed -e "s@'.*@@g")
 chromiumversion=$(echo "$nwdlltext" | grep -B 4 '::SHGetSpecialFolderPathW' | grep '\.[0-9]\.[0-9]' | sed -e 's@.*\.\$@@g')
+rpgmakername=$(echo -e "$rpgcoretext" | sed -n "s/Utils.RPGMAKER_NAME = .//p" | sed -e 's@.;@@g')
+rpgmakerversion=$(echo -e "$rpgcoretext" | sed -n 's/Utils.RPGMAKER_VERSION = .//p' | sed -e 's@.;@@g')
+
 
 echo "NWJS version - $nwjsversiondll
 Chromium version - $chromiumversion
 Node version - $nodeversion
+RPG Maker Name - $rpgmakername
+RPG Maker version - $rpgmakerversion
 
 ffmpeg prebuild link
-https://github.com/nwjs-ffmpeg-prebuilt/nwjs-ffmpeg-prebuilt/releases/tag/$nwjsversion"
+https://github.com/nwjs-ffmpeg-prebuilt/nwjs-ffmpeg-prebuilt/releases/tag/$nwjsversiondll"
 else
 echo "Can't find the game path"
 fi
@@ -367,10 +435,15 @@ nwjsf="$latestinstallednwjsfd"
 else
 nwjsf=$(ls -tp "$defp" | grep / | head -n 1)
 fi
+if [ -n "$NWJSPATH" ]; then
+nwjstestpath="$NWJSPATH"
+echo "$NWJSPATH"
+else
 if [ -n "$nwjsversion" ]; then
 nwjstestpath="$defp/nwjs/$nwjsversion"
 else
 nwjstestpath="$defp/$nwjsf"
+fi
 fi
 
 # wwwsavesymlink.sh "$@"
@@ -383,10 +456,10 @@ fi
 startnw() {
 if [[ "$XDG_SESSION_TYPE" == "wayland" ]]; then
 echo "wayland detected"
-"$nwjstestpath/nw" --ozone-platform=wayland
+"$nwjstestpath/nw" --remote-debugging-port=9222 --ozone-platform=wayland
 else
 echo "wayland not detected, starting in x11"
-"$nwjstestpath/nw" --ozone-platform=x11
+"$nwjstestpath/nw" --remote-debugging-port=9222 --ozone-platform=x11
 fi
 }
 
