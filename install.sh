@@ -1,7 +1,7 @@
 #!/bin/bash
 
 installpath=$(dirname "$0")
-version='1.0.1'
+version='1.0.2'
 if ! [ -d "$installpath/nwjs" ]; then
 echo "Can't find nwjs folder"
 exit 1;
@@ -21,6 +21,9 @@ createfd() {
 if ! [ -d "$1" ]; then
 echo "Missing $1 creating one"
 mkdir -p "$1"
+if [ "$1" = "$localbin" ]; then
+nolocalbin=true
+fi
 fi;
 }
 
@@ -61,7 +64,7 @@ cp -r "$installpath/nwjs/" "$mainfd"
 # echo "Making a desktop file"
 echo "[Desktop Entry]
 Name=RPG Maker MV/MZ (cicpoffs mount)
-Exec=$mainfd/nwjs/packagefiles/nwjsstart-cicpoffs.sh --latest
+Exec=env gamef='%f' $mainfd/nwjs/packagefiles/nwjsstart-cicpoffs.sh --chooselatestnwjs #
 Type=Application
 Categories=Game
 StartupNotify=true
@@ -71,8 +74,15 @@ Terminal=true
 NoDisplay=true" > "$localapplicationsfd/nwjstest.desktop"
 chmod +x "$localapplicationsfd/nwjstest.desktop"
 
+# Exec=bash -c "/home/pasha/desktopapps/nwjs/nwjs/packagefiles/nwjsstart-cicpoffs.sh --latestnwjs --gamepath '$(pwd)'";#
 
 lnnew "$mainfd/nwjs/packagefiles/nwjsstart-cicpoffs.sh" "$localbin/rpgmaker-linux"
-
+update-desktop-database ~/.local/share/applications
 
 echo "Installation Done"
+
+if [ -n "$nolocalbin" ]; then
+echo "$localbin folder was created, you might need to restart your computer if you want to use the program in the terminal
+Or use
+$ export PATH=\$PATH:$localbin"
+fi
