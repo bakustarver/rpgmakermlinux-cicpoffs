@@ -77,7 +77,7 @@ chmod +x "$localapplicationsfd/nwjstest.desktop"
 # Exec=bash -c "/home/pasha/desktopapps/nwjs/nwjs/packagefiles/nwjsstart-cicpoffs.sh --latestnwjs --gamepath '$(pwd)'";#
 
 lnnew "$mainfd/nwjs/packagefiles/nwjsstart-cicpoffs.sh" "$localbin/rpgmaker-linux"
-update-desktop-database ~/.local/share/applications
+update-desktop-database -q ~/.local/share/applications
 
 echo "Installation Done"
 
