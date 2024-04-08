@@ -157,9 +157,9 @@ found=true
 fi
 fi
 #
-# if [ -z "$found" ] && [ -n "$gamef" ] ; then
-# checkgamefilesfd "$gamef"
-# fi
+if [ -z "$found" ] && [ -n "$gamef" ] ; then
+checkgamefilesfd "$gamef"
+fi
 
 
 
