@@ -29,7 +29,7 @@ fi
 if [ "$arch" = "x64" ] || [ "$arch" = "ia32" ]; then
 
 if [ -z "$@" ]; then
-version=$(wget --user-agent 'Mozilla/5.0 (Windows NT 10.0; rv:123.0) Gecko/20100101 Firefox/123.0' -qO- "https://github.com/nwjs/nw.js/tags" | grep 'Link--primary Link' | head -n 1 | sed -e 's@.*">@@g' -e 's@<.*@@g' -e 's@nw-@@g')
+version=$(wget --user-agent 'Mozilla/5.0 (Windows NT 10.0; rv:124.0) Gecko/20100101 Firefox/124.0' -qO- "https://github.com/nwjs/nw.js/tags" | grep 'Link--primary Link' | head -n 1 | sed -e 's@.*">@@g' -e 's@<.*@@g' -e 's@nw-@@g')
 else
 if echo "$@" | grep -q "v[0-1].[0-9][0-9].[0]"; then
 version="$@"
@@ -67,11 +67,18 @@ if [ "$skipdownloadifexist" = "true" ]; then
 
 echo skipping download;
 else
+if [ -n "$SDKNWJS" ]; then
+wget -P "$defp" https://dl.nwjs.io/$version/nwjs-sdk-$version-linux-$arch.tar.gz
+
+tar -xf "$defp/nwjs-sdk-$version-linux-$arch.tar.gz" -C "$defp/nwjs"
+rm "$defp/nwjs-sdk-$version-linux-$arch.tar.gz"
+else
 wget -P "$defp" https://dl.nwjs.io/$version/nwjs-$version-linux-$arch.tar.gz
 
 
 tar -xf "$defp/nwjs-$version-linux-$arch.tar.gz" -C "$defp/nwjs"
 rm "$defp/nwjs-$version-linux-$arch.tar.gz"
+fi
 fi
 echo Finished
 fi
