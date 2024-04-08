@@ -1,6 +1,6 @@
 #!/bin/bash
 
-archt=$(uname -m)
+archt=$(uname -m | sed -e 's/armv7l/armhf/g')
 version=1.0.3
 link="https://github.com/bakustarver/rpgmakermlinux-cicpoffs/releases/download/v$version/rpgmakerlinux-$archt-v$version.tar.gz"
 basenametar=$(basename "$link")
