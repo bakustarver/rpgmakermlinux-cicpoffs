@@ -1,11 +1,12 @@
 #!/bin/bash
 
+export LD_LIBRARY_PATH="$HOME/desktopapps/nwjs/nwjs/packagefiles/:$LD_LIBRARY_PATH"
 
 # kdialog --msgbox "$CPATH"
 
 # curdesktop=$(echo "$XDG_CURRENT_DESKTOP")
 # defp="$HOME/deskappbin/nwjs/nwjs/"
-version='1.0.2'
+version='1.0.3'
 
 nwjsfm="$HOME/desktopapps/nwjs/nwjs"
 
@@ -14,6 +15,7 @@ defp="$nwjsfm/nwjs"
 
 githubscriptwget=$(timeout 5s wget -qO- "https://raw.githubusercontent.com/bakustarver/rpgmakermlinux-cicpoffs/main/installgithub.sh" )
 
+latestinstallednwjsfd=$(ls -p "$defp" | grep / | sort -V | tail -n 1 )
 
 
 
@@ -33,8 +35,7 @@ fi
 
 
 arch=$(uname -m)
-archcheckmessage=$(echo "$arch" | sed -e 's@x86_64@pie executable, x86-64,@g' -e 's@aarch64@pie executable, ARM aarch64,@g' -e 's@i686@pie executable, Intel 80386,@g' -e 's@i386@pie executable, Intel 80386,@g' -e 's@armhf@pie executable, ARM,@g')
-latestinstallednwjsfd=$(ls -p "$defp" | grep / | sort -V | tail -n 1 )
+archcheckmessage=$(echo "$arch" | sed -e 's@x86_64@pie executable, x86-64,@g' -e 's@aarch64@pie executable, ARM aarch64,@g' -e 's@i686@pie executable, Intel 80386,@g' -e 's@i386@pie executable, Intel 80386,@g' -e 's@armv7l@pie executable, ARM,@g' -e 's@armhf@pie executable, ARM,@g')
 
 checkthebinaryarch() {
 if ! [ -f "$1" ]; then
@@ -83,6 +84,8 @@ fullupdatereinstall() {
 echo "$githubscriptwget" | bash
 }
 
+
+
 updatenwjs() {
 export latestlocal=$(echo "$latestinstallednwjsfd" | sed -e 's@nwjs-@@g' -e 's@-linux.*@@g')
 "$nwjsfm/dwnwjs.sh"
@@ -113,11 +116,13 @@ fi
 }
 
 checkgamefilesfd() {
-if [ -d "$1/www" ] && [ -e "$1/package.json" ] && [ -e "$1/www/js/plugins.js" ]; then
-mountpath="$1/www"
+npath=$(dirname "$1" | sed -e "s@^'@@g");
+zenity --title "$gamef" --warning --text="$npath"
+if [ -d "$npath/www" ] && [ -e "$npath/package.json" ] && [ -e "$npath/www/js/plugins.js" ]; then
+mountpath="$npath/www"
 found=true
 gamepath=true
-elif [ -d "$1/data" ] && [ -e "$1/package.json" ] && [ -e "$1/js/plugins.js" ]; then
+elif [ -d "$npath/data" ] && [ -e "$npath/package.json" ] && [ -e "$npath/js/plugins.js" ]; then
 mountpath="$1"
 gamepath=true
 found=true
@@ -126,6 +131,7 @@ echo "Can't find game with $1"
 exit 1
 fi
 }
+
 
 
 checkgamepath() {
@@ -150,10 +156,10 @@ mountpath="$PWD"
 found=true
 fi
 fi
-
-if [ -z "$found" ] && [ -n "$gamef" ] ; then
-checkgamefilesfd "$gamef"
-fi
+#
+# if [ -z "$found" ] && [ -n "$gamef" ] ; then
+# checkgamefilesfd "$gamef"
+# fi
 
 
 
@@ -209,6 +215,10 @@ do
             ;;
         --checkreleaseupdates)
             info=true
+            incompletefeaturefunc
+            ;;
+        --usesdk)
+            export SDKNWJS=true
             incompletefeaturefunc
             ;;
         --checkbetaupdates)
@@ -370,7 +380,8 @@ https://github.com/bakustarver/rpgmakermlinux-cicpoffs
 --checkbetaupdates
 --updatescripts
 --fullupdate
---sourcelinks"
+--sourcelinks
+--usesdk"
 fi
 
 
