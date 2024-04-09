@@ -6,7 +6,7 @@ export LD_LIBRARY_PATH="$HOME/desktopapps/nwjs/nwjs/packagefiles/:$LD_LIBRARY_PA
 
 # curdesktop=$(echo "$XDG_CURRENT_DESKTOP")
 # defp="$HOME/deskappbin/nwjs/nwjs/"
-version='1.0.3'
+version='1.0.4'
 
 nwjsfm="$HOME/desktopapps/nwjs/nwjs"
 
@@ -116,8 +116,12 @@ fi
 }
 
 checkgamefilesfd() {
+if echo "$1" | grep ".exe"; then
 npath=$(dirname "$1" | sed -e "s@^'@@g");
-zenity --title "$gamef" --warning --text="$npath"
+else
+npath="$1"
+fi
+# zenity --title "$gamef" --warning --text="$npath"
 if [ -d "$npath/www" ] && [ -e "$npath/package.json" ] && [ -e "$npath/www/js/plugins.js" ]; then
 mountpath="$npath/www"
 found=true
