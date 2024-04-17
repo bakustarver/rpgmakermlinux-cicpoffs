@@ -16,7 +16,7 @@ I was inspired by [m5kro](https://github.com/m5kro)'s project and his linux/mac 
 - The Native support of 4 architectures: x86-64, i386, armhf, arm64 
 
 
-
+ 
 After installing the program you can run the game using an application - "RPG Maker MV/MZ (cicpoffs mount)"
 
 #
