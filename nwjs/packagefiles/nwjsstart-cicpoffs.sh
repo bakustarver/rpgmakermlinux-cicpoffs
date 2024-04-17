@@ -12,11 +12,23 @@ nwjsfm="$HOME/desktopapps/nwjs/nwjs"
 
 defp="$nwjsfm/nwjs"
 
+nwjslist=$(ls -p "$defp" | grep / | sort -V)
+if [ -z "$nwjslist" ]; then
+echo "the nwjs is not installed, please use $ rpgmaker-linux --installnwjs"
+fi
+if echo "$nwjslist" | grep -q "\-sdk"; then
+# sdkinstalled=true
+nwjsonlylist=$(echo "$nwjslist" | grep -v "sdk")
+nwjssdkonlylist=$(echo "$nwjslist" | grep "sdk")
+latestinstallednwjsfd=$(echo "$nwjssdkonlylist" | sort -V | uniq | tail -n 1)
+else
+latestinstallednwjsfd=$(echo "$nwjslist" | tail -n 1)
+fi
+echo "$latestinstallednwjsfd"
+# exit
+githubscriptwget=$(timeout 7s wget -qO- "https://raw.githubusercontent.com/bakustarver/rpgmakermlinux-cicpoffs/main/installgithub.sh" )
 
-githubscriptwget=$(timeout 5s wget -qO- "https://raw.githubusercontent.com/bakustarver/rpgmakermlinux-cicpoffs/main/installgithub.sh" )
-
-latestinstallednwjsfd=$(ls -p "$defp" | grep / | sort -V | tail -n 1 )
-
+# latestinstallednwjsfd=$(ls -p "$defp" | grep / | sort -V | tail -n 1 )
 
 
 if [ -n "$githubscriptwget" ]; then
@@ -31,6 +43,7 @@ $ rpgmaker-linux --fullupdate
 fi
 fi
 fi
+
 
 
 
@@ -62,6 +75,22 @@ checkthebinariesarch() {
 }
 
 
+pixi5install() {
+echo "Installing pixi5"
+newjsfd="$nwjsfm/packagefiles/rpgmaker-mv-pixi5/js"
+curjs="$mountpath/js"
+if grep "pixi.js - v5." "$curjs/libs/pixi.js"; then
+echo "The pixi5 lib is already installed"
+else
+mv "$curjs" "$mountpath/js-backup"
+cp -r "$newjsfd" "$mountpath"
+cp -r "$mountpath/js-backup/plugins" "$curjs"
+cat "$mountpath/js-backup/plugins.js" > "$curjs/plugins.js"
+echo "pixi5 was installed"
+fi
+#pixi func
+}
+
 sourcelinks() {
 
 echo "Github page
@@ -87,8 +116,14 @@ echo "$githubscriptwget" | bash
 
 
 updatenwjs() {
+if [ -f "$nwjsfm/packagefiles/usesdk.txt" ]; then
+export latestlocal=$(echo "$nwjssdkonlylist" | tail -n 1 | sed -e 's@nwjs-sdk-@@g' -e 's@-linux.*@@g' )
+
+"$nwjsfm/dwnwjs.sh"
+else
 export latestlocal=$(echo "$latestinstallednwjsfd" | sed -e 's@nwjs-@@g' -e 's@-linux.*@@g')
 "$nwjsfm/dwnwjs.sh"
+fi
 }
 
 nwjsversionfunc() {
@@ -105,14 +140,14 @@ fi
 }
 
 pchange() {
-if [ -f "$1" ]; then
-dirname "$1"
-elif [ -d "$1" ]; then
-echo "$1"
+if echo "$1" | grep ".exe"; then
+dirname "$1" | sed -e "s@^'@@g"
 else
-echo "Use "$arg' "/path/rpggame/"'
-exit 1
+echo "$1"
 fi
+# echo "Use "$arg' "/path/rpggame/"'
+# exit 1
+# fi
 }
 
 checkgamefilesfd() {
@@ -221,9 +256,21 @@ do
             info=true
             incompletefeaturefunc
             ;;
+        --usestandart)
+#             export SDKNWJS=true
+            if [ -e "$nwjsfm/packagefiles/usesdk.txt" ]; then
+            rm "$nwjsfm/packagefiles/usesdk.txt"
+            fi
+            ;;
+        --pixi5install)
+            INSTALLPIXI5=true
+            ;;
         --usesdk)
-            export SDKNWJS=true
-            incompletefeaturefunc
+#             export SDKNWJS=true
+            touch "$nwjsfm/packagefiles/usesdk.txt"
+            if [ -z "$nwjssdkonlylist" ]; then
+            updatenwjs
+            fi
             ;;
         --checkbetaupdates)
             info=true
@@ -385,7 +432,8 @@ https://github.com/bakustarver/rpgmakermlinux-cicpoffs
 --updatescripts
 --fullupdate
 --sourcelinks
---usesdk"
+--usesdk
+--pixi5install"
 fi
 
 
@@ -471,10 +519,10 @@ fi
 startnw() {
 if [[ "$XDG_SESSION_TYPE" == "wayland" ]]; then
 echo "wayland detected"
-"$nwjstestpath/nw" --remote-debugging-port=9222 --ozone-platform=wayland
+"$nwjstestpath/nw" --ozone-platform=wayland
 else
 echo "wayland not detected, starting in x11"
-"$nwjstestpath/nw" --remote-debugging-port=9222 --ozone-platform=x11
+"$nwjstestpath/nw" --ozone-platform=x11
 fi
 }
 
@@ -515,6 +563,10 @@ echo -e "Mounting done.
 Total time: $SECONDS seconds"
 
 }
+
+if [ "$INSTALLPIXI5" = "true" ]; then
+pixi5install
+fi
 
 checkandunmount
 checkthebinaryarch "$cicpoffs"
