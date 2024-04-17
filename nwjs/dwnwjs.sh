@@ -1,9 +1,21 @@
 #!/bin/bash
 
 gitlink="https://github.com/nwjs/nw.js"
-defp="$HOME/desktopapps/nwjs/nwjs"
-versioninstalledlist=$(ls "$defp/nwjs")
-arch=$(uname -m | sed -e 's@i686@ia32@g' -e 's@x86_64@x64@g' -e 's@armhf@arm@g' -e 's@aarch64@arm64@g')
+# defp="$HOME/desktopapps/nwjs/nwjs"
+defp=$(dirname "$0")
+# defp="$defp0/nwjs"
+echo "defp $defp"
+if ! [ -d "$defp" ]; then
+mkdir -p "$defp"
+fi;
+nwjsfm="$HOME/desktopapps/nwjs/nwjs"
+
+if [ -f "$nwjsfm/packagefiles/usesdk.txt" ]; then
+SDKNWJS=true
+fi
+echo "$SDKNWJS"
+versioninstalledlist=$(ls "$defp")
+arch=$(uname -m | sed -e 's@i686@ia32@g' -e 's@x86_64@x64@g' -e 's@armv7l@armhf@g' -e 's@armhf@arm@g' -e 's@aarch64@arm64@g')
 
 
 
@@ -19,9 +31,19 @@ fi
 
 
 if [ "$arch" = "arm" ]; then
+if [ -n "$SDKNWJS" ]; then
+echo "No sdk version for your architecture $arch
+Use $ rpgmaker-linux --usestandart";
+exit
+fi
 nwjslinktar="https://github.com/bakustarver/rpgmakermlinux-cicpoffs/releases/download/libraries/nwjs-v0.60.1-linux-arm.tar.gz"
 downloadandextract
-elif [ "$arch" = "arm" ]; then
+elif [ "$arch" = "arm64" ]; then
+if [ -n "$SDKNWJS" ]; then
+echo "No sdk version for your architecture $arch
+Use $ rpgmaker-linux --usestandart";
+exit;
+fi
 nwjslinktar="https://github.com/bakustarver/rpgmakermlinux-cicpoffs/releases/download/libraries/nwjs-v0.60.1-linux-arm64.tar.gz"
 downloadandextract
 fi
@@ -40,11 +62,9 @@ echo "Incorrect version name - $@"
 exit 1;
 fi
 
-if echo "$versioninstalledlist" | grep -q "$version" && [ "$skipdownloadifexist" = "true" ]; then
-export nwjsversion="nwjs-$version-linux-$arch/"
-fi
-fi
 
+fi
+# kdialog --msgbox "hello 1"
 
 
 # echo "$latestlocal $version"
@@ -53,15 +73,21 @@ echo Your nwjs version is latest
 echo Reinstall? y/n
 read
 if [ "$REPLY" = "y" ] || [ "$REPLY" = "yes" ]; then
+if [ -n "$SDKNWJS" ]; then
+rm -rf "$defp/nwjs/nwjs-sdk-$version-linux-x64/"
+else
 rm -rf "$defp/nwjs/nwjs-$version-linux-x64/"
+fi
 echo Reinstalling "$latestlocal";
 else
-exit
+exit;
 fi
 fi
+# kdialog --msgbox "hello 2"
 
 
 # uname -p
+echo "sdk q$SDKNWJS"
 
 if [ "$skipdownloadifexist" = "true" ]; then
 
@@ -82,3 +108,5 @@ fi
 fi
 echo Finished
 fi
+fi
+
