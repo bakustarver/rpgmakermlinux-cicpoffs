@@ -9,6 +9,7 @@ I was inspired by [m5kro](https://github.com/m5kro)'s project and his linux/mac 
 
 #### Contains the following features:
 - Running any RPG Maker MV/MZ game on linux.
+- Sharp increase in fps (from 2 to 4 times more compared to Wine, can be viewed by pressing the F2 key) 
 - Downloading and selecting any version of NWJS (using the command line).
 - Starting a game with the Japanese locale option.
 - Launching a game using a command line.
