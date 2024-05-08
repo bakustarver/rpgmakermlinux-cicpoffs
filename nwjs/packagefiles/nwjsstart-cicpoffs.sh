@@ -6,25 +6,34 @@ export LD_LIBRARY_PATH="$HOME/desktopapps/nwjs/nwjs/packagefiles/:$LD_LIBRARY_PA
 
 # curdesktop=$(echo "$XDG_CURRENT_DESKTOP")
 # defp="$HOME/deskappbin/nwjs/nwjs/"
-version='1.0.4'
+version='1.0.5'
+
 
 nwjsfm="$HOME/desktopapps/nwjs/nwjs"
 
-defp="$nwjsfm/nwjs"
+yadp="$nwjsfm/packagefiles/yad"
 
-nwjslist=$(ls -p "$defp" | grep / | sort -V)
+defp="$nwjsfm/nwjs"
+export defpn="$nwjsfm"
+
+
+nwjslist=$(ls -p "$defp" | grep /)
+
 if [ -z "$nwjslist" ]; then
 echo "the nwjs is not installed, please use $ rpgmaker-linux --installnwjs"
 fi
-if echo "$nwjslist" | grep -q "\-sdk"; then
-# sdkinstalled=true
 nwjsonlylist=$(echo "$nwjslist" | grep -v "sdk")
 nwjssdkonlylist=$(echo "$nwjslist" | grep "sdk")
+if echo "$nwjslist" | grep -q "\-sdk"; then
+# sdkinstalled=true
 latestinstallednwjsfd=$(echo "$nwjssdkonlylist" | sort -V | uniq | tail -n 1)
+# allversionsnwjs=$(echo "$nwjslist" | sed -e 's@-sdk-@@g' -e 's@nwjs-@@g' -e 's@-linux-.*@@g' | sort -V | uniq)
 else
 latestinstallednwjsfd=$(echo "$nwjslist" | tail -n 1)
 fi
-echo "$latestinstallednwjsfd"
+allversionsnwjs=$(echo "$nwjslist" | sed -e 's@sdk-@@g' -e 's@nwjs-@@g' -e 's@-linux-.*@@g' | sort -V | uniq | tac)
+
+# echo "$latestinstallednwjsfd"
 # exit
 githubscriptwget=$(timeout 7s wget -qO- "https://raw.githubusercontent.com/bakustarver/rpgmakermlinux-cicpoffs/main/installgithub.sh" )
 
@@ -48,7 +57,7 @@ fi
 
 
 arch=$(uname -m)
-archcheckmessage=$(echo "$arch" | sed -e 's@x86_64@pie executable, x86-64,@g' -e 's@aarch64@pie executable, ARM aarch64,@g' -e 's@i686@pie executable, Intel 80386,@g' -e 's@i386@pie executable, Intel 80386,@g' -e 's@armv7l@pie executable, ARM,@g' -e 's@armhf@pie executable, ARM,@g')
+archcheckmessage=$(echo "$arch" | sed -e 's@x86_64@, x86-64, version@g' -e 's@aarch64@, ARM aarch64,@g' -e 's@i686@, Intel 80386,@g' -e 's@i386@, Intel 80386,@g' -e 's@armv7l@, ARM,@g' -e 's@armhf@, ARM,@g')
 
 checkthebinaryarch() {
 if ! [ -f "$1" ]; then
@@ -75,6 +84,59 @@ checkthebinariesarch() {
 }
 
 
+makedesktopfile() {
+# $mountpath
+geticonpath=$(sed -n 's/.*"icon": "//p' "$nwjstestpath/package.json" | sed -e 's@"@@g')
+if [ "$engine" = "mz" ] && [ -z "$PACKAGEJSONPATH" ]; then
+geticonpath=$(echo "$geticonpath" | sed -e 's@www/@@g');
+fi
+bmountpath=$(basename "$mountpath")
+if [ "$engine" = "mv" ]; then
+ndirname=$(dirname "$mountpath")
+# echo 1
+else
+ndirname="$mountpath"
+# echo 2
+fi
+ndrbasen=$(basename "$ndirname")
+iconpath="$ndirname/$geticonpath"
+# kdialog --msgbox "$mountpath-$bmountpath\n$ndirname\n$iconpath"
+
+if [ -z "$dsavepath" ]; then
+dsavepath="$ndirname"
+fi
+
+getgamename="Your game" #$(basename "$mountpath")
+# kdialog --msgbox "$iconpath"
+if ! [ -f "$dsavepath/$ndrbasen.desktop" ]; then
+echo "[Desktop Entry]
+Name=$ndrbasen
+Exec=env gamef=\"$ndirname\" $nwjsfm/packagefiles/nwjsstart-cicpoffs.sh
+Type=Application
+Categories=Game
+StartupNotify=true
+MimeType=application/x-ms-dos-executable;application/x-wine-extension-msp;
+Icon=$iconpath
+Terminal=true" > "$dsavepath/$ndrbasen.desktop"
+chmod +x "$dsavepath/$ndrbasen.desktop"
+fi
+}
+
+makelocalshortcut() {
+dsavepath=""
+makedesktopfile
+}
+
+makedesktopshortcut() {
+dsavepath=$(xdg-user-dir DESKTOP)
+makedesktopfile
+}
+
+makethemenushortcut() {
+dsavepath="$HOME/.local/share/applications/"
+makedesktopfile
+}
+
 pixi5install() {
 echo "Installing pixi5"
 newjsfd="$nwjsfm/packagefiles/rpgmaker-mv-pixi5/js"
@@ -90,6 +152,36 @@ echo "pixi5 was installed"
 fi
 #pixi func
 }
+
+texthookerplugininstall() {
+echo "Installing the text hooker plugin"
+texthookerpligin="$nwjsfm/packagefiles/plugins/Clipboard_llule.js"
+
+
+pluginsfile="$mountpath/js/plugins.js"
+if grep -q 'Clipboard_llule","status":true,' "$pluginsfile"; then
+echo "The texthooker plugin is already installed"
+else
+cp "$pluginsfile" "$pluginsfile.bk"
+sed -e 's@^\[$@[\n{"name":"Clipboard_llule","status":true,"description":"","parameters":{}},@g' -i "$pluginsfile"
+cp "$texthookerpligin" "$mountpath/js/plugins/";
+
+fi
+}
+
+
+texthookerpluginuninstall() {
+echo "Uninstalling the text hooker plugin"
+pluginsfile="$mountpath/js/plugins.js"
+if grep -q 'Clipboard_llule","status":true,' "$pluginsfile"; then
+sed -e 's@{"name":"Clipboard_llule".*@@g' -i "$pluginsfile"
+else
+echo "The text hooker plugin is not installed"
+fi
+
+
+}
+
 
 sourcelinks() {
 
@@ -161,10 +253,12 @@ if [ -d "$npath/www" ] && [ -e "$npath/package.json" ] && [ -e "$npath/www/js/pl
 mountpath="$npath/www"
 found=true
 gamepath=true
+engine=mv
 elif [ -d "$npath/data" ] && [ -e "$npath/package.json" ] && [ -e "$npath/js/plugins.js" ]; then
 mountpath="$1"
 gamepath=true
 found=true
+engine=mz
 else
 echo "Can't find game with $1"
 exit 1
@@ -190,9 +284,11 @@ if [ -z "$gamepath" ]; then
 if [ -d ./www ] && [ -f ./package.json ]; then
 mountpath="$PWD/www"
 found=true
+engine=mv
 elif [ -d ./js ] && [ -f ./package.json ] &&  [ -d ./data ]; then
 mountpath="$PWD"
 found=true
+engine=mz
 fi
 fi
 #
@@ -230,7 +326,11 @@ else
 packagejson="$HOME/desktopapps/nwjs/nwjs/packagefiles/package.json"
 fi
 packagejsoninfo=$(cat "$packagejson")
+
 newpackagejson=$(echo "$packagejsoninfo" | sed -e 's@"name": "",@"name": "RPG Maker MV/MZ (cicpoffs mount)",@g' -e 's@"main": ".*@"main": "www/index.html",@' -e 's@"title": "",@"title": "RPG Maker MV/MZ (cicpoffs mount)",@g')
+
+
+# echo "$packagejson"
 # ln -s "$packagejson" "$nwjstestpath"
 if [ -h "$nwjstestpath/package.json" ]; then
 rm "$nwjstestpath/package.json"
@@ -256,6 +356,9 @@ do
             info=true
             incompletefeaturefunc
             ;;
+        --gui)
+            GUIMENU=true
+            ;;
         --usestandart)
 #             export SDKNWJS=true
             if [ -e "$nwjsfm/packagefiles/usesdk.txt" ]; then
@@ -264,6 +367,12 @@ do
             ;;
         --pixi5install)
             INSTALLPIXI5=true
+            ;;
+        --installtexthookerplugin)
+            INSTALLTHPL=true
+            ;;
+        --uninstalltexthookerplugin)
+            INSTALLTHPL=false
             ;;
         --usesdk)
 #             export SDKNWJS=true
@@ -295,6 +404,29 @@ do
         --updatescripts)
             disableCopperBld=true
             incompletefeaturefunc
+            ;;
+        --makeshortcut)
+            case "$arg2" in
+                local)
+                    MAKELOCALSHORTCUT=true
+                    ;;
+                desktop)
+                    MAKEDESKTOPSHORTCUT=true
+                    ;;
+                menu)
+                    ADDTOTHEMENU=true
+                    ;;
+                all)
+                    MAKELOCALSHORTCUT=true
+                    MAKEDESKTOPSHORTCUT=true
+                    ADDTOTHEMENU=true
+                    ;;
+
+                *)
+                    echo -e "Use --makeshortcut local or desktop or menu all"
+                    info=true
+                    ;;
+            esac
             ;;
         --unmount)
             case "$arg2" in
@@ -375,7 +507,7 @@ armhf"
             esac
             ;;
         --jpnlocale)
-            LANG="ja_JP.utf8"
+            export LANG="ja_JP.utf8"
             ;;
         --sourcelinks)
             sourcelinks
@@ -433,11 +565,97 @@ https://github.com/bakustarver/rpgmakermlinux-cicpoffs
 --fullupdate
 --sourcelinks
 --usesdk
---pixi5install"
+--pixi5install
+--installtexthookerplugin
+--uninstalltexthookerplugin
+--makeshortcut"
 fi
 
 
+yaddata() {
+updatenwjsvar=$(echo "$@" | awk '{print $1}')
+pixiupdatevar=$(echo "$@" | awk '{print $2}')
+localshortcutvar=$(echo "$@" | awk '{print $3}')
+nwjsguivar=$(echo "$@" | awk '{print $4}')
+jpnlocalevar=$(echo "$@" | awk '{print $5}')
+texthookerset=$(echo "$@" | awk '{print $6}')
+desktopshortcut=$(echo "$@" | awk '{print $7}')
+addtomenuvar=$(echo "$@" | awk '{print $8}')
+sdkvar=$(echo "$@" | awk '{print $9}')
 
+# kdialog --msgbox "$updatenwjsvar $pixiupdate $localshortcut $texthookerset dc $desktopshortcut $addtomenuvar $sdkvar $nwjsguivar"
+}
+
+if [ "$GUIMENU" = "true" ]; then
+configgp="$HOME/desktopapps/rpgmaker-guiconfig.txt"
+if [ -f "$configgp" ]; then
+configgdata=$(cat "$configgp")
+yaddata "$configgdata"
+newversionlist=$(echo "$allversionsnwjs" | grep -v "^$nwjsguivar$" | sed "1s/^/$nwjsguivar\n/")
+if [ -z "$newversionlist" ]; then
+newversionlist="$allversionsnwjs"
+fi
+# kdialog --msgbox "$nwjsguivar\n--$newversionlist"
+guim=$("$yadp" --title "RPG Maker MV/MZ Options" --text="Please choose your options:" --image="$HOME/desktopapps/nwjs/nwjs/packagefiles/nwjs128.png" --columns=5 --field "Update NWJS":chk $updatenwjsvar --form --field "Pixi5 Update":chk "$pixiupdatevar" --field="Shorcut Options::LBL" false --field "Local Shortcut":chk "$localshortcutvar" --form --separator=" " --item-separator="\n" --field="Versions::"CBE "$newversionlist" --field "Japanese Locale":chk "$jpnlocalevar" --field "Texthooker Plugin":chk "$texthookerset" --field=" :LBL" false --field "Desktop Shortcut":chk "$desktopshortcut" --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field "Show in the Menu":chk "$addtomenuvar" --field "Use SDK version":chk "$sdkvar" --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false)
+else
+guim=$("$yadp" --title "RPG Maker MV/MZ Options" --text="Please choose your options:" --image="$HOME/desktopapps/nwjs/nwjs/packagefiles/nwjs128.png" --columns=5 --field "Update NWJS":chk true --form --field "Pixi5 Update":chk false --field="Shorcut Options::LBL" false --field "Local Shortcut":chk true --form --separator=" " --item-separator="\n" --field="Versions::"CBE "$allversionsnwjs" --field "Japanese Locale":chk false --field "Texthooker Plugin":chk false --field=" :LBL" false --field "Desktop Shortcut":chk false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field "Show in the Menu":chk false --field "Use SDK version":chk false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false)
+fi
+
+if [ -n "$guim" ] ; then
+echo "$guim" > "$configgp"
+else
+exit;
+fi
+yaddata "$guim"
+echo "$guim"
+
+# exit;
+if [ "$jpnlocalevar" = "TRUE" ]; then
+export LANG="ja_JP.utf8"
+fi
+
+if [ "$updatenwjsvar" = "TRUE" ]; then
+export skipdownloadifexist=true
+export checkversionnwjs=false
+updatenwjs
+fi
+
+if [ "$texthookerset" = "TRUE" ]; then
+INSTALLTHPL=true
+elif [ "$texthookerset" = "FALSE" ]; then
+INSTALLTHPL=false
+fi
+
+if [ "$sdkvar" = "TRUE" ]; then
+if ! [ -f "$nwjsfm/packagefiles/usesdk.txt" ]; then
+touch "$nwjsfm/packagefiles/usesdk.txt"
+fi
+elif [ "$sdkvar" = "FALSE" ]; then
+if [ -f "$nwjsfm/packagefiles/usesdk.txt" ]; then
+rm "$nwjsfm/packagefiles/usesdk.txt"
+fi
+fi
+
+
+if [ "$localshortcutvar" = "TRUE" ]; then
+MAKELOCALSHORTCUT=true
+fi
+if [ "$desktopshortcut" = "TRUE" ]; then
+MAKEDESKTOPSHORTCUT=true
+fi
+if [ "$addtomenuvar" = "TRUE" ]; then
+ADDTOTHEMENU=true
+fi
+
+if [ -n "$nwjsguivar" ]; then
+nwjsversion="$nwjsguivar"
+export skipdownloadifexist=true
+export checkversionnwjs=false
+. "$nwjsfm/dwnwjs.sh" "$nwjsguivar"
+fi
+
+fi
+# exit;
 
 if [ "$printrpgmakerlibversions" = "true" ]; then
 if [ "$found" = "true" ]; then
@@ -489,8 +707,19 @@ fi
 # echo "$forceaarch"
 
 
+
 if [ -z "$cicpoffspath" ]; then
 cicpoffs="$HOME/desktopapps/nwjs/nwjs/cicpoffs"
+fi
+
+nwjslist=$(ls -p "$nwjsfm/nwjs/" | grep /)
+
+if [ -f "$nwjsfm/packagefiles/usesdk.txt" ]; then
+nwjslistd=$(echo "$nwjslist" | grep "sdk")
+# export latestlocal=$(echo "$nwjssdkonlylist" | tail -n 1 | sed -e 's@nwjs-sdk-@@g' -e 's@-linux.*@@g' )
+
+else
+nwjslistd=$(echo "$nwjslist" | grep -v "sdk")
 fi
 
 if [ "$latestnwjs" = "true" ]; then
@@ -503,16 +732,23 @@ nwjstestpath="$NWJSPATH"
 echo "$NWJSPATH"
 else
 if [ -n "$nwjsversion" ]; then
-nwjstestpath="$defp/nwjs/$nwjsversion"
+
+searchpath=$(echo "$nwjslistd" | grep "$nwjsversion" )
+# nwjstestpath="$defp/nwjs/$nwjsversion"
+if [ -n "$searchpath" ]; then
+nwjstestpath="$nwjsfm/nwjs/$searchpath"
+# kdialog --msgbox "$nwjstestpath"
+else
+echo no version
+fi
 else
 nwjstestpath="$defp/$nwjsf"
 fi
 fi
 
+
 # wwwsavesymlink.sh "$@"
 # echo "$nwjstestpath"
-
-
 
 
 
@@ -531,6 +767,9 @@ fi
 #Unmount folder
 
 checkandunmount() {
+if ! [ -d "$nwjstestpath/www" ]; then
+mkdir -p "$nwjstestpath/www"
+fi;
 if [ -z "$unmount" ]; then
 testf=$(findmnt "$nwjstestpath/www");
 if [ -n "$testf" ]; then
@@ -551,6 +790,7 @@ if ! [ -d "$nwjstestpath/www" ]; then
 mkdir -p "$nwjstestpath/www"
 fi;
 
+echo "$cicpoffs" "$mountpath" "$nwjstestpath/www"
 "$cicpoffs" "$mountpath" "$nwjstestpath/www"
 
 SECONDS=0;
@@ -565,16 +805,36 @@ Total time: $SECONDS seconds"
 }
 
 if [ "$INSTALLPIXI5" = "true" ]; then
-pixi5install
+pixi5install;
 fi
 
+if [ "$INSTALLTHPL" = "true" ]; then
+texthookerplugininstall;
+elif [ "$INSTALLTHPL" = "false" ]; then
+texthookerpluginuninstall
+fi
+# kdialog --msgbox "ggg $nwjstestpath"
+
+
 checkandunmount
+
 checkthebinaryarch "$cicpoffs"
+
 checkthebinaryarch "$nwjstestpath/nw"
+
 
 if [ "$found" = "true" ]; then
 # rmsymlinks
 mountwww
+if [ -n "$MAKELOCALSHORTCUT" ]; then
+makelocalshortcut
+fi
+if [ -n "$MAKEDESKTOPSHORTCUT" ]; then
+makedesktopshortcut
+fi
+if [ -n "$ADDTOTHEMENU" ]; then
+makethemenushortcut
+fi
 startnw
 checkandunmount
 fi
