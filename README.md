@@ -22,6 +22,7 @@ After installing the program you can run the game using an application - "RPG Ma
 
 #
 ![img](https://github.com/bakustarver/rpgmakermlinux-cicpoffs/assets/66978329/4d55e52a-fe6d-44a5-a7bb-9380218d16f1)
+![img](https://github.com/bakustarver/rpgmakermlinux-cicpoffs/assets/66978329/212ea961-8419-4c4b-b616-c7a3e165f923)
 
 
 ## Installation || Update
