@@ -1,7 +1,7 @@
 #!/bin/bash
 
 installpath=$(dirname "$0")
-version='1.0.3'
+version='1.0.5'
 if ! [ -d "$installpath/nwjs" ]; then
 echo "Can't find nwjs folder"
 exit 1;
@@ -13,7 +13,7 @@ localapplicationsfd="$HOME/.local/share/applications/"
 localbin="$HOME/.local/bin"
 
 arch=$(uname -m)
-archcheckmessage=$(echo "$arch" | sed -e 's@x86_64@pie executable, x86-64,@g' -e 's@aarch64@pie executable, ARM aarch64,@g' -e 's@i686@pie executable, Intel 80386,@g' -e 's@armv7l@pie executable, ARM,@g' -e 's@armhf@pie executable, ARM,@g')
+archcheckmessage=$(echo "$arch" | sed -e 's@x86_64@, x86-64, version@g' -e 's@aarch64@, ARM aarch64,@g' -e 's@i686@, Intel 80386,@g' -e 's@i386@, Intel 80386,@g' -e 's@armv7l@, ARM,@g' -e 's@armhf@, ARM,@g')
 
 rm -rf "$mainfd"
 
@@ -64,15 +64,27 @@ cp -r "$installpath/nwjs/" "$mainfd"
 # echo "Making a desktop file"
 echo "[Desktop Entry]
 Name=RPG Maker MV/MZ (cicpoffs mount)
-Exec=env gamef='%u' $mainfd/nwjs/packagefiles/nwjsstart-cicpoffs.sh --chooselatestnwjs
+Exec=env gamef=\"%u\" $mainfd/nwjs/packagefiles/nwjsstart-cicpoffs.sh --chooselatestnwjs
 Type=Application
-Categories=Game
+Categories=Games
 StartupNotify=true
 MimeType=application/x-ms-dos-executable;application/x-wine-extension-msp;
 Icon=$mainfd/nwjs/packagefiles/nwjs128.png
 Terminal=true
 NoDisplay=true" > "$localapplicationsfd/nwjstest.desktop"
 chmod +x "$localapplicationsfd/nwjstest.desktop"
+
+echo "[Desktop Entry]
+Name=RPG Maker MV/MZ Options
+Exec=env gamef=\"%u\" $mainfd/nwjs/packagefiles/nwjsstart-cicpoffs.sh --gui
+Type=Application
+Categories=Games
+StartupNotify=true
+MimeType=application/x-ms-dos-executable;application/x-wine-extension-msp;
+Icon=$mainfd/nwjs/packagefiles/nwjs128.png
+Terminal=true
+NoDisplay=true" > "$localapplicationsfd/nwjstoptions.desktop"
+chmod +x "$localapplicationsfd/nwjsoptions.desktop"
 
 # Exec=bash -c "/home/pasha/desktopapps/nwjs/nwjs/packagefiles/nwjsstart-cicpoffs.sh --latestnwjs --gamepath '$(pwd)'";#
 
