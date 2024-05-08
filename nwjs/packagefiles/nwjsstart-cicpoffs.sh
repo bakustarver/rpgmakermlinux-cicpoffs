@@ -6,7 +6,7 @@ export LD_LIBRARY_PATH="$HOME/desktopapps/nwjs/nwjs/packagefiles/:$LD_LIBRARY_PA
 
 # curdesktop=$(echo "$XDG_CURRENT_DESKTOP")
 # defp="$HOME/deskappbin/nwjs/nwjs/"
-version='1.0.5'
+version='1.0.6'
 
 
 nwjsfm="$HOME/desktopapps/nwjs/nwjs"
