@@ -11,6 +11,7 @@ I was inspired by [m5kro](https://github.com/m5kro)'s project and his linux/mac 
 - Running any RPG Maker MV/MZ game on linux.
 - Sharp increase in fps (from 2 to 4 times more compared to Wine, can be viewed by pressing the F2 key) 
 - Downloading and selecting any version of NWJS (using the command line).
+- Easily installable SDK version of NWJS with one click in the gui, or via cli.
 - Starting a game with the Japanese locale option.
 - Launching a game using a command line.
 - Showing the NWJS, Nodejs, Chromium versions of your downloaded game.
