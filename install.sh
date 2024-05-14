@@ -59,7 +59,7 @@ createfd "$localbin"
 
 checkthebinaryarch "$installpath/nwjs/cicpoffs"
 cp "$installpath/install.sh" "$mainfd"
-cp -r "$installpath/nwjs/" "$mainfd"
+cp -r "$installpath/nwjs" "$mainfd"
 
 # echo "Making a desktop file"
 echo -e "[Desktop Entry]
@@ -89,6 +89,7 @@ chmod +x "$localapplicationsfd/nwjsoptions.desktop"
 # Exec=bash -c "/home/pasha/desktopapps/nwjs/nwjs/packagefiles/nwjsstart-cicpoffs.sh --latestnwjs --gamepath '$(pwd)'";#
 
 lnnew "$mainfd/nwjs/packagefiles/nwjsstart-cicpoffs.sh" "$localbin/rpgmaker-linux"
+chmod +x "$localbin/rpgmaker-linux"
 update-desktop-database -q ~/.local/share/applications
 
 echo "Installation Done"
