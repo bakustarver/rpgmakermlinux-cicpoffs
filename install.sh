@@ -9,7 +9,7 @@ fi
 echo "Installing rpgmaker-linux v$version"
 
 mainfd="$HOME/desktopapps/nwjs"
-localapplicationsfd="$HOME/.local/share/applications/"
+localapplicationsfd="$HOME/.local/share/applications"
 localbin="$HOME/.local/bin"
 
 arch=$(uname -m)
@@ -62,7 +62,7 @@ cp "$installpath/install.sh" "$mainfd"
 cp -r "$installpath/nwjs/" "$mainfd"
 
 # echo "Making a desktop file"
-echo "[Desktop Entry]
+echo -e "[Desktop Entry]
 Name=RPG Maker MV/MZ (cicpoffs mount)
 Exec=env gamef=\"%u\" $mainfd/nwjs/packagefiles/nwjsstart-cicpoffs.sh --chooselatestnwjs
 Type=Application
@@ -74,7 +74,7 @@ Terminal=true
 NoDisplay=true" > "$localapplicationsfd/nwjstest.desktop"
 chmod +x "$localapplicationsfd/nwjstest.desktop"
 
-echo "[Desktop Entry]
+echo -e "[Desktop Entry]
 Name=RPG Maker MV/MZ Options
 Exec=env gamef=\"%u\" $mainfd/nwjs/packagefiles/nwjsstart-cicpoffs.sh --gui
 Type=Application
@@ -83,7 +83,7 @@ StartupNotify=true
 MimeType=application/x-ms-dos-executable;application/x-wine-extension-msp;
 Icon=$mainfd/nwjs/packagefiles/nwjs128.png
 Terminal=true
-NoDisplay=true" > "$localapplicationsfd/nwjstoptions.desktop"
+NoDisplay=true" > "$localapplicationsfd/nwjsoptions.desktop"
 chmod +x "$localapplicationsfd/nwjsoptions.desktop"
 
 # Exec=bash -c "/home/pasha/desktopapps/nwjs/nwjs/packagefiles/nwjsstart-cicpoffs.sh --latestnwjs --gamepath '$(pwd)'";#
