@@ -83,6 +83,7 @@ rpgmaker-linux --sourcelinks
 - [mkxp-z](https://github.com/mkxp-z/mkxp-z) - Open-source cross-platform player for (some) RPG Maker XP / VX / VX Ace games. A very heavily modified fork of mkxp. RGSS on steroids with a stupid name. 
 - [easyrpg](https://easyrpg.org/) - EasyRPG is a community project to create a free, open source, role playing game creation tool, compatible with RPG Maker 2000/2003 games.
 - [Painless-Porter](https://github.com/m5kro/Painless-Porter) - A tool to quickly port RPG Maker MV and MZ games to Linux and MacOS and upload to file hosters. 
+- [ruffle](https://github.com/ruffle-rs/ruffle) - A Flash Player emulator written in Rust 
 
 
   
