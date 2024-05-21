@@ -3,7 +3,7 @@ The project contains a collection of shell scripts that will help you run games 
 I was inspired by [m5kro](https://github.com/m5kro)'s project and his linux/mac os builds.
 
 ### The software uses the following dependencies:
-- nwjs - As the main engine of the game
+- [nwjs](https://nwjs.io/) - As the main engine of the game
 - [cicpoffs](https://github.com/adlerosn/cicpoffs) - For mounting the game folder in windows Case-Insensitive mode (that allows nwjs better find the game files)
 - tools such as wget, ln, readlink, grep - For downloading the latest version of nwjs and viewing the files
 
