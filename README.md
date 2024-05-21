@@ -4,7 +4,7 @@ I was inspired by [m5kro](https://github.com/m5kro)'s project and his linux/mac 
 
 ### The software uses the following dependencies:
 - nwjs - As the main engine of the game
-- cicpoffs - For mounting the game folder in windows Case-Insensitive mode (that allows nwjs better find the game files)
+- [cicpoffs](https://github.com/adlerosn/cicpoffs) - For mounting the game folder in windows Case-Insensitive mode (that allows nwjs better find the game files)
 - tools such as wget, ln, readlink, grep - For downloading the latest version of nwjs and viewing the files
 
 #### Contains the following features:
