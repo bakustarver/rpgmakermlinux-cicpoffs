@@ -8,4 +8,7 @@ localbin="$HOME/.local/bin"
 
 rm -rf "$mainfd"
 rm "$localapplicationsfd/nwjstest.desktop"
+rm "$localapplicationsfd/nwjsoptions.desktop"
 rm "$localbin/rpgmaker-linux"
+rm -rf "$HOME/.local/share/Steam/compatibilitytools.d/rpgmaker-linux-steam-wrapper/"
+rm -rf "$HOME/.var/app/com.valvesoftware.Steam/data/Steam/compatibilitytools.d/rpgmaker-linux-steam-wrapper/"
