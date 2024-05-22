@@ -1,0 +1,6 @@
+"manifest"
+{
+  "version" "2"
+  "commandline" "/rpgmaker-linux-cicpoffs-wrapper.sh %verb%"
+  "use_sessions" "1"
+}

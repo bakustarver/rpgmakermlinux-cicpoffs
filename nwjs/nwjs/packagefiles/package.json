@@ -1,0 +1,13 @@
+{
+  "name": "RPG Maker MV/MZ (cicpoffs mount)",
+  "main": "www/index.html",
+  "js-flags": "--expose-gc",
+  "chromium-args": "--enable-webgl --ignore-gpu-blacklist --disable-setuid-sandbox-enable --force-gpu-rasterization --enable-gpu-memory-buffer-video-frames --enable-native-gpu-memory-buffers --enable-zero-copy --enable-gpu-async-worker-context --disable-password-generation",
+  "window": {
+    "title": "RPG Maker MV/MZ (cicpoffs mount)",
+    "toolbar": false,
+    "width": 745,
+    "height": 400,
+    "icon": "www/icon/icon.png"
+  }
+}
