@@ -15,7 +15,7 @@ I was inspired by [m5kro](https://github.com/m5kro)'s project and his linux/mac 
 - Starting a game with the Japanese locale option.
 - Launching a game using a command line.
 - Showing the NWJS, Nodejs, Chromium versions of your downloaded game.
-- Updating Pixi 5 image rendering libraries for RPG Maker MV (that's supposed to increase performance)
+- Updating Pixi 5 libraries for RPG Maker MV (that's supposed to increase performance)
 - Installing the Text hooker plug-in that copies the game's dialogs automatically to your clipboard.
 - Can be used as compatibility tool in steam for Windows games.
 - The Native support of 4 architectures: x86-64, i386, armhf, arm64
