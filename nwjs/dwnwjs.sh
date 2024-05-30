@@ -24,26 +24,30 @@ nwjslist=$(echo "$nwjslist" | grep "sdk")
 else
 nwjslist=$(echo "$nwjslist" | grep -v "sdk")
 fi
+if [ -z "$DWNWJSNODEBUG" ]; then
 echo "$SDKNWJS"
+fi
 versioninstalledlist=$(ls "$defp")
 arch=$(uname -m | sed -e 's@i686@ia32@g' -e 's@x86_64@x64@g' -e 's@armv7l@armhf@g' -e 's@armhf@arm@g' -e 's@aarch64@arm64@g')
 
 
+
+
 downloadversion() {
 if [ -n "$SDKNWJS" ]; then
-# rm "$defp/nwjs-$version-linux-$arch.tar.gz"
-
-wget -c -P "$defp" https://dl.nwjs.io/$version/nwjs-sdk-$version-linux-$arch.tar.gz
-
-tar -xf "$defp/nwjs-sdk-$version-linux-$arch.tar.gz" -C "$defp/nwjs"
-rm "$defp/nwjs-sdk-$version-linux-$arch.tar.gz"
+file="nwjs-sdk-$version-linux-$arch.tar.gz"
 else
-# rm "$defp/nwjs-$version-linux-$arch.tar.gz"
-wget -c -P "$defp" https://dl.nwjs.io/$version/nwjs-$version-linux-$arch.tar.gz
+file="nwjs-$version-linux-$arch.tar.gz"
+fi
+link="https://dl.nwjs.io/$version/$file"
 
+if wget -q --spider "$link"; then
+wget -c -P "$defp" "$link"
 
-tar -xf "$defp/nwjs-$version-linux-$arch.tar.gz" -C "$defp/nwjs"
-rm "$defp/nwjs-$version-linux-$arch.tar.gz"
+tar -xf "$defp/$file" -C "$defp/nwjs"
+rm "$defp/$file"
+else
+echo "Can't find such version "
 fi
 }
 
@@ -69,7 +73,7 @@ nwjslinktar="https://github.com/bakustarver/rpgmakermlinux-cicpoffs/releases/dow
 downloadandextract
 elif [ "$arch" = "arm64" ]; then
 if [ -n "$SDKNWJS" ]; then
-echo "No sdk version for your architecture $arch
+echo "There is no sdk version for your architecture $arch
 Use $ rpgmaker-linux --usestandart";
 exit;
 fi
@@ -109,6 +113,7 @@ else
 rm -rf "$defp/nwjs/nwjs-$version-linux-x64/"
 fi
 echo Reinstalling "$latestlocal";
+# fi
 else
 exit;
 fi
@@ -121,8 +126,11 @@ fi
 if [ "$skipdownloadifexist" = "true" ]; then
 # if  "$nwjslist"
 if [ -n "$nwjslist" ] && echo "$nwjslist" | grep -q "$version" ; then
+
 # version
+if [ -z "$DWNWJSNODEBUG" ]; then
 echo skiping
+fi
 else
 downloadversion
 fi
@@ -134,4 +142,3 @@ echo Finished
 fi
 # fi
 
-sleep 1;

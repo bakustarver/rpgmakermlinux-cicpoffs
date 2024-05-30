@@ -1,0 +1,13 @@
+"compatibilitytools"
+{
+  "compat_tools"
+  {
+    "rpgmaker-linux-cicpoffs" // Internal name of this tool
+    {
+      "install_path" "."
+      "display_name" "RPG Maker MV/MZ (cicpoffs mount) Tool"
+      "from_oslist"  "windows"
+      "to_oslist"    "linux"
+    }
+  }
+}

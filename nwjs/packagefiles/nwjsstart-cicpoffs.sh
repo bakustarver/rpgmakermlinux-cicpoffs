@@ -6,16 +6,18 @@ export LD_LIBRARY_PATH="$HOME/desktopapps/nwjs/nwjs/packagefiles/:$LD_LIBRARY_PA
 
 # curdesktop=$(echo "$XDG_CURRENT_DESKTOP")
 # defp="$HOME/deskappbin/nwjs/nwjs/"
-version='1.0.7'
+version='1.0.8'
 
 
 nwjsfm="$HOME/desktopapps/nwjs/nwjs"
 
 yadp="$nwjsfm/packagefiles/yad"
+evbunpack="$nwjsfm/packagefiles/evbunpack"
+
 
 defp="$nwjsfm/nwjs"
 export defpn="$nwjsfm"
-
+export DWNWJSNODEBUG=true
 
 nwjslist=$(ls -p "$defp" | grep /)
 
@@ -90,14 +92,17 @@ geticonpath=$(sed -n 's/.*"icon": "//p' "$nwjstestpath/package.json" | sed -e 's
 if [ "$engine" = "mz" ] && [ -z "$PACKAGEJSONPATH" ]; then
 geticonpath=$(echo "$geticonpath" | sed -e 's@www/@@g');
 fi
-bmountpath=$(basename "$mountpath")
-if [ "$engine" = "mv" ]; then
-ndirname=$(dirname "$mountpath")
-# echo 1
-else
-ndirname="$mountpath"
-# echo 2
-fi
+# bmountpath=$(basename "$mountpath")
+# if [ "$engine" = "mv" ]; then
+# ndirname=$(dirname "$mountpath")
+# # echo 1
+# else
+# ndirname="$mountpath"
+# # echo 2
+# fi
+ndirname="$npath"
+
+
 ndrbasen=$(basename "$ndirname")
 iconpath="$ndirname/$geticonpath"
 # kdialog --msgbox "$mountpath-$bmountpath\n$ndirname\n$iconpath"
@@ -153,18 +158,20 @@ fi
 #pixi func
 }
 
-texthookerplugininstall() {
-echo "Installing the text hooker plugin"
-texthookerpligin="$nwjsfm/packagefiles/plugins/Clipboard_llule.js"
 
 
-pluginsfile="$mountpath/js/plugins.js"
-if grep -q 'Clipboard_llule","status":true,' "$pluginsfile"; then
-echo "The texthooker plugin is already installed"
+plugininstallfunc() {
+# echo "Installing the text hooker plugin"
+yourplugin="$1"
+bnpl=$(basename "$1" | sed -e 's@.js@@g')
+pluginslistfile="$mountpath/js/plugins.js"
+
+if grep -q "$bnpl\",\"status\":true," "$pluginslistfile"; then
+echo "The $bnpl plugin is already installed"
 else
-cp "$pluginsfile" "$pluginsfile.bk"
-sed -e 's@^\[$@[\n{"name":"Clipboard_llule","status":true,"description":"","parameters":{}},@g' -i "$pluginsfile"
-cp "$texthookerpligin" "$mountpath/js/plugins/";
+cp "$pluginslistfile" "$pluginslistfile.bk"
+sed -e "s@^\[@[\n$pluginset@g" -i "$pluginslistfile"
+cp "$yourplugin" "$mountpath/js/plugins/";
 
 fi
 }
@@ -181,6 +188,19 @@ fi
 
 
 }
+
+fivehundredslotsplugininstall() {
+pluginset='{"name":"CustomizeMaxSaveFile","status":true,"description":"Customize max save file number","parameters":{"SaveFileNumber":"500"}},'
+plugininstallfunc "$nwjsfm/packagefiles/plugins/CustomizeMaxSaveFile.js"
+
+}
+
+texthookerplugininstall() {
+pluginset='{"name":"Clipboard_llule","status":true,"description":"","parameters":{}},'
+plugininstallfunc "$nwjsfm/packagefiles/plugins/Clipboard_llule.js"
+
+}
+
 
 
 sourcelinks() {
@@ -243,10 +263,11 @@ fi
 }
 
 checkgamefilesfd() {
-if echo "$1" | grep ".exe"; then
-npath=$(dirname "$1" | sed -e "s@^'@@g");
+npath=$(echo "$1" | sed -e 's@rpgmakermp:///@@g')
+if echo "$npath" | grep ".exe"; then
+npath=$(dirname "$npath" | sed -e "s@^'@@g");
 else
-npath="$1"
+npath="$npath"
 fi
 # zenity --title "$gamef" --warning --text="$npath"
 if [ -d "$npath/www" ] && [ -e "$npath/package.json" ] && [ -e "$npath/www/js/plugins.js" ]; then
@@ -255,12 +276,12 @@ found=true
 gamepath=true
 engine=mv
 elif [ -d "$npath/data" ] && [ -e "$npath/package.json" ] && [ -e "$npath/js/plugins.js" ]; then
-mountpath="$1"
+mountpath="$npath"
 gamepath=true
 found=true
 engine=mz
 else
-echo "Can't find game with $1"
+echo "Can't find game with $npath"
 exit 1
 fi
 }
@@ -285,14 +306,17 @@ if [ -d ./www ] && [ -f ./package.json ]; then
 mountpath="$PWD/www"
 found=true
 engine=mv
+npath="$PWD"
 elif [ -d ./js ] && [ -f ./package.json ] &&  [ -d ./data ]; then
 mountpath="$PWD"
 found=true
 engine=mz
+npath="$PWD"
 fi
 fi
 #
 if [ -z "$found" ] && [ -n "$gamef" ] ; then
+# kdialog --msgbox "$gamef"
 checkgamefilesfd "$gamef"
 fi
 
@@ -577,13 +601,13 @@ updatenwjsvar=$(echo "$@" | awk '{print $1}')
 pixiupdatevar=$(echo "$@" | awk '{print $2}')
 localshortcutvar=$(echo "$@" | awk '{print $3}')
 nwjsguivar=$(echo "$@" | awk '{print $4}')
-jpnlocalevar=$(echo "$@" | awk '{print $5}')
+fivehundredsaveslotspluginvar=$(echo "$@" | awk '{print $5}')
 texthookerset=$(echo "$@" | awk '{print $6}')
 desktopshortcut=$(echo "$@" | awk '{print $7}')
 addtomenuvar=$(echo "$@" | awk '{print $8}')
 sdkvar=$(echo "$@" | awk '{print $9}')
 
-# kdialog --msgbox "$updatenwjsvar $pixiupdate $localshortcut $texthookerset dc $desktopshortcut $addtomenuvar $sdkvar $nwjsguivar"
+# kdialog --msgbox "$updatenwjsvar $pixiupdate $localshortcut $texthookerset dc $desktopshortcut $addtomenuvar $sdkvar $nwjsguivar hh $fivehundredsaveslotspluginvar"
 }
 
 if [ "$GUIMENU" = "true" ]; then
@@ -596,9 +620,9 @@ if [ -z "$newversionlist" ]; then
 newversionlist="$allversionsnwjs"
 fi
 # kdialog --msgbox "$nwjsguivar\n--$newversionlist"
-guim=$("$yadp" --title "RPG Maker MV/MZ Options" --text="Please choose your options:" --image="$HOME/desktopapps/nwjs/nwjs/packagefiles/nwjs128.png" --columns=5 --field "Update NWJS":chk $updatenwjsvar --form --field "Pixi5 Update":chk "$pixiupdatevar" --field="Shorcut Options::LBL" false --field "Local Shortcut":chk "$localshortcutvar" --form --separator=" " --item-separator="\n" --field="Versions::"CBE "$newversionlist" --field "Japanese Locale":chk "$jpnlocalevar" --field "Texthooker Plugin":chk "$texthookerset" --field=" :LBL" false --field "Desktop Shortcut":chk "$desktopshortcut" --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field "Show in the Menu":chk "$addtomenuvar" --field "Use SDK version":chk "$sdkvar" --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false)
+guim=$("$yadp" --title "RPG Maker MV/MZ Options" --text="Please choose your options:" --image="$HOME/desktopapps/nwjs/nwjs/packagefiles/nwjs128.png" --columns=5 --field "Update NWJS":chk $updatenwjsvar --form --field "Pixi5 Update":chk "$pixiupdatevar" --field="Shorcut Options::LBL" false --field "Local Shortcut":chk "$localshortcutvar" --form --separator=" " --item-separator="\n" --field="Versions::"CBE "$newversionlist" --field "500 Save Slots Plugin":chk "$fivehundredsaveslotspluginvar" --field "Texthooker Plugin":chk "$texthookerset" --field=" :LBL" false --field "Desktop Shortcut":chk "$desktopshortcut" --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field "Show in the Menu":chk "$addtomenuvar" --field "Use SDK version":chk "$sdkvar" --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false)
 else
-guim=$("$yadp" --title "RPG Maker MV/MZ Options" --text="Please choose your options:" --image="$HOME/desktopapps/nwjs/nwjs/packagefiles/nwjs128.png" --columns=5 --field "Update NWJS":chk true --form --field "Pixi5 Update":chk false --field="Shorcut Options::LBL" false --field "Local Shortcut":chk true --form --separator=" " --item-separator="\n" --field="Versions::"CBE "$allversionsnwjs" --field "Japanese Locale":chk false --field "Texthooker Plugin":chk false --field=" :LBL" false --field "Desktop Shortcut":chk false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field "Show in the Menu":chk false --field "Use SDK version":chk false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false)
+guim=$("$yadp" --title "RPG Maker MV/MZ Options" --text="Please choose your options:" --image="$HOME/desktopapps/nwjs/nwjs/packagefiles/nwjs128.png" --columns=5 --field "Update NWJS":chk true --form --field "Pixi5 Update":chk false --field="Shorcut Options::LBL" false --field "Local Shortcut":chk true --form --separator=" " --item-separator="\n" --field="Versions::"CBE "$allversionsnwjs" --field "500 Save Slots PSlugin":chk false --field "Texthooker Plugin":chk false --field=" :LBL" false --field "Desktop Shortcut":chk false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field "Show in the Menu":chk false --field "Use SDK version":chk false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false)
 fi
 
 if [ -n "$guim" ] ; then
@@ -610,8 +634,9 @@ yaddata "$guim"
 echo "$guim"
 
 # exit;
-if [ "$jpnlocalevar" = "TRUE" ]; then
-export LANG="ja_JP.utf8"
+if [ "$fivehundredsaveslotspluginvar" = "TRUE" ]; then
+# export LANG="ja_JP.utf8"
+export FIVEHUNDREDSAVESLOTSPLUGIN=true
 fi
 
 if [ "$updatenwjsvar" = "TRUE" ]; then
@@ -624,6 +649,10 @@ if [ "$texthookerset" = "TRUE" ]; then
 INSTALLTHPL=true
 elif [ "$texthookerset" = "FALSE" ]; then
 INSTALLTHPL=false
+fi
+
+if [ "$pixiupdatevar" = "TRUE" ]; then
+INSTALLPIXI5=true
 fi
 
 if [ "$sdkvar" = "TRUE" ]; then
@@ -725,7 +754,7 @@ fi
 if [ "$latestnwjs" = "true" ]; then
 nwjsf="$latestinstallednwjsfd"
 else
-nwjsf=$(ls -tp "$defp" | grep / | head -n 1)
+nwjsf=$(ls -tp "$defp" | grep / | head -n 1 | sed -e 's@/$@@g')
 fi
 if [ -n "$NWJSPATH" ]; then
 nwjstestpath="$NWJSPATH"
@@ -746,9 +775,50 @@ nwjstestpath="$defp/$nwjsf"
 fi
 fi
 
-
+nwjstestpath=$(echo "$nwjstestpath" | sed -e 's@/$@@g')
 # wwwsavesymlink.sh "$@"
 # echo "$nwjstestpath"
+
+
+unpackexe() {
+gameexe="$1"
+gameexefd="$1-extracted"
+originalexe=$(echo "$1" | sed -e 's@\.exe@@g' -e 's@$@_original.exe-extracted@g')
+"$evbunpack" "$gameexe" "$gameexefd"
+# find "$gameexefd" -type f \( -name "*.exe" \) -delete
+cp -r "$gameexefd"/* "$npath"
+mkdir "$originalexe"
+}
+
+searchforpackedexe() {
+gfexe=$(ls "$1" | grep "\.exe$")
+while IFS= read -r line; do
+# check=$()
+if ! [ -d "$npath/$line-extracted" ]; then
+
+if strings "$npath/$line" | grep -q "\.enigma"; then
+$yadp --image="dialog-question" \
+  --title "RPG Maker linux: $line" \
+  --text "Detected game files in $line!\nWould you like to unpack it?" \
+  --button="Yes:0" \
+  --button="No:1"
+ret=$?
+# ret=1;
+# fi
+name=$(echo "$line")
+
+
+if [[ $ret -eq 1 ]]; then
+mkdir "$npath/$line-extracted";
+elif [[ $ret -eq 0 ]]; then
+unpackexe "$npath/$line"
+fi
+fi
+# echo "$name"
+# echo "$check"
+fi
+done <<< "$gfexe"
+}
 
 
 
@@ -808,6 +878,10 @@ if [ "$INSTALLPIXI5" = "true" ]; then
 pixi5install;
 fi
 
+if [ "$FIVEHUNDREDSAVESLOTSPLUGIN" = "true" ]; then
+fivehundredslotsplugininstall;
+fi
+
 if [ "$INSTALLTHPL" = "true" ]; then
 texthookerplugininstall;
 elif [ "$INSTALLTHPL" = "false" ]; then
@@ -825,6 +899,7 @@ checkthebinaryarch "$nwjstestpath/nw"
 
 if [ "$found" = "true" ]; then
 # rmsymlinks
+searchforpackedexe "$npath"
 mountwww
 if [ -n "$MAKELOCALSHORTCUT" ]; then
 makelocalshortcut
@@ -836,5 +911,6 @@ if [ -n "$ADDTOTHEMENU" ]; then
 makethemenushortcut
 fi
 startnw
+# sleep 60;
 checkandunmount
 fi
