@@ -1,7 +1,7 @@
 #!/bin/bash
 
 installpath=$(dirname "$0")
-version='1.0.7'
+version='1.0.8'
 if ! [ -d "$installpath/nwjs" ]; then
 echo "Can't find nwjs folder"
 exit 1;
@@ -108,7 +108,6 @@ Terminal=true
 NoDisplay=true" > "$localapplicationsfd/nwjsoptions.desktop"
 chmod +x "$localapplicationsfd/nwjsoptions.desktop"
 
-# Exec=bash -c "/home/pasha/desktopapps/nwjs/nwjs/packagefiles/nwjsstart-cicpoffs.sh --latestnwjs --gamepath '$(pwd)'";#
 
 lnnew "$mainfd/nwjs/packagefiles/nwjsstart-cicpoffs.sh" "$localbin/rpgmaker-linux"
 chmod +x "$localbin/rpgmaker-linux"
