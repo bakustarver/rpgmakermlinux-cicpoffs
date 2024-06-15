@@ -42,7 +42,7 @@ or
 rm -rf "$HOME/desktopapps/nwjs" && rm "$HOME/.local/share/applications/nwjstest.desktop" && rm "$HOME/.local/bin/rpgmaker-linux"
 ```
 
-## Command line Options
+## Command line Commands
 
 #### Run the rpg maker game
 ```
