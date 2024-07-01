@@ -1,0 +1,16 @@
+{
+	"name": "tyranoscript",
+	"main": "tyranoeng/index.html",
+	"window": {
+		"title": "TyranoScript Linux",
+		"icon": "link.png",
+		"toolbar": false,
+		"frame": true,
+		"width": 745,
+		"height": 400,
+		"position": "center"
+	},
+	"webkit": {
+		"plugin": true
+	}
+}
