@@ -1,19 +1,22 @@
 #!/bin/bash
 
-export LD_LIBRARY_PATH="$HOME/desktopapps/nwjs/nwjs/packagefiles/:$LD_LIBRARY_PATH"
 
 # kdialog --msgbox "$CPATH"
 
 # curdesktop=$(echo "$XDG_CURRENT_DESKTOP")
 # defp="$HOME/deskappbin/nwjs/nwjs/"
-version='1.0.8'
+version='1.0.9'
 
-
-nwjsfm="$HOME/desktopapps/nwjs/nwjs"
+mainfd="$HOME/desktopapps"
+nwjsfm="$mainfd/nwjs/nwjs"
+export LD_LIBRARY_PATH="$mainfd/nwjs/nwjs/packagefiles/:$LD_LIBRARY_PATH"
 
 yadp="$nwjsfm/packagefiles/yad"
+tyranounpacker="$nwjsfm/packagefiles/tyranodataextract"
+electronfd="$mainfd/electron-tyrano"
+mkxpzp="$mainfd/mkxp-z"
 evbunpack="$nwjsfm/packagefiles/evbunpack"
-
+ndmodulesfd="$nwjsfm/packagefiles/tyranobuilder/node_modules"
 
 defp="$nwjsfm/nwjs"
 export defpn="$nwjsfm"
@@ -92,27 +95,14 @@ geticonpath=$(sed -n 's/.*"icon": "//p' "$nwjstestpath/package.json" | sed -e 's
 if [ "$engine" = "mz" ] && [ -z "$PACKAGEJSONPATH" ]; then
 geticonpath=$(echo "$geticonpath" | sed -e 's@www/@@g');
 fi
-# bmountpath=$(basename "$mountpath")
-# if [ "$engine" = "mv" ]; then
-# ndirname=$(dirname "$mountpath")
-# # echo 1
-# else
-# ndirname="$mountpath"
-# # echo 2
-# fi
 ndirname="$npath"
-
 
 ndrbasen=$(basename "$ndirname")
 iconpath="$ndirname/$geticonpath"
-# kdialog --msgbox "$mountpath-$bmountpath\n$ndirname\n$iconpath"
-
 if [ -z "$dsavepath" ]; then
 dsavepath="$ndirname"
 fi
 
-getgamename="Your game" #$(basename "$mountpath")
-# kdialog --msgbox "$iconpath"
 if ! [ -f "$dsavepath/$ndrbasen.desktop" ]; then
 echo "[Desktop Entry]
 Name=$ndrbasen
@@ -225,6 +215,151 @@ fullupdatereinstall() {
 echo "$githubscriptwget" | bash
 }
 
+unpackexe() {
+gameexe="$1"
+gameexefd="$1-extracted"
+originalexe=$(echo "$1" | sed -e 's@\.exe@@g' -e 's@$@_original.exe-extracted@g')
+"$evbunpack" "$gameexe" "$gameexefd"
+# find "$gameexefd" -type f \( -name "*.exe" \) -delete
+cp -r "$gameexefd"/* "$npath"
+mkdir "$originalexe"
+}
+
+tyranoextractv4exe() {
+if [ -n "$exenpath" ]; then
+# kdialog --msgbox "hhhcc"
+"$tyranounpacker" exe "$exenpath" "$npath"
+else
+exen=$(ls -p "$npath" | grep -v "/$" | grep "\.exe$")
+"$tyranounpacker" exe "$exenpath" "$npath"
+fi
+}
+
+tyranolndatafd() {
+rm "$mainfd/nwjs/nwjs/packagefiles/tyranobuilder/tyranoeng/data"
+if [ "$npath/data/others/translate/main.js" ]; then
+cat "$mainfd/nwjs/nwjs/packagefiles/tyranobuilder/pathches/tf/main.js" > "$npath/data/others/translate/main.js"
+fi
+ln -fs "$npath/data" "$mainfd/nwjs/nwjs/packagefiles/tyranobuilder/tyranoeng"
+}
+
+
+mkxpzdownload() {
+if [ "$arch" = "x86_64" ]; then
+link="https://github.com/bakustarver/rpgmakermlinux-cicpoffs/releases/download/libraries/mkxp-z.$arch.zip"
+wget -O /tmp/mkxp-z.zip "$link"
+unzip -d "$mkxpzp" /tmp/mkxp-z.zip
+sed -e "s@\"RGSS@\"$mkxpzp/RGSS@g" -i "$mkxpzp/mkxp.json"
+rm /tmp/mkxp-z.zip
+else
+echo For this release, supported x86_64 only
+fi
+}
+
+mkxpzdialog() {
+$yadp --image="dialog-question" \
+  --title "Rpg Maker VX Ace / VX/ XP Launcher: $line" \
+  --text "Mkxp-z module is not installed\nWould you like to download it?\n+292 mb" \
+  --button="Yes:0" \
+  --button="No:1" \
+retmkxpz=$?
+
+if [[ $retmkxpz -eq 1 ]]; then
+exit;
+elif [[ $retmkxpz -eq 0 ]]; then
+mkxpzdownload;
+fi
+
+}
+
+
+electron-tyrano-downloader() {
+yarch=$(echo "$arch" | sed -e 's@x86_64@x64@g' -e 's@i686@ia32@g' -e 's@aarch64@arm64@g')
+link="https://github.com/electron/electron/releases/download/v9.4.4/electron-v9.4.4-linux-$yarch.zip"
+wget -O /tmp/electron-tyrano.zip "$link"
+unzip -d "$electronfd" /tmp/electron-tyrano.zip
+rm /tmp/electron-tyrano.zip
+}
+
+tyranocheckelectron() {
+$yadp --image="dialog-question" \
+  --title "Tyranobuilder Launcher: $line" \
+  --text "Founded electron game $line!\nHow would you like to open it?" \
+  --button="Electron (Recomended):0" \
+  --button="NWJS:1" \
+  --button="Exit:2"
+rettyranoelectron=$?
+if [ -n "$asarpath" ]; then
+"$tyranounpacker" asarapp "$asarpath" "$npath/resources/app"
+fi
+
+
+if [[ $rettyranoelectron -eq 0 ]]; then
+
+
+if ! [ -f "$electronfd/electron" ]; then
+electron-tyrano-downloader
+fi
+
+rm "$electronfd/resources/app"
+sed '/$.userenv = function/,/};/c\
+    $.userenv = function () {\
+        return "pc";\
+    };' -i "$npath/resources/app/tyrano/libs.js"
+ln -fs "$npath/resources/app" "$electronfd/resources/"
+usetyranoelectron=true
+elif [[ $rettyranoelectron -eq 1 ]]; then
+rm "$mainfd/nwjs/nwjs/packagefiles/tyranobuilder/tyranoeng/data"
+ln -fs "$npath/resources/app/data" "$mainfd/nwjs/nwjs/packagefiles/tyranobuilder/tyranoeng"
+elif [[ $rettyranoelectron -eq 2 ]]; then
+exit;
+fi
+}
+
+tyranoelectron() {
+if [ -n "$asarpath" ]; then
+"$tyranounpacker" asarapp "$asarpath" "$npath/resources/app"
+fi
+rm "$electronfd/resources/app"
+sed '/$.userenv = function/,/};/c\
+    $.userenv = function () {\
+        return "pc";\
+    };' -i "$npath/resources/app/tyrano/libs.js"
+ln -fs "$npath/resources/app" "$electronfd/resources/"
+usetyranoelectron=true
+}
+
+
+searchforpackedexe() {
+local gfexe=$(ls -p "$1" | grep -v "/$" | grep "\.exe$")
+npath="$1"
+while IFS= read -r line; do
+# check=$()
+if ! [ -d "$npath/$line-extracted" ]; then
+
+if strings "$npath/$line" | grep -m 1 -q "\.enigma"; then
+$yadp --image="dialog-question" \
+  --title "RPG Maker linux: $line" \
+  --text "Detected game files in $line!\nWould you like to unpack it?" \
+  --button="Yes:0" \
+  --button="No:1"
+ret=$?
+# ret=1;
+# fi
+name=$(echo "$line")
+
+
+if [[ $ret -eq 1 ]]; then
+mkdir "$npath/$line-extracted";
+elif [[ $ret -eq 0 ]]; then
+unpackexe "$npath/$line"
+fi
+fi
+# echo "$name"
+# echo "$check"
+fi
+done <<< "$gfexe"
+}
 
 
 updatenwjs() {
@@ -262,13 +397,25 @@ fi
 # fi
 }
 
+electronch2() {
+if [ -f "$electronfd/electron" ]; then
+tyranoelectron
+tyranoeng=electron
+else
+tyranocheckelectron
+fi
+}
+
 checkgamefilesfd() {
 npath=$(echo "$1" | sed -e 's@rpgmakermp:///@@g')
 if echo "$npath" | grep ".exe"; then
+exenpath="$npath"
 npath=$(dirname "$npath" | sed -e "s@^'@@g");
 else
 npath="$npath"
 fi
+# kdialog --msgbox "$npath"
+searchforpackedexe "$npath"
 # zenity --title "$gamef" --warning --text="$npath"
 if [ -d "$npath/www" ] && [ -e "$npath/package.json" ] && [ -e "$npath/www/js/plugins.js" ]; then
 mountpath="$npath/www"
@@ -280,6 +427,36 @@ mountpath="$npath"
 gamepath=true
 found=true
 engine=mz
+elif [ -e "$npath/Game.ini" ] && [ -e "$npath/Game.exe" ]; then
+
+if ! [ -f $mkxpzp/mkxp-z.x86_64 ]; then
+mkxpzdialog
+fi
+
+sed -e "s@.*.gameFolder.*@    \"gameFolder\": \"$npath\",@g" -i "$mkxpzp/mkxp.json"
+"$mkxpzp/mkxp-z.x86_64"
+
+elif [ -e "$npath/ffmpegsumo.dll" ] && [ -e "$npath/nw.pak" ] && [ -e "$npath/d3dcompiler_47.dll" ] && [ -e "$npath/nw.pak" ]; then
+mountpath="$npath"
+# gamepath=true
+# found=true
+engine=tyrano
+tyranoeng=nwjs
+
+if [ -d "$npath/data" ] && [ -e "$npath/data/system/Config.tjs" ]; then
+tyranolndatafd
+else
+tyranoextractv4exe
+tyranolndatafd
+fi
+elif [ -d "$npath/resources" ] && [ -d "$npath/locales" ] && [ -e "$npath/chrome_100_percent.pak" ] && [ -e "$npath/natives_blob.bin" ] && [ -e "$npath/chrome_200_percent.pak" ]; then
+engine=tyrano
+if [ -d "$npath/resources/app/data" ] && [ -f "$npath/resources/app/index.html" ] && [ -f "$npath/resources/app/main.js" ] && [ -d "$npath/resources/app/tyrano" ]; then
+electronch2
+elif [ -f "$npath/resources/app.asar" ]; then
+asarpath="$npath/resources/app.asar"
+electronch2
+fi
 else
 echo "Can't find game with $npath"
 exit 1
@@ -302,6 +479,7 @@ checkgamefilesfd "$path"
 }
 
 if [ -z "$gamepath" ]; then
+searchforpackedexe "$PWD"
 if [ -d ./www ] && [ -f ./package.json ]; then
 mountpath="$PWD/www"
 found=true
@@ -314,10 +492,13 @@ engine=mz
 npath="$PWD"
 fi
 fi
+# fi
 #
-if [ -z "$found" ] && [ -n "$gamef" ] ; then
+if [ -z "$found" ]; then
+if [ -n "$gamef" ]; then
 # kdialog --msgbox "$gamef"
 checkgamefilesfd "$gamef"
+fi
 fi
 
 
@@ -610,7 +791,7 @@ sdkvar=$(echo "$@" | awk '{print $9}')
 # kdialog --msgbox "$updatenwjsvar $pixiupdate $localshortcut $texthookerset dc $desktopshortcut $addtomenuvar $sdkvar $nwjsguivar hh $fivehundredsaveslotspluginvar"
 }
 
-if [ "$GUIMENU" = "true" ]; then
+guirpgmakermfn() {
 configgp="$HOME/desktopapps/rpgmaker-guiconfig.txt"
 if [ -f "$configgp" ]; then
 configgdata=$(cat "$configgp")
@@ -683,6 +864,15 @@ export checkversionnwjs=false
 . "$nwjsfm/dwnwjs.sh" "$nwjsguivar"
 fi
 
+}
+
+
+if [ "$GUIMENU" = "true" ]; then
+if [ "$engine" = "tyrano" ]; then
+echo tyrano;
+else
+guirpgmakermfn
+fi
 fi
 # exit;
 
@@ -780,45 +970,7 @@ nwjstestpath=$(echo "$nwjstestpath" | sed -e 's@/$@@g')
 # echo "$nwjstestpath"
 
 
-unpackexe() {
-gameexe="$1"
-gameexefd="$1-extracted"
-originalexe=$(echo "$1" | sed -e 's@\.exe@@g' -e 's@$@_original.exe-extracted@g')
-"$evbunpack" "$gameexe" "$gameexefd"
-# find "$gameexefd" -type f \( -name "*.exe" \) -delete
-cp -r "$gameexefd"/* "$npath"
-mkdir "$originalexe"
-}
 
-searchforpackedexe() {
-gfexe=$(ls "$1" | grep "\.exe$")
-while IFS= read -r line; do
-# check=$()
-if ! [ -d "$npath/$line-extracted" ]; then
-
-if strings "$npath/$line" | grep -q "\.enigma"; then
-$yadp --image="dialog-question" \
-  --title "RPG Maker linux: $line" \
-  --text "Detected game files in $line!\nWould you like to unpack it?" \
-  --button="Yes:0" \
-  --button="No:1"
-ret=$?
-# ret=1;
-# fi
-name=$(echo "$line")
-
-
-if [[ $ret -eq 1 ]]; then
-mkdir "$npath/$line-extracted";
-elif [[ $ret -eq 0 ]]; then
-unpackexe "$npath/$line"
-fi
-fi
-# echo "$name"
-# echo "$check"
-fi
-done <<< "$gfexe"
-}
 
 
 
@@ -856,6 +1008,9 @@ rm "$nwjstestpath/www"
 
 mountwww() {
 packagejsonfunc
+if [ -h "$nwjstestpath/www" ]; then
+rm "$nwjstestpath/www"
+fi
 if ! [ -d "$nwjstestpath/www" ]; then
 mkdir -p "$nwjstestpath/www"
 fi;
@@ -897,9 +1052,20 @@ checkthebinaryarch "$cicpoffs"
 checkthebinaryarch "$nwjstestpath/nw"
 
 
-if [ "$found" = "true" ]; then
+if [ "$engine" = "tyrano" ]; then
+if [ "$usetyranoelectron" = "true" ]; then
+"$electronfd/electron"
+else
+ln -s "$ndmodulesfd" "$nwjstestpath"
+ln -s "$mainfd/nwjs/nwjs/packagefiles/tyranobuilder/tyranoeng" "$nwjstestpath"
+cat "$mainfd/nwjs/nwjs/packagefiles/tyranobuilder/package.json" > "$nwjstestpath/package.json"
+startnw
+fi
+
+
+
+elif [ "$found" = "true" ]; then
 # rmsymlinks
-searchforpackedexe "$npath"
 mountwww
 if [ -n "$MAKELOCALSHORTCUT" ]; then
 makelocalshortcut
@@ -914,3 +1080,5 @@ startnw
 # sleep 60;
 checkandunmount
 fi
+
+
