@@ -2,13 +2,21 @@
 The project contains a collection of shell scripts that will help you run games on the RPG Maker MV/MZ engine on linux.
 I was inspired by [m5kro](https://github.com/m5kro)'s project and his linux/mac os builds.
 
-### The software uses the following dependencies:
+### The software uses the following dependencies for RPG Maker MV/MZ:
 - [nwjs](https://nwjs.io/) - As the main engine of the game
 - [cicpoffs](https://github.com/adlerosn/cicpoffs) - For mounting the game folder in windows Case-Insensitive mode (that allows nwjs better find the game files)
 - tools such as wget, ln, readlink, grep - For downloading the latest version of nwjs and viewing the files
 
+### Dependencies for tyranobuilder
+- python script tyranoextract with these dependencies (asarlib,pefile)
+- sed
+
+### Dependencies for RPG Maker XP / VX / VX Ace
+- [mkxp-z](https://github.com/mkxp-z/mkxp-z) - Open-source cross-platform player for (some) RPG Maker XP / VX / VX Ace games. A very heavily modified fork of mkxp. RGSS on steroids with a stupid name. 
+- sed
+  
+
 #### Contains the following features:
-- Running any RPG Maker MV/MZ game on linux.
 - Sharp increase in fps (from 2 to 4 times more compared to Wine, can be viewed by pressing the F2 key)
 - Updating Pixi 5 libraries for RPG Maker MV games (that's supposed to increase performance)
 - Downloading and selecting any version of NWJS (using the command line).
