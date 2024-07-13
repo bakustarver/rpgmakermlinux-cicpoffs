@@ -9,6 +9,7 @@ I was inspired by [m5kro](https://github.com/m5kro)'s project and his linux/mac 
 - tools such as wget, ln, readlink, grep - For downloading the latest version of nwjs and viewing the files
 
 ### Dependencies for tyranobuilder (Supports this engine since v1.0.9)
+- [nwjs](https://nwjs.io/) - As the main engine of the game
 - python script tyranoextract with these dependencies (asarlib,pefile)
 
 ### Dependencies for RPG Maker XP / VX / VX Ace (Supports this engine since v1.0.9)
