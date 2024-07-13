@@ -12,6 +12,7 @@ Priority is primarily on RPG Maker MV/MZ. (if you have errors with XP, VX, Vx Ac
 
 ### Dependencies for tyranobuilder (Supports this engine since v1.0.9)
 - [nwjs](https://nwjs.io/) - As the main engine of the game
+- electron 9.4.4 to run v5 version games of this engine
 - python script tyranoextract with these dependencies (asarlib,pefile)
 
 ### Dependencies for RPG Maker XP / VX / VX Ace (Supports this engine since v1.0.9)
