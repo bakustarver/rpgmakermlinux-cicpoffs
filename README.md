@@ -2,6 +2,8 @@
 The project contains a collection of shell scripts that will help you run games on the RPG Maker MV/MZ engine on linux.
 I was inspired by [m5kro](https://github.com/m5kro)'s project and his linux/mac os builds.
 
+
+# Dependencies
 ### The software uses the following dependencies for RPG Maker MV/MZ:
 - [nwjs](https://nwjs.io/) - As the main engine of the game
 - [cicpoffs](https://github.com/adlerosn/cicpoffs) - For mounting the game folder in windows Case-Insensitive mode (that allows nwjs better find the game files)
