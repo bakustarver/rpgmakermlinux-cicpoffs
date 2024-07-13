@@ -6,7 +6,8 @@ I was inspired by [m5kro](https://github.com/m5kro)'s project and his linux/mac 
 ### The software uses the following dependencies for RPG Maker MV/MZ:
 - [nwjs](https://nwjs.io/) - As the main engine of the game
 - [cicpoffs](https://github.com/adlerosn/cicpoffs) - For mounting the game folder in windows Case-Insensitive mode (that allows nwjs better find the game files)
-- tools such as wget, ln, readlink, grep - For downloading the latest version of nwjs and viewing the files
+- [evbunpack](https://github.com/mos9527/evbunpack) - For unpacking game files stored in Game.exe (if they are packaged)
+- tools such as wget, ln, readlink, grep - For downloading the latest version of nwjs and viewing the files.
 
 ### Dependencies for tyranobuilder (Supports this engine since v1.0.9)
 - [nwjs](https://nwjs.io/) - As the main engine of the game
