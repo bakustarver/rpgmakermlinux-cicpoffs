@@ -15,7 +15,7 @@ Priority is primarily on RPG Maker MV/MZ. (if you have errors with XP, VX, Vx Ac
 - python script tyranoextract with these dependencies (asarlib,pefile)
 
 ### Dependencies for RPG Maker XP / VX / VX Ace (Supports this engine since v1.0.9)
-- [mkxp-z](https://github.com/mkxp-z/mkxp-z) - Open-source cross-platform player for (some) RPG Maker XP / VX / VX Ace games. A very heavily modified fork of mkxp. RGSS on steroids with a stupid name. (May have limited support for games, due to win32api)
+- [mkxp-z](https://github.com/mkxp-z/mkxp-z) - Open-source cross-platform player for (some) RPG Maker XP / VX / VX Ace games. A very heavily modified fork of mkxp. RGSS on steroids with a stupid name. (May have limited support for games, due to win32api in plugins)
   
 #### Contains the following features:
 - Sharp increase in fps (from 2 to 4 times more compared to Wine, can be viewed by pressing the F2 key)
