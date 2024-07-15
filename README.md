@@ -12,11 +12,11 @@ Priority is primarily on RPG Maker MV/MZ. (if you have errors with XP, VX, Vx Ac
 
 #### Dependencies for tyranobuilder
 - [nwjs](https://nwjs.io/) - As the main engine of the game
-- [electron 9.4.4](https://github.com/electron/electron/releases/tag/v9.4.4) to run v5 version games of this engine
+- [electron 9.4.4](https://github.com/electron/electron/releases/tag/v9.4.4) to run v5 version games of this engine (Optionally)
 - python script tyranoextract with these dependencies (asarlib,pefile)
 
 #### Dependencies for RPG Maker XP / VX / VX Ace
-- [mkxp-z](https://github.com/mkxp-z/mkxp-z) - Open-source cross-platform player for (some) RPG Maker XP / VX / VX Ace games. A very heavily modified fork of mkxp. RGSS on steroids with a stupid name. (May have limited support for games, due to win32api in plugins)
+- [mkxp-z](https://github.com/mkxp-z/mkxp-z) - Open-source cross-platform player for (some) RPG Maker XP / VX / VX Ace games. A very heavily modified fork of mkxp. RGSS on steroids with a stupid name. (May have limited support for games, due to win32api in plugins) (Optionally)
 
   
 #### Contains the following features:
