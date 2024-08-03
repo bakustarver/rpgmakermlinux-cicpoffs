@@ -28,7 +28,11 @@ If applicable, add screenshots to help explain your problem.
  - Browser [e.g. chrome, safari]
  - Version [e.g. 22]
 
+**Does the game crash at startup?**
+If it does, a description of the crash during startup.
+
 **Do other games launch with the same issue?**
+a description of whether the same problem exists with other games.
 
 **Are you using the compatibility tool to run in the steam platform?**
 
