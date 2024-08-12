@@ -98,13 +98,14 @@ rpgmaker-linux --sourcelinks
 - [Painless-Porter-CLI](https://github.com/m5kro/Painless-Porter-CLI) - A tool to quickly port RPG Maker MV and MZ games to Linux and MacOS and upload to file hosters. 
 - [ruffle](https://github.com/ruffle-rs/ruffle) - A Flash Player emulator written in Rust 
 
+### Professional version:
+<a href="https://bakurpg.itch.io/rpg-maker-mv-mz-for-linux"><img src="https://github.com/user-attachments/assets/8cbb198a-573e-46e7-8253-f893858427d5" width="600"></a>
 
   
 ## Support me:
 [Patreon](https://www.patreon.com/user/about?u=121421184)
 [Buymeacoffee](https://www.buymeacoffee.com/rpgmakerlinux)
 
-<a href="https://bakurpg.itch.io/rpg-maker-mv-mz-for-linux"><img src="https://github.com/user-attachments/assets/8cbb198a-573e-46e7-8253-f893858427d5" width="600"></a>
 
 
 
@@ -118,7 +119,7 @@ rpgmaker-linux --sourcelinks
 
 
 
-![img](https://github.com/bakustarver/rpgmakermlinux-cicpoffs/assets/66978329/2a82ecd6-e45e-4cce-a83c-f215fdde7c1e)
+<img src="https://github.com/bakustarver/rpgmakermlinux-cicpoffs/assets/66978329/2a82ecd6-e45e-4cce-a83c-f215fdde7c1e" width="1000">
 
 
 
