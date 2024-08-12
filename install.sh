@@ -1,25 +1,30 @@
 #!/bin/bash
 
 installpath=$(dirname "$0")
-version='1.0.8'
+version='1.1.0'
 if ! [ -d "$installpath/nwjs" ]; then
 echo "Can't find nwjs folder"
 exit 1;
 fi
 echo "Installing rpgmaker-linux v$version"
 
+mainfdtxt="$HOME/.config/defrpgmakerlinuxpath.txt"
+if [ -e "$mainfdtxt" ]; then
+mainfd=$(cat "$mainfdtxt" | sed -e 's@/$@@g' -e 's@$@/nwjs@g');
+mainfde=$(cat "$mainfdtxt" | sed -e 's@/$@@g')
+customrpgmakerlinuxpath=true
+else
 mainfd="$HOME/desktopapps/nwjs"
+fi
 localapplicationsfd="$HOME/.local/share/applications"
 localbin="$HOME/.local/bin"
 compatibilitytoolsfddef="$HOME/.steam/root/compatibilitytools.d/"
 compatibilitytoolsfdflatpak="$HOME/.var/app/com.valvesoftware.Steam/data/Steam/compatibilitytools.d/"
 
-
 arch=$(uname -m)
 archcheckmessage=$(echo "$arch" | sed -e 's@x86_64@, x86-64, version@g' -e 's@aarch64@, ARM aarch64,@g' -e 's@i686@, Intel 80386,@g' -e 's@i386@, Intel 80386,@g' -e 's@armv7l@, ARM,@g' -e 's@armhf@, ARM,@g')
 
 rm -rf "$mainfd"
-
 
 
 createfd() {
@@ -82,6 +87,10 @@ cp "$installpath/install.sh" "$mainfd"
 cp "$installpath/uninstall.sh" "$mainfd"
 
 cp -r "$installpath/nwjs" "$mainfd"
+
+if [ "$customrpgmakerlinuxpath" = "true" ]; then
+sed "s@^mainfd=.*@mainfd=\"$mainfde\"@g" -i "$mainfd/nwjs/packagefiles/nwjsstart-cicpoffs.sh"
+fi
 
 # echo "Making a desktop file"
 echo -e "[Desktop Entry]
