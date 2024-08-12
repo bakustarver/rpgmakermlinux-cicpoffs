@@ -5,10 +5,10 @@
 
 # curdesktop=$(echo "$XDG_CURRENT_DESKTOP")
 # defp="$HOME/deskappbin/nwjs/nwjs/"
-version='1.0.9'
+version='1.1.0'
 
 mainfd="$HOME/desktopapps"
-nwjsfm="$mainfd/nwjs/nwjs"
+export nwjsfm="$mainfd/nwjs/nwjs"
 export LD_LIBRARY_PATH="$mainfd/nwjs/nwjs/packagefiles/:$LD_LIBRARY_PATH"
 
 yadp="$nwjsfm/packagefiles/yad"
@@ -63,6 +63,9 @@ fi
 
 arch=$(uname -m)
 archcheckmessage=$(echo "$arch" | sed -e 's@x86_64@, x86-64, version@g' -e 's@aarch64@, ARM aarch64,@g' -e 's@i686@, Intel 80386,@g' -e 's@i386@, Intel 80386,@g' -e 's@armv7l@, ARM,@g' -e 's@armhf@, ARM,@g')
+if [[ "$arch" == *"arm"* ]]; then
+armsys=true
+fi
 
 checkthebinaryarch() {
 if ! [ -f "$1" ]; then
@@ -149,6 +152,9 @@ fi
 }
 
 
+relocaterpgmaker() {
+echo test
+}
 
 plugininstallfunc() {
 # echo "Installing the text hooker plugin"
@@ -230,14 +236,14 @@ if [ -n "$exenpath" ]; then
 # kdialog --msgbox "hhhcc"
 "$tyranounpacker" exe "$exenpath" "$npath"
 else
-exen=$(ls -p "$npath" | grep -v "/$" | grep "\.exe$")
+exenpath=$(ls -p "$npath" | grep -v "/$" | grep "\.exe$")
 "$tyranounpacker" exe "$exenpath" "$npath"
 fi
 }
 
 tyranolndatafd() {
 rm "$mainfd/nwjs/nwjs/packagefiles/tyranobuilder/tyranoeng/data"
-if [ "$npath/data/others/translate/main.js" ]; then
+if [ -f "$npath/data/others/translate/main.js" ]; then
 cat "$mainfd/nwjs/nwjs/packagefiles/tyranobuilder/pathches/tf/main.js" > "$npath/data/others/translate/main.js"
 fi
 ln -fs "$npath/data" "$mainfd/nwjs/nwjs/packagefiles/tyranobuilder/tyranoeng"
@@ -245,15 +251,20 @@ ln -fs "$npath/data" "$mainfd/nwjs/nwjs/packagefiles/tyranobuilder/tyranoeng"
 
 
 mkxpzdownload() {
-if [ "$arch" = "x86_64" ]; then
+if [ "$arch" = "i686" ]; then
+echo For this release, i686 not supported
+
+fi
+# mkxpzarch=$(echo "$arch" )
+
 link="https://github.com/bakustarver/rpgmakermlinux-cicpoffs/releases/download/libraries/mkxp-z.$arch.zip"
 wget -O /tmp/mkxp-z.zip "$link"
 unzip -d "$mkxpzp" /tmp/mkxp-z.zip
 sed -e "s@\"RGSS@\"$mkxpzp/RGSS@g" -i "$mkxpzp/mkxp.json"
 rm /tmp/mkxp-z.zip
-else
-echo For this release, supported x86_64 only
-fi
+# else
+# echo For this release, supported x86_64 only
+# fi
 }
 
 mkxpzdialog() {
@@ -284,7 +295,7 @@ rm /tmp/electron-tyrano.zip
 tyranocheckelectron() {
 $yadp --image="dialog-question" \
   --title "Tyranobuilder Launcher: $line" \
-  --text "Founded electron game $line!\nHow would you like to open it?" \
+  --text "Found electron game $line!\nHow would you like to open it?" \
   --button="Electron (Recomended):0" \
   --button="NWJS:1" \
   --button="Exit:2"
@@ -311,9 +322,94 @@ usetyranoelectron=true
 elif [[ $rettyranoelectron -eq 1 ]]; then
 rm "$mainfd/nwjs/nwjs/packagefiles/tyranobuilder/tyranoeng/data"
 ln -fs "$npath/resources/app/data" "$mainfd/nwjs/nwjs/packagefiles/tyranobuilder/tyranoeng"
+usetyranoelectron=""
 elif [[ $rettyranoelectron -eq 2 ]]; then
 exit;
 fi
+}
+
+mkxpzdialogoptions() {
+$yadp --image="dialog-question" \
+  --title "Mkxp-z Options: $line" \
+  --text "Found the rppmaker game $line!\nHow would you like to open it?" \
+  --button="Linux mkxp-z:0" \
+  --button="Windows mkxp-z (Requires Wine):1" \
+  --button="Exit:2"
+rettyranoelectron=$?
+
+
+if [[ $rettyranoelectron -eq 0 ]]; then
+mkxpopt=linux
+
+elif [[ $rettyranoelectron -eq 1 ]]; then
+mkxpopt=wine
+elif [[ $rettyranoelectron -eq 2 ]]; then
+exit;
+fi
+}
+
+godotdownloadsdk() {
+if [ -z "$execpath" ]; then
+exen=$(ls -p "$npath" | grep -v "/$" | grep "\.exe$" )
+fi
+
+
+while IFS= read -r line; do
+godotold=""
+exenn=$(echo "$line" | sed "s@.exe@@g" )
+# echo hhh
+strgodotexe=$(strings "$npath/$line")
+versiongodot=$(echo "$strgodotexe" | grep -m 1 'Godot Engine v' | sed -e 's@.* v@@g' -e 's@.official@@g' )
+if [ -z "$versiongodot" ]; then
+# echo zzz
+versiongodot=$(echo "$strgodotexe" | grep -B 1 "User-Agent:" | grep "[0-9]\.[0-9]\." | grep -v "User-Agent:" | sed -e 's@.official@@g' )
+# echo "exe $exenpath"
+godotold=true
+fi
+# echo "$exen"
+# echo "cc $versiongodot"
+
+if [ -n "$versiongodot" ]; then
+n1godot=$(echo "$versiongodot" | sed -e 's@\.[a-Z].*@@g')
+n2godot=$(echo "$versiongodot" | sed -e 's@.*\.@@g')
+garch=$(echo "$arch" | sed -e 's@86_64@86_64@g' -e 's@i686@x86_32@g' -e 's@aarch64@arm64@g' -e 's@armv7l@arm32@g')
+versinid="_linux.$garch.zip"
+
+# https://downloads.tuxfamily.org/godotengine/3.5.2/
+if [ "$godotold" = "true"  ]; then
+# echo "ccc $garch"
+garch=$(echo "$garch" | sed -e 's@x86_64@64@g' -e 's@x86_32@32@g')
+if [ "$garch" = "64" ] && [ "$garch" = "32" ]; then
+echo "The Godot version don't have any arm versin";
+exit;
+fi
+versinid="_x11.$garch.zip"
+godotsdklink="https://downloads.tuxfamily.org/godotengine/$n1godot/Godot_v$n1godot-$n2godot$versinid"
+else
+if [ "$n2godot" = "stable" ]; then
+godotsdklink="https://downloads.tuxfamily.org/godotengine/$n1godot/Godot_v$n1godot-$n2godot$versinid"
+else
+godotsdklink="https://downloads.tuxfamily.org/godotengine/$n1godot/$n2godot/Godot_v$n1godot-$n2godot$versinid"
+fi
+fi
+if wget -q --spider "$godotsdklink"; then
+dglink="$godotdownloadsdk"
+fi
+
+archivngodot=$(basename "$godotsdklink")
+binname=$(echo "$archivngodot" | sed -e 's@.zip@@g')
+if ! [ -f "$npath/$exenn.$garch" ]; then
+wget -c "$godotsdklink" -P "$npath"
+unzip -d "$npath" "$npath/$archivngodot";
+mv "$npath/$binname" "$npath/$exenn.$garch";
+rm "$npath/$archivngodot";
+fi
+"$npath/$exenn.$garch"
+exit;
+else
+echo "Can't find the Godot version in exe"
+fi
+done <<< "$exen"
 }
 
 tyranoelectron() {
@@ -331,13 +427,25 @@ usetyranoelectron=true
 
 
 searchforpackedexe() {
+# echo fffvvvv
 local gfexe=$(ls -p "$1" | grep -v "/$" | grep "\.exe$")
+# echo "$gfexe"
 npath="$1"
+if [ -n "$gfexe" ]; then
 while IFS= read -r line; do
 # check=$()
+allstrings=$(strings "$npath/$line")
+if echo "$allstrings" | grep -m 1 -q "\!CreatePipe(\&pipe\[0\]" && echo "$allstrings" | grep -m 1 -q "Godot Engine"; then
+# echo vvv
+# "$pckextract" "$npath/$line"
+linenoexe=$(echo "$line.pck" | sed "s@\.exe@@g")
+# mv "$npath/$line.pck" "$npath/$linenoexe"
+cp "$line" "$linenoexe"
+fi
+# !CreatePipe(&pipe[0]
 if ! [ -d "$npath/$line-extracted" ]; then
-
-if strings "$npath/$line" | grep -m 1 -q "\.enigma"; then
+# echo hmmm
+if echo "$allstrings" | grep -m 1 -q "\.enigma"; then
 $yadp --image="dialog-question" \
   --title "RPG Maker linux: $line" \
   --text "Detected game files in $line!\nWould you like to unpack it?" \
@@ -359,13 +467,14 @@ fi
 # echo "$check"
 fi
 done <<< "$gfexe"
+fi
 }
 
 
 updatenwjs() {
 if [ -f "$nwjsfm/packagefiles/usesdk.txt" ]; then
 export latestlocal=$(echo "$nwjssdkonlylist" | tail -n 1 | sed -e 's@nwjs-sdk-@@g' -e 's@-linux.*@@g' )
-
+# echo "gggsagsga"
 "$nwjsfm/dwnwjs.sh"
 else
 export latestlocal=$(echo "$latestinstallednwjsfd" | sed -e 's@nwjs-@@g' -e 's@-linux.*@@g')
@@ -383,6 +492,24 @@ checkifexist() {
 if ! [ -f "$1" ]; then
 echo "Can't find the file $1"
 exit
+fi
+}
+
+mkxpfunc() {
+if [ -z "$mkxpfound" ]; then
+
+if ! [ -f $mkxpzp/mkxp-z.$arch ]; then
+mkxpzdialog
+fi
+
+sed -e "s@.*.gameFolder.*@    \"gameFolder\": \"$npath\",@g" -i "$mkxpzp/mkxp.json"
+if [ "$mkxpopt" = "wine" ]; then
+wine "$mkxpzp/mkxp-z.exe"
+else
+"$mkxpzp/mkxp-z.$arch"
+fi
+mkxpfound=true
+
 fi
 }
 
@@ -406,8 +533,40 @@ tyranocheckelectron
 fi
 }
 
+tyranofuncv4() {
+mountpath="$npath"
+# gamepath=true
+# found=true
+engine=tyrano
+tyranover=v4
+tyranoeng=nwjs
+
+if [ -d "$npath/data" ] && [ -e "$npath/data/system/Config.tjs" ]; then
+tyranolndatafd
+else
+tyranoextractv4exe
+tyranolndatafd
+fi
+}
+
+
+tyranofuncv5() {
+engine=tyrano
+tyranover=v5
+if [ -d "$npath/resources/app/data" ] && [ -f "$npath/resources/app/index.html" ] && [ -f "$npath/resources/app/main.js" ] && [ -d "$npath/resources/app/tyrano" ]; then
+electronch2
+elif [ -f "$npath/resources/app.asar" ]; then
+asarpath="$npath/resources/app.asar"
+electronch2
+fi
+}
+
+
+
+
 checkgamefilesfd() {
 npath=$(echo "$1" | sed -e 's@rpgmakermp:///@@g')
+# echo "$npath"
 if echo "$npath" | grep ".exe"; then
 exenpath="$npath"
 npath=$(dirname "$npath" | sed -e "s@^'@@g");
@@ -415,8 +574,8 @@ else
 npath="$npath"
 fi
 # kdialog --msgbox "$npath"
-searchforpackedexe "$npath"
 # zenity --title "$gamef" --warning --text="$npath"
+searchforpackedexe "$npath"
 if [ -d "$npath/www" ] && [ -e "$npath/package.json" ] && [ -e "$npath/www/js/plugins.js" ]; then
 mountpath="$npath/www"
 found=true
@@ -428,38 +587,24 @@ gamepath=true
 found=true
 engine=mz
 elif [ -e "$npath/Game.ini" ] && [ -e "$npath/Game.exe" ]; then
-
-if ! [ -f $mkxpzp/mkxp-z.x86_64 ]; then
-mkxpzdialog
-fi
-
-sed -e "s@.*.gameFolder.*@    \"gameFolder\": \"$npath\",@g" -i "$mkxpzp/mkxp.json"
-"$mkxpzp/mkxp-z.x86_64"
+# mkxpfunc
+engine=mkxpz
 
 elif [ -e "$npath/ffmpegsumo.dll" ] && [ -e "$npath/nw.pak" ] && [ -e "$npath/d3dcompiler_47.dll" ] && [ -e "$npath/nw.pak" ]; then
-mountpath="$npath"
-# gamepath=true
-# found=true
-engine=tyrano
-tyranoeng=nwjs
-
-if [ -d "$npath/data" ] && [ -e "$npath/data/system/Config.tjs" ]; then
-tyranolndatafd
-else
-tyranoextractv4exe
-tyranolndatafd
-fi
+tyranofuncv4
 elif [ -d "$npath/resources" ] && [ -d "$npath/locales" ] && [ -e "$npath/chrome_100_percent.pak" ] && [ -e "$npath/natives_blob.bin" ] && [ -e "$npath/chrome_200_percent.pak" ]; then
-engine=tyrano
-if [ -d "$npath/resources/app/data" ] && [ -f "$npath/resources/app/index.html" ] && [ -f "$npath/resources/app/main.js" ] && [ -d "$npath/resources/app/tyrano" ]; then
-electronch2
-elif [ -f "$npath/resources/app.asar" ]; then
-asarpath="$npath/resources/app.asar"
-electronch2
-fi
+tyranofuncv5
+
 else
-echo "Can't find game with $npath"
+# kdialog --msgbox "xxzxz"
+checkpck=$(ls "$npath" | grep "\.pck")
+if [ -n "$checkpck" ]; then
+godotdownloadsdk
+else
+echo "Can't find any game in $npath"
 exit 1
+fi
+
 fi
 }
 
@@ -477,9 +622,9 @@ fi
 # kdialog --msbox "$path"
 checkgamefilesfd "$path"
 }
+searchforpackedexe "$PWD"
 
 if [ -z "$gamepath" ]; then
-searchforpackedexe "$PWD"
 if [ -d ./www ] && [ -f ./package.json ]; then
 mountpath="$PWD/www"
 found=true
@@ -490,6 +635,25 @@ mountpath="$PWD"
 found=true
 engine=mz
 npath="$PWD"
+elif [ -e "./ffmpegsumo.dll" ] && [ -e "./nw.pak" ] && [ -e "./d3dcompiler_47.dll" ] && [ -e "./nw.pak" ]; then
+npath="$PWD"
+tyranofuncv4
+elif [ -d "./resources" ] && [ -d "./locales" ] && [ -e "./chrome_100_percent.pak" ] && [ -e "./natives_blob.bin" ] && [ -e "./chrome_200_percent.pak" ]; then
+npath="$PWD"
+tyranofuncv5
+elif [ -e "./Game.ini" ] && [ -e "./Game.exe" ]; then
+# mkxpfunc
+engine=mkxpz
+else
+npath="$PWD"
+checkpck=$(ls "$npath" | grep "\.pck")
+if [ -n "$checkpck" ]; then
+godotdownloadsdk
+else
+# echo "Can't find game in $npath"
+notfound=true
+# exit 1
+fi
 fi
 fi
 # fi
@@ -508,7 +672,7 @@ path="$1"
 if [ -d "$path/lib" ] && [ -e "$path/nw" ]; then
 NWJSPATH="$path"
 else
-echo "Can't find NWJS"
+echo "Can't find the NWJS"
 exit 1
 fi
 }
@@ -519,7 +683,7 @@ if [ -e "$path" ]; then
 cicpoffs="$path"
 cicpoffspath="true"
 else
-echo "Can't find cicpoff"
+echo "Can't find the cicpoff binary"
 exit 1
 fi
 }
@@ -528,12 +692,15 @@ packagejsonfunc() {
 if [ -n "$PACKAGEJSONPATH" ]; then
 packagejson="$PACKAGEJSONPATH"
 else
-packagejson="$HOME/desktopapps/nwjs/nwjs/packagefiles/package.json"
+packagejson="$mainfd/nwjs/nwjs/packagefiles/package.json"
 fi
 packagejsoninfo=$(cat "$packagejson")
 
+if [ -n "$PACKAGEJSONPATH" ]; then
 newpackagejson=$(echo "$packagejsoninfo" | sed -e 's@"name": "",@"name": "RPG Maker MV/MZ (cicpoffs mount)",@g' -e 's@"main": ".*@"main": "www/index.html",@' -e 's@"title": "",@"title": "RPG Maker MV/MZ (cicpoffs mount)",@g')
-
+else
+newpackagejson=$(echo "$packagejsoninfo")
+fi
 
 # echo "$packagejson"
 # ln -s "$packagejson" "$nwjstestpath"
@@ -564,6 +731,9 @@ do
         --gui)
             GUIMENU=true
             ;;
+        --relocate)
+            relocaterpgmaker
+            ;;
         --usestandart)
 #             export SDKNWJS=true
             if [ -e "$nwjsfm/packagefiles/usesdk.txt" ]; then
@@ -575,6 +745,9 @@ do
             ;;
         --installtexthookerplugin)
             INSTALLTHPL=true
+            ;;
+        --install500slotsplugin)
+            FIVEHUNDREDSAVESLOTSPLUGIN=true
             ;;
         --uninstalltexthookerplugin)
             INSTALLTHPL=false
@@ -658,7 +831,7 @@ do
             elif [ -f "$PWD/package.json" ]; then
             PACKAGEJSONPATH="$PWD/package.json"
             else
-            echo "Can't find the original package.json"
+            echo "Can't detect the original package.json"
             fi
             useoriginalgamepackagejson=true
             ;;
@@ -676,6 +849,9 @@ do
         --printrpgmakerlibversions)
             printrpgmakerlibversions=true
             info=true
+            ;;
+        --exportthegame)
+            EXPORTTHEGAME=true
             ;;
         --forceaarch)
             incompletefeaturefunc
@@ -745,35 +921,60 @@ fi
 
 
 if [ "$help" = true ]; then
-echo -e "RPGMaker MV/MZ linux $version
+echo -e "RPGMaker MV/MZ for Linux [cicpoffs mount] v$version
 
-https://github.com/bakustarver/rpgmakermlinux-cicpoffs
 
---help
---version
---updatenwjs
---chooselatestnwjs
---nwjsversion
---clearoldnwjs
---unmount
---gamepath
---useoriginalgamepackagejson
---custompackagejsonpath
---nwjspath
---cicpoffspath
---printrpgmakerlibversions
---forceaarch
---jpnlocale
---checkreleaseupdates
---checkbetaupdates
---updatescripts
---fullupdate
---sourcelinks
---usesdk
---pixi5install
---installtexthookerplugin
---uninstalltexthookerplugin
---makeshortcut"
+Usage: rpgmaker-linux [OPTIONS]
+
+Options:
+  --help                          Show this help message.
+  --version                       Show version of the program.
+  --updatenwjs                    Update the NW.js to the latest version.
+  --chooselatestnwjs              Choose the latest version of NW.js available on your PC.
+  --nwjsversion <version>         Choose the version of NW.js you want to use.
+  --clearoldnwjs                  Clear old NW.js versions (incomplete feature).
+  --unmount <true|false>          Option to disable mounting of the game folder.
+  --gamepath <path>               Specify the path to the RPG Maker game.
+  --useoriginalgamepackagejson    Use the original game package.json file.
+  --custompackagejsonpath <path>  Specify a custom path for the package.json file.
+  --nwjspath <path>               Specify the custom path of the NW.js directory.
+  --cicpoffspath <path>           Specify the cicpoffs binary path.
+  --printrpgmakerlibversions      Show versions of RPG Maker MV/MZ game libraries.
+  --forceaarch <architecture>     Force the use of specified architecture (e.g., x86_64, i386, aarch64) (incomplete feature).
+  --jpnlocale                     Use Japanese locale for certain games.
+  --checkbetaupdates              Check for beta updates (incomplete feature).
+  --updatescripts                 Fast update scripts for the rpgmaker-linux (incomplete feature).
+  --fullupdate                    Perform a full update of the rpgmaker-linux.
+  --sourcelinks                   Print the list of links to the project's source code, documentation, and donation options in the output.
+  --usesdk                        Use the NW.js SDK version.
+  --pixi5install                  Install the Pixi 5 library.
+  --install500slotsplugin         Install the 500 slots plugin.
+  --installtexthookerplugin       Install the text hooker plugin.
+  --uninstalltexthookerplugin     Uninstall the text hooker plugin.
+  --makeshortcut <type>           Create a shortcut for the game (type: local, desktop, menu, all).
+  --gui                           Launch the GUI for easier management.
+
+Examples:
+  Run the RPG Maker game:
+    rpgmaker-linux --gamepath /path/rpg-maker-game/
+
+  Show version of the program:
+    rpgmaker-linux --version
+
+  Update the NW.js to the latest version:
+    rpgmaker-linux --updatenwjs
+
+  Show versions of RPG Maker game libraries:
+    rpgmaker-linux --gamepath /path/rpg-maker-game/ --printrpgmakerlibversions
+
+  Choose the version of NW.js you want to use:
+    rpgmaker-linux --nwjsversion 0.40.0 --gamepath /path/rpg-maker-game/
+
+  Use Japanese locale for certain games:
+    rpgmaker-linux --jpnlocale --gamepath /path/rpg-maker-game/
+
+  Show donation links:
+    rpgmaker-linux --sourcelinks"
 fi
 
 
@@ -792,7 +993,11 @@ sdkvar=$(echo "$@" | awk '{print $9}')
 }
 
 guirpgmakermfn() {
-configgp="$HOME/desktopapps/rpgmaker-guiconfig.txt"
+if [ -d "$HOME/.config" ]; then
+configgp="$HOME/.config/rpgmaker-guiconfig.txt"
+else
+configgp="$HOME/rpgmaker-guiconfig.txt"
+fi
 if [ -f "$configgp" ]; then
 configgdata=$(cat "$configgp")
 yaddata "$configgdata"
@@ -801,9 +1006,9 @@ if [ -z "$newversionlist" ]; then
 newversionlist="$allversionsnwjs"
 fi
 # kdialog --msgbox "$nwjsguivar\n--$newversionlist"
-guim=$("$yadp" --title "RPG Maker MV/MZ Options" --text="Please choose your options:" --image="$HOME/desktopapps/nwjs/nwjs/packagefiles/nwjs128.png" --columns=5 --field "Update NWJS":chk $updatenwjsvar --form --field "Pixi5 Update":chk "$pixiupdatevar" --field="Shorcut Options::LBL" false --field "Local Shortcut":chk "$localshortcutvar" --form --separator=" " --item-separator="\n" --field="Versions::"CBE "$newversionlist" --field "500 Save Slots Plugin":chk "$fivehundredsaveslotspluginvar" --field "Texthooker Plugin":chk "$texthookerset" --field=" :LBL" false --field "Desktop Shortcut":chk "$desktopshortcut" --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field "Show in the Menu":chk "$addtomenuvar" --field "Use SDK version":chk "$sdkvar" --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false)
+guim=$("$yadp" --title "RPG Maker MV/MZ Options" --text="Please choose your options:" --image="$mainfd/nwjs/nwjs/packagefiles/nwjs128.png" --columns=5 --field "Update NWJS":chk $updatenwjsvar --form --field "Pixi5 Update":chk "$pixiupdatevar" --field="Shorcut Options::LBL" false --field "Local Shortcut":chk "$localshortcutvar" --form --separator=" " --item-separator="\n" --field="Versions::"CBE "$newversionlist" --field "500 Save Slots Plugin":chk "$fivehundredsaveslotspluginvar" --field "Texthooker Plugin":chk "$texthookerset" --field=" :LBL" false --field "Desktop Shortcut":chk "$desktopshortcut" --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field "Show in the Menu":chk "$addtomenuvar" --field "Use SDK version":chk "$sdkvar" --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false)
 else
-guim=$("$yadp" --title "RPG Maker MV/MZ Options" --text="Please choose your options:" --image="$HOME/desktopapps/nwjs/nwjs/packagefiles/nwjs128.png" --columns=5 --field "Update NWJS":chk true --form --field "Pixi5 Update":chk false --field="Shorcut Options::LBL" false --field "Local Shortcut":chk true --form --separator=" " --item-separator="\n" --field="Versions::"CBE "$allversionsnwjs" --field "500 Save Slots PSlugin":chk false --field "Texthooker Plugin":chk false --field=" :LBL" false --field "Desktop Shortcut":chk false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field "Show in the Menu":chk false --field "Use SDK version":chk false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false)
+guim=$("$yadp" --title "RPG Maker MV/MZ Options" --text="Please choose your options:" --image="$mainfd/nwjs/nwjs/packagefiles/nwjs128.png" --columns=5 --field "Update NWJS":chk true --form --field "Pixi5 Update":chk false --field="Shorcut Options::LBL" false --field "Local Shortcut":chk true --form --separator=" " --item-separator="\n" --field="Versions::"CBE "$allversionsnwjs" --field "500 Save Slots PSlugin":chk false --field "Texthooker Plugin":chk false --field=" :LBL" false --field "Desktop Shortcut":chk false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field "Show in the Menu":chk false --field "Use SDK version":chk false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false --field=" :LBL" false)
 fi
 
 if [ -n "$guim" ] ; then
@@ -812,13 +1017,26 @@ else
 exit;
 fi
 yaddata "$guim"
-echo "$guim"
+# echo "$guim"
 
 # exit;
 if [ "$fivehundredsaveslotspluginvar" = "TRUE" ]; then
 # export LANG="ja_JP.utf8"
 export FIVEHUNDREDSAVESLOTSPLUGIN=true
 fi
+
+
+if [ "$sdkvar" = "TRUE" ]; then
+# echo ccc
+if ! [ -f "$nwjsfm/packagefiles/usesdk.txt" ]; then
+touch "$nwjsfm/packagefiles/usesdk.txt"
+fi
+elif [ "$sdkvar" = "FALSE" ]; then
+if [ -f "$nwjsfm/packagefiles/usesdk.txt" ]; then
+rm "$nwjsfm/packagefiles/usesdk.txt"
+fi
+fi
+
 
 if [ "$updatenwjsvar" = "TRUE" ]; then
 export skipdownloadifexist=true
@@ -834,16 +1052,6 @@ fi
 
 if [ "$pixiupdatevar" = "TRUE" ]; then
 INSTALLPIXI5=true
-fi
-
-if [ "$sdkvar" = "TRUE" ]; then
-if ! [ -f "$nwjsfm/packagefiles/usesdk.txt" ]; then
-touch "$nwjsfm/packagefiles/usesdk.txt"
-fi
-elif [ "$sdkvar" = "FALSE" ]; then
-if [ -f "$nwjsfm/packagefiles/usesdk.txt" ]; then
-rm "$nwjsfm/packagefiles/usesdk.txt"
-fi
 fi
 
 
@@ -867,9 +1075,19 @@ fi
 }
 
 
+
+
+
 if [ "$GUIMENU" = "true" ]; then
 if [ "$engine" = "tyrano" ]; then
 echo tyrano;
+# tyranover=v5
+if [ "$tyranover" = "v5" ]; then
+tyranocheckelectron
+fi
+elif  [ "$engine" = "mkxpz" ]; then
+echo mkxpz;
+mkxpzdialogoptions
 else
 guirpgmakermfn
 fi
@@ -928,7 +1146,7 @@ fi
 
 
 if [ -z "$cicpoffspath" ]; then
-cicpoffs="$HOME/desktopapps/nwjs/nwjs/cicpoffs"
+cicpoffs="$mainfd/nwjs/nwjs/cicpoffs"
 fi
 
 nwjslist=$(ls -p "$nwjsfm/nwjs/" | grep /)
@@ -951,7 +1169,7 @@ nwjstestpath="$NWJSPATH"
 echo "$NWJSPATH"
 else
 if [ -n "$nwjsversion" ]; then
-
+echo "$nwjslistd"
 searchpath=$(echo "$nwjslistd" | grep "$nwjsversion" )
 # nwjstestpath="$defp/nwjs/$nwjsversion"
 if [ -n "$searchpath" ]; then
@@ -970,17 +1188,82 @@ nwjstestpath=$(echo "$nwjstestpath" | sed -e 's@/$@@g')
 # echo "$nwjstestpath"
 
 
+if [ "$EXPORTTHEGAME" = "true" ]; then
+defexportpath="$HOME/Your_exported_games"
+thegamebasename=$(basename "$npath" | sed -e "s@\$@-linux-$arch@g")
+theexpgamep="$defexportpath/$thegamebasename"
+if ! [ -d "$theexpgamep" ]; then
+mkdir -p "$theexpgamep/www"
+fi;
+if ! [ -d "$theexpgamep" ]; then
+mkdir -p "$theexpgamep/www-case"
+fi;
+cp -r "$nwjstestpath"/* "$theexpgamep/"
+if ! [ -d "$theexpgamep" ]; then
+mkdir -p "$theexpgamep/lib"
+fi;
+cp "$cicpoffs" "$theexpgamep/lib"
+cp "$nwjsfm/packagefiles/libulockmgr.so.1" "$theexpgamep/lib"
+cp "$mainfd/nwjs/nwjs/packagefiles/package.json" "$theexpgamep"
+cp "$nwjsfm/packagefiles/filestoexport/start_your_game.sh" "$theexpgamep"
+cp -r "$mountpath" "$theexpgamep/www-case"
+exclude_list=(
+    "credits.html"
+    "www"
+    "icudtl.dat"
+    "notification_helper.exe"
+    "package.json"
+    "d3dcompiler_47.dll"
+    "libegl.dll"
+    "nw_100_percent.pak"
+    "resources.pak"
+    "debug.log"
+    "libglesv2.dll"
+    "nw_200_percent.pak"
+    "ffmpeg.dll"
+    "locales"
+    "nw.dll"
+    "swiftshader"
+    "game.exe"
+    "game_en.exe"
+    "node.dll"
+    "nw_elf.dll"
+    "v8_context_snapshot.bin"
+    "update-patch.bat"
+    "patch-config.txt"
+    "dazed"
+)
+  # Loop through files and folders in the game directory
+for item in "$mountpath"/*; do
+      # Get the basename of the item and convert it to lowercase
+    base0=$(basename "$item" )
+    base=$(echo "$base0" | tr '[:upper:]' '[:lower:]')
+    echo "$item - $base"
+    # Check if the lowercase basename is in the lowercase exclude list
+    if [[ " ${exclude_list[@]} " =~ " ${base} " ]]; then
+#         echo "cc $item - $base"
+        rm -rf "$theexpgamep/www-case/$base0"
+    fi
+done
+
+# "$mountpath"
+exit;
+fi
 
 
 
 
 startnw() {
+if [ -n "$armsys" ]; then
+"$nwjstestpath/nw" --ozone-platform=x11
+else
 if [[ "$XDG_SESSION_TYPE" == "wayland" ]]; then
 echo "wayland detected"
 "$nwjstestpath/nw" --ozone-platform=wayland
 else
 echo "wayland not detected, starting in x11"
 "$nwjstestpath/nw" --ozone-platform=x11
+fi
 fi
 }
 
@@ -1008,6 +1291,11 @@ rm "$nwjstestpath/www"
 
 mountwww() {
 packagejsonfunc
+if ! [ -h "$nwjstestpath/data" ] && [ -h "$nwjsfm/packagefiles/data" ]; then
+# echo hello;
+cp -a "$nwjsfm/packagefiles/data" "$nwjstestpath/data"
+fi
+
 if [ -h "$nwjstestpath/www" ]; then
 rm "$nwjstestpath/www"
 fi
@@ -1029,9 +1317,25 @@ Total time: $SECONDS seconds"
 
 }
 
+
+plugins-autoinstall() {
+cpfd="$nwjsfm/plugins-autoinstall"
+pluginslistfile="$mountpath/js/plugins.js"
+# echo ggvv
+if [ -n "$(ls -A "$cpfd/js/plugins" )" ] && [ -s "$cpfd/pluginsconf.txt" ] && ! [ -f "$mountpath/pluginsconf.txt" ] ; then
+# echo "hellovvvv"
+pluginset=$(cat "$cpfd/pluginsconf.txt")
+cp -r "$cpfd"/* "$mountpath/"
+cp "$pluginslistfile" "$pluginslistfile.bk"
+sed -e "s@^\[@[\n$pluginset@g" -i "$pluginslistfile"
+# rm "$mountpath/pluginsconf.txt"
+fi
+}
+
 if [ "$INSTALLPIXI5" = "true" ]; then
 pixi5install;
 fi
+
 
 if [ "$FIVEHUNDREDSAVESLOTSPLUGIN" = "true" ]; then
 fivehundredslotsplugininstall;
@@ -1052,6 +1356,11 @@ checkthebinaryarch "$cicpoffs"
 checkthebinaryarch "$nwjstestpath/nw"
 
 
+if [ -n "$notfound" ]; then
+echo "Can't find any game in $npath"
+exit 1
+fi
+
 if [ "$engine" = "tyrano" ]; then
 if [ "$usetyranoelectron" = "true" ]; then
 "$electronfd/electron"
@@ -1061,12 +1370,14 @@ ln -s "$mainfd/nwjs/nwjs/packagefiles/tyranobuilder/tyranoeng" "$nwjstestpath"
 cat "$mainfd/nwjs/nwjs/packagefiles/tyranobuilder/package.json" > "$nwjstestpath/package.json"
 startnw
 fi
+elif [ "$engine" = "mkxpz" ]; then
 
-
+mkxpfunc
 
 elif [ "$found" = "true" ]; then
 # rmsymlinks
 mountwww
+plugins-autoinstall
 if [ -n "$MAKELOCALSHORTCUT" ]; then
 makelocalshortcut
 fi
