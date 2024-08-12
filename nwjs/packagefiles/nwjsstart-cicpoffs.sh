@@ -952,6 +952,9 @@ Options:
   --installtexthookerplugin       Install the text hooker plugin.
   --uninstalltexthookerplugin     Uninstall the text hooker plugin.
   --makeshortcut <type>           Create a shortcut for the game (type: local, desktop, menu, all).
+  --exportthegame                 This option allows users to export their RPG Maker game into a distributable format. When this argument is used, the program will package the game
+                                  files, including assets, scripts, and configurations, into a single folder or archive that can be easily shared or deployed.
+                                  You can easily send the exported game to your friends who are using Linux, allowing them to enjoy the game without any additional setup.
   --gui                           Launch the GUI for easier management.
 
 Examples:
