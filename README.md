@@ -19,7 +19,7 @@ Priority is primarily on RPG Maker MV/MZ. (if you have errors with XP, VX, Vx Ac
 - [mkxp-z](https://github.com/mkxp-z/mkxp-z) - Open-source cross-platform player for (some) RPG Maker XP / VX / VX Ace games. A very heavily modified fork of mkxp. RGSS on steroids with a stupid name. (May have limited support for games, due to win32api in plugins) (Optionally)
 
 #### Dependencies for Godot engine
-- wget (Required to download SDK, after download is finished linux port is complete (Works even with embedded pck files) )
+- wget (Required to download SDK, once download is done the linux port is complete (works even with embedded pck files)).
 
 #### Contains the following features:
 - Sharp increase in fps (from 2 to 4 times more compared to Wine, can be viewed by pressing the F2 key)
