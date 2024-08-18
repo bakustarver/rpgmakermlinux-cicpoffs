@@ -81,6 +81,8 @@ rpgmaker-linux --sourcelinks
 - [easyrpg](https://easyrpg.org/) - EasyRPG is a community project to create a free, open source, role playing game creation tool, compatible with RPG Maker 2000/2003 games.
 - [Painless-Porter-CLI](https://github.com/m5kro/Painless-Porter-CLI) - A tool to quickly port RPG Maker MV and MZ games to Linux and MacOS and upload to file hosters. 
 - [ruffle](https://github.com/ruffle-rs/ruffle) - A Flash Player emulator written in Rust 
+- [RPGMaker MV/MZ Save Editor](https://www.appimagehub.com/p/2166407/) - This is a offile tool for editing RPGMaker save files. It currently supports save files written by RPG Maker MV (.rpgsave) & MZ (.rmmzsave).
+
 
 ### Professional version:
 <a href="https://bakurpg.itch.io/rpg-maker-mv-mz-for-linux"><img src="https://github.com/user-attachments/assets/421edc23-fdd5-47d4-aa8b-3d914be4a177" width="600"></a>
