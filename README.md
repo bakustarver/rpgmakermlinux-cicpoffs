@@ -1,6 +1,5 @@
 #  RPG Maker MV / MZ for Linux [ cicpoffs mount]
-The project contains a collection of shell scripts that will help you run games on the RPG Maker MV/MZ engine on linux.
-I was inspired by [m5kro](https://github.com/m5kro)'s project and his linux/mac os builds. 
+The bash wrapper that uses native linux libraries to run various game engines. Previously supported only RPG Maker MV/MZ.  Now supports RPG Maker XP, VX, VX Ace, MV, MZ, TyranoBuilder, Godot. There are plans to add other engines that use nwjs.
 Priority is primarily on RPG Maker MV/MZ. (if you have errors with XP, VX, Vx Ace address this [link](https://github.com/mkxp-z/mkxp-z)).
 
 #### Contains the following features (RPG Maker MV / MZ):
