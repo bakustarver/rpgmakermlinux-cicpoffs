@@ -5,7 +5,7 @@ Priority is primarily on RPG Maker MV/MZ. (if you have errors with XP, VX, Vx Ac
 #### Contains the following features (RPG Maker MV / MZ):
 - Sharp increase in fps (from 2 to 4 times more compared to Wine, can be viewed by pressing the F2 key)
 - Updating Pixi 5 libraries for RPG Maker MV games (that's supposed to increase performance)
-- Downloading and selecting any version of NWJS (using the command line).
+- Downloading and selecting any version of NWJS (using the command line and GUI).
 - Easily installable SDK version of NWJS with one click in the gui, or via cli.
 - Starting a game with the Japanese locale option.
 - Launching a game using a command line.
