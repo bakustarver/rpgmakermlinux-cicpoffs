@@ -3,25 +3,7 @@ The project contains a collection of shell scripts that will help you run games 
 I was inspired by [m5kro](https://github.com/m5kro)'s project and his linux/mac os builds. 
 Priority is primarily on RPG Maker MV/MZ. (if you have errors with XP, VX, Vx Ace address this [link](https://github.com/mkxp-z/mkxp-z)).
 
-
-#### The software uses the following dependencies for RPG Maker MV/MZ:
-- [nwjs](https://nwjs.io/) - As the main engine of the game
-- [cicpoffs](https://github.com/adlerosn/cicpoffs) - For mounting the game folder in windows Case-Insensitive mode (that allows nwjs better find the game files)
-- [evbunpack](https://github.com/mos9527/evbunpack) - For unpacking game files stored in Game.exe (if they are packaged)
-- tools such as wget, ln, readlink, grep - For downloading the latest version of nwjs and viewing the files.
-
-#### Dependencies for tyranobuilder
-- [nwjs](https://nwjs.io/) - As the main engine of the game
-- [electron 9.4.4](https://github.com/electron/electron/releases/tag/v9.4.4) to run v5 version games of this engine (Optionally)
-- python script tyranoextract with these dependencies (asarlib,pefile)
-
-#### Dependencies for RPG Maker XP / VX / VX Ace (There is limited support)
-- [mkxp-z](https://github.com/mkxp-z/mkxp-z) - Open-source cross-platform player for (some) RPG Maker XP / VX / VX Ace games. A very heavily modified fork of mkxp. RGSS on steroids with a stupid name. (May have limited support for games, due to win32api in plugins) (Optionally)
-
-#### Dependencies for Godot engine
-- wget (Required to download SDK, once download is done the linux port is complete (works even with embedded pck files)).
-
-#### Contains the following features:
+#### Contains the following features :
 - Sharp increase in fps (from 2 to 4 times more compared to Wine, can be viewed by pressing the F2 key)
 - Updating Pixi 5 libraries for RPG Maker MV games (that's supposed to increase performance)
 - Downloading and selecting any version of NWJS (using the command line).
@@ -33,6 +15,7 @@ Priority is primarily on RPG Maker MV/MZ. (if you have errors with XP, VX, Vx Ac
 - Can be used as compatibility tool in steam for Windows games.
 - The Native support of 4 architectures: x86-64, i386, armhf, arm64
 
+[Dependencies list](DEPENDENCIES.md)
 
  
 After installing the program you can run the game using an application - "RPG Maker MV/MZ (cicpoffs mount)"
