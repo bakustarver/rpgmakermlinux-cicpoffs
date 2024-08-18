@@ -3,7 +3,7 @@ The project contains a collection of shell scripts that will help you run games 
 I was inspired by [m5kro](https://github.com/m5kro)'s project and his linux/mac os builds. 
 Priority is primarily on RPG Maker MV/MZ. (if you have errors with XP, VX, Vx Ace address this [link](https://github.com/mkxp-z/mkxp-z)).
 
-#### Contains the following features :
+#### Contains the following features (RPG Maker MV / MZ):
 - Sharp increase in fps (from 2 to 4 times more compared to Wine, can be viewed by pressing the F2 key)
 - Updating Pixi 5 libraries for RPG Maker MV games (that's supposed to increase performance)
 - Downloading and selecting any version of NWJS (using the command line).
