@@ -4,9 +4,10 @@ if [[ ! -z "${LD_PRELOAD}" ]]; then
      echo "LD_PRELOAD found with $LD_PRELOAD"
      export ORIGINAL_LD_PRELOAD="$LD_PRELOAD"
      export LD_PRELOAD=""
-     export LD_LIBRARY_PATH=""
 #      export PATH=""
 fi
+export LD_LIBRARY_PATH=""
+
 #
 # DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
