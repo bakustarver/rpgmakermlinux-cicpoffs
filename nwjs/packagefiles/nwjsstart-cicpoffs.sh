@@ -5,7 +5,7 @@
 
 # curdesktop=$(echo "$XDG_CURRENT_DESKTOP")
 # defp="$HOME/deskappbin/nwjs/nwjs/"
-version='1.1.0'
+version='1.1.1'
 
 mainfd="$HOME/desktopapps"
 export nwjsfm="$mainfd/nwjs/nwjs"
@@ -366,6 +366,9 @@ versiongodot=$(echo "$strgodotexe" | grep -B 1 "User-Agent:" | grep "[0-9]\.[0-9
 # echo "exe $exenpath"
 godotold=true
 fi
+if [ -z "$versiongodot" ]; then
+versiongodot=$(echo "$strgodotexe" | grep '[0-9]\.[0-9]\.[0-9]\.stable\.' )
+fi
 # echo "$exen"
 # echo "cc $versiongodot"
 
@@ -374,6 +377,20 @@ n1godot=$(echo "$versiongodot" | sed -e 's@\.[a-Z].*@@g')
 n2godot=$(echo "$versiongodot" | sed -e 's@.*\.@@g')
 garch=$(echo "$arch" | sed -e 's@86_64@86_64@g' -e 's@i686@x86_32@g' -e 's@aarch64@arm64@g' -e 's@armv7l@arm32@g')
 versinid="_linux.$garch.zip"
+if [ "$n2godot" =  "custom_build" ]; then
+$yadp --image="dialog-question" \
+  --title "Godot SDK Downloader: $line" \
+  --text "It seems that this version of the Godot game has the own custom compilation\nand there may be problems with it!\nWould you like to download the standard SDK for this game?" \
+  --button="Yes:0" \
+  --button="Exit:1"
+retgodotcustom=$?
+if [[ $retgodotcustom -eq 0 ]]; then
+customsdk=true;
+n2godot="stable"
+elif [[ $retgodotcustom -eq 1 ]]; then
+exit;
+fi
+fi
 
 # https://downloads.tuxfamily.org/godotengine/3.5.2/
 if [ "$godotold" = "true"  ]; then
@@ -440,7 +457,9 @@ if echo "$allstrings" | grep -m 1 -q "\!CreatePipe(\&pipe\[0\]" && echo "$allstr
 # "$pckextract" "$npath/$line"
 linenoexe=$(echo "$line.pck" | sed "s@\.exe@@g")
 # mv "$npath/$line.pck" "$npath/$linenoexe"
+if ! [ -f "$linenoexe" ]; then
 cp "$line" "$linenoexe"
+fi
 fi
 # !CreatePipe(&pipe[0]
 if ! [ -d "$npath/$line-extracted" ]; then
@@ -780,7 +799,7 @@ do
             fullupdatereinstall
             ;;
         --updatescripts)
-            disableCopperBld=true
+            updatescriptsgithub=true
             incompletefeaturefunc
             ;;
         --makeshortcut)
@@ -943,7 +962,7 @@ Options:
   --forceaarch <architecture>     Force the use of specified architecture (e.g., x86_64, i386, aarch64) (incomplete feature).
   --jpnlocale                     Use Japanese locale for certain games.
   --checkbetaupdates              Check for beta updates (incomplete feature).
-  --updatescripts                 Fast update scripts for the rpgmaker-linux (incomplete feature).
+  --updatescripts                 Quickly update only the scripts in this tool from the github (Warning: May be missing files if you updating)
   --fullupdate                    Perform a full update of the rpgmaker-linux.
   --sourcelinks                   Print the list of links to the project's source code, documentation, and donation options in the output.
   --usesdk                        Use the NW.js SDK version.
@@ -980,6 +999,26 @@ Examples:
     rpgmaker-linux --sourcelinks"
 fi
 
+updatescript() {
+link="$1"
+path="$2"
+basenfile=$(basename "$2")
+newupdate=$(wget -qO- "$1")
+if [ -n "$newupdate" ]; then
+echo "$newupdate" > "$path" ;
+chmod +x "$path"
+else
+echo "Can't update the steamwrapper"
+fi
+}
+
+if [ "$updatescriptsgithub" = "true" ]; then
+
+updatescript "https://raw.githubusercontent.com/bakustarver/rpgmakermlinux-cicpoffs/main/nwjs/packagefiles/rpgmaker-linux-steam-wrapper/rpgmaker-linux-cicpoffs-wrapper.sh" "$HOME/.steam/steam/compatibilitytools.d/rpgmaker-linux-steam-wrapper/rpgmaker-linux-cicpoffs-wrapper.sh"
+updatescript "https://raw.githubusercontent.com/bakustarver/rpgmakermlinux-cicpoffs/main/nwjs/packagefiles/nwjsstart-cicpoffs.sh" "$mainfd/nwjs/nwjs/packagefiles/nwjsstart-cicpoffs.sh"
+updatescript "https://raw.githubusercontent.com/bakustarver/rpgmakermlinux-cicpoffs/main/nwjs/dwnwjs.sh" "$mainfd/nwjs/nwjs/dwnwjs.sh"
+
+fi
 
 yaddata() {
 updatenwjsvar=$(echo "$@" | awk '{print $1}')
@@ -1021,6 +1060,7 @@ exit;
 fi
 yaddata "$guim"
 # echo "$guim"
+
 
 # exit;
 if [ "$fivehundredsaveslotspluginvar" = "TRUE" ]; then
