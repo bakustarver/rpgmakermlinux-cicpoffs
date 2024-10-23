@@ -65,9 +65,9 @@ rpgmaker-linux --gamepath /path/rpg-maker-game/ --printrpgmakerlibversions
 ```
 rpgmaker-linux --nwjsversion 0.40.0 --gamepath /path/rpg-maker-game/
 ```
-#### In certain games you may need the Japanese locale use:
+####  Sends an anonymous report to developer about game data, system information, engine for fixing bugs and errors :
 ```
-rpgmaker-linux --jpnlocale --gamepath /path/rpg-maker-game/
+rpgmaker-linux --bugreport
 ```
 #### Show donation links:
 ```
