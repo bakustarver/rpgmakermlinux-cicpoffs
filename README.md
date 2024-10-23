@@ -65,10 +65,6 @@ rpgmaker-linux --gamepath /path/rpg-maker-game/ --printrpgmakerlibversions
 ```
 rpgmaker-linux --nwjsversion 0.40.0 --gamepath /path/rpg-maker-game/
 ```
-####  Disable the GUI menu in steam :
-```
-rpgmaker-linux --steamskipgui true
-```
 ####  Sends an anonymous report to developer about game data, system information, engine for fixing bugs and errors :
 ```
 rpgmaker-linux --bugreport
@@ -76,6 +72,10 @@ rpgmaker-linux --bugreport
 #### Show donation links:
 ```
 rpgmaker-linux --sourcelinks
+```
+####  Disable the GUI menu in steam :
+```
+rpgmaker-linux --steamskipgui true
 ```
 
 ### Interesting projects
