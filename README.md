@@ -27,6 +27,13 @@ After installing the program you can run the game using an application - "RPG Ma
 wget -qO- "https://raw.githubusercontent.com/bakustarver/rpgmakermlinux-cicpoffs/main/installgithub.sh" | bash
 ```
 
+
+## Custom path
+If you want to change the default installation location, use the following command before installation
+```
+echo "$HOME/somedirpath/" > "$HOME/.config/defrpgmakerlinuxpath.txt"
+```
+
 ## Uninstall
 ```
 wget -qO- "https://raw.githubusercontent.com/bakustarver/rpgmakermlinux-cicpoffs/main/uninstallgithub.sh" | bash
