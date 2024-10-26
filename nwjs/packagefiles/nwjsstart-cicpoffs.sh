@@ -1,17 +1,12 @@
 #!/bin/bash
 
 
-# kdialog --msgbox "$CPATH"
-
-# curdesktop=$(echo "$XDG_CURRENT_DESKTOP")
-# defp="$HOME/deskappbin/nwjs/nwjs/"
-version='1.1.1'
-
-mainfd="$HOME/desktopapps"
+version='1.1.3'
+export mainfd="$HOME/desktopapps"
 export nwjsfm="$mainfd/nwjs/nwjs"
 export LD_LIBRARY_PATH="$mainfd/nwjs/nwjs/packagefiles/:$LD_LIBRARY_PATH"
 
-yadp="$nwjsfm/packagefiles/yad"
+export yadp="$nwjsfm/packagefiles/yad"
 tyranounpacker="$nwjsfm/packagefiles/tyranodataextract"
 electronfd="$mainfd/electron-tyrano"
 mkxpzp="$mainfd/mkxp-z"
@@ -22,13 +17,11 @@ defp="$nwjsfm/nwjs"
 export defpn="$nwjsfm"
 export DWNWJSNODEBUG=true
 
-nwjslist=$(ls -p "$defp" | grep /)
+nwjslist=$(ls -p "$defp" | grep -v "www" | grep /)
 
-if [ -z "$nwjslist" ]; then
-echo "the nwjs is not installed, please use $ rpgmaker-linux --installnwjs"
-fi
 nwjsonlylist=$(echo "$nwjslist" | grep -v "sdk")
 nwjssdkonlylist=$(echo "$nwjslist" | grep "sdk")
+
 if echo "$nwjslist" | grep -q "\-sdk"; then
 # sdkinstalled=true
 latestinstallednwjsfd=$(echo "$nwjssdkonlylist" | sort -V | uniq | tail -n 1)
@@ -37,7 +30,7 @@ else
 latestinstallednwjsfd=$(echo "$nwjslist" | tail -n 1)
 fi
 allversionsnwjs=$(echo "$nwjslist" | sed -e 's@sdk-@@g' -e 's@nwjs-@@g' -e 's@-linux-.*@@g' | sort -V | uniq | tac)
-
+#
 # echo "$latestinstallednwjsfd"
 # exit
 githubscriptwget=$(timeout 7s wget -qO- "https://raw.githubusercontent.com/bakustarver/rpgmakermlinux-cicpoffs/main/installgithub.sh" )
@@ -70,6 +63,9 @@ fi
 checkthebinaryarch() {
 if ! [ -f "$1" ]; then
 echo "Missing file $1"
+# echo "Use
+# $ rpgmaker-linux "
+exit;
 fi
 
 if ! file "$1" | grep -q "$archcheckmessage" ; then
@@ -257,6 +253,11 @@ echo For this release, i686 not supported
 fi
 # mkxpzarch=$(echo "$arch" )
 
+if [ -n "$REINSTALLMKXPZ" ]; then
+echo Reinstalling mkxpz
+rm -rf "$mkxpzp"
+fi
+
 link="https://github.com/bakustarver/rpgmakermlinux-cicpoffs/releases/download/libraries/mkxp-z.$arch.zip"
 wget -O /tmp/mkxp-z.zip "$link"
 unzip -d "$mkxpzp" /tmp/mkxp-z.zip
@@ -282,6 +283,7 @@ mkxpzdownload;
 fi
 
 }
+
 
 
 electron-tyrano-downloader() {
@@ -499,11 +501,14 @@ else
 export latestlocal=$(echo "$latestinstallednwjsfd" | sed -e 's@nwjs-@@g' -e 's@-linux.*@@g')
 "$nwjsfm/dwnwjs.sh"
 fi
+nwjslist=$(ls -p "$defp" | grep -v "www" | grep /)
+
 }
 
 nwjsversionfunc() {
 export skipdownloadifexist=true
 . "$nwjsfm/dwnwjs.sh" "$1"
+nwjsversion=$1
 # nwjsversion=(echo "$nwjsversion"
 }
 
@@ -531,6 +536,10 @@ mkxpfound=true
 
 fi
 }
+
+
+
+
 
 pchange() {
 if echo "$1" | grep ".exe"; then
@@ -608,7 +617,12 @@ engine=mz
 elif [ -e "$npath/Game.ini" ] && [ -e "$npath/Game.exe" ]; then
 # mkxpfunc
 engine=mkxpz
-
+elif [ -e "$npath/package.nw" ]; then
+# mkxpfunc
+engine=construct-nwjs
+elif [ -e "$npath/nscript.dat" ]; then
+# mkxpfunc
+engine=nscripter
 elif [ -e "$npath/ffmpegsumo.dll" ] && [ -e "$npath/nw.pak" ] && [ -e "$npath/d3dcompiler_47.dll" ] && [ -e "$npath/nw.pak" ]; then
 tyranofuncv4
 elif [ -d "$npath/resources" ] && [ -d "$npath/locales" ] && [ -e "$npath/chrome_100_percent.pak" ] && [ -e "$npath/natives_blob.bin" ] && [ -e "$npath/chrome_200_percent.pak" ]; then
@@ -663,6 +677,12 @@ tyranofuncv5
 elif [ -e "./Game.ini" ] && [ -e "./Game.exe" ]; then
 # mkxpfunc
 engine=mkxpz
+elif [ -e "./package.nw" ]; then
+# mkxpfunc
+engine=construct-nwjs
+elif [ -e "./nscript.dat" ]; then
+# mkxpfunc
+engine=nscripter
 else
 npath="$PWD"
 checkpck=$(ls "$npath" | grep "\.pck")
@@ -785,12 +805,11 @@ do
         --chooselatestnwjs)
             latestnwjs=true
             ;;
-        --choosenwjsversion)
+        --nwjsversion)
             nwjsversionfunc "$2"
             ;;
-        --clearoldnwjs)
+        --deleteoldnwjs)
             clearoldnwjs=true
-            incompletefeaturefunc
             ;;
         --updatenwjs)
             updatenwjs
@@ -872,6 +891,9 @@ do
         --exportthegame)
             EXPORTTHEGAME=true
             ;;
+        --bugreport)
+            BUGREPORT=true
+            ;;
         --forceaarch)
             incompletefeaturefunc
             case "$arg2" in
@@ -909,6 +931,27 @@ armhf"
         --jpnlocale)
             export LANG="ja_JP.utf8"
             ;;
+        --reinstallmkxpz)
+            REINSTALLMKXPZ=true mkxpzdownload
+            ;;
+        --steamskipgui)
+            case "$arg2" in
+                true)
+                    echo " " > "$HOME/.config/steamskipgui.txt"
+                    echo "Gui is disabled now"
+                    info=true
+                    ;;
+                false)
+                    rm "$HOME/.config/steamskipgui.txt"
+                    echo "Gui is enabled now"
+                    info=true
+                    ;;
+                *)
+                    echo -e "Use --steamskipgui true\n--steamskipgui false"
+                    info=true
+                    ;;
+            esac
+            ;;
         --sourcelinks)
             sourcelinks
             info=true
@@ -920,7 +963,10 @@ armhf"
     shift
 done
 
-
+if [ -z "$nwjslist" ]; then
+echo "the nwjs is not installed, please use $ rpgmaker-linux --updatenwjs"
+exit;
+fi
 # --chooselatestnwjs --choosenwjsversion --nwjspath
 #latestnwjs=true $nwjsversion #NWJSPATH
 if [ "$latestnwjs" = "true" ] && [ -n "$nwjsversion" ] || [ "$latestnwjs" = "true" ] && [ -n "$NWJSPATH" ] || [ -n "$nwjsversion" ]  && [ -n "$NWJSPATH" ]; then
@@ -951,7 +997,7 @@ Options:
   --updatenwjs                    Update the NW.js to the latest version.
   --chooselatestnwjs              Choose the latest version of NW.js available on your PC.
   --nwjsversion <version>         Choose the version of NW.js you want to use.
-  --clearoldnwjs                  Clear old NW.js versions (incomplete feature).
+  --deleteoldnwjs                 Delete old NW.js versions.
   --unmount <true|false>          Option to disable mounting of the game folder.
   --gamepath <path>               Specify the path to the RPG Maker game.
   --useoriginalgamepackagejson    Use the original game package.json file.
@@ -970,7 +1016,11 @@ Options:
   --install500slotsplugin         Install the 500 slots plugin.
   --installtexthookerplugin       Install the text hooker plugin.
   --uninstalltexthookerplugin     Uninstall the text hooker plugin.
+  --reinstallmkxpz                Reinstall the mkxpz module.
+  --steamskipgui <true|false>     Disable gui in steam.
   --makeshortcut <type>           Create a shortcut for the game (type: local, desktop, menu, all).
+  --bugreport                     Sends an anonymous report to developer about game data, system information, engine for fixing bugs and errors.
+                                  You can describe in detail the issue or enhancement you would like to see.
   --exportthegame                 This option allows users to export their RPG Maker game into a distributable format. When this argument is used, the program will package the game
                                   files, including assets, scripts, and configurations, into a single folder or archive that can be easily shared or deployed.
                                   You can easily send the exported game to your friends who are using Linux, allowing them to enjoy the game without any additional setup.
@@ -991,9 +1041,6 @@ Examples:
 
   Choose the version of NW.js you want to use:
     rpgmaker-linux --nwjsversion 0.40.0 --gamepath /path/rpg-maker-game/
-
-  Use Japanese locale for certain games:
-    rpgmaker-linux --jpnlocale --gamepath /path/rpg-maker-game/
 
   Show donation links:
     rpgmaker-linux --sourcelinks"
@@ -1117,8 +1164,24 @@ fi
 
 }
 
+if [ "$clearoldnwjs" = "true" ]; then
+latestversion=$(echo "$allversionsnwjs" | head -n 1)
+while IFS= read -r version; do
 
+if ! [[ "${version}" =~ "${latestversion}" ]]; then
+# if ! echo "$version" | grep -q "$latestversion"; then
+   echo Deleting "$nwjsfm/nwjs/$version"
+rm -rf "$nwjsfm/nwjs/$version"
+# else
+# echo fff
+# echo "$version"
+fi
+done <<< "$nwjslist"
 
+#         echo "cc $item - $base"
+
+exit
+fi
 
 
 if [ "$GUIMENU" = "true" ]; then
@@ -1132,12 +1195,17 @@ elif  [ "$engine" = "mkxpz" ]; then
 echo mkxpz;
 mkxpzdialogoptions
 else
+if [ -n "$SteamEnv" ] && [ -f "$HOME/.config/steamskipgui.txt" ] ; then
+echo skipping gui
+else
 guirpgmakermfn
+fi
 fi
 fi
 # exit;
 
-if [ "$printrpgmakerlibversions" = "true" ]; then
+
+debuggamelibs() {
 if [ "$found" = "true" ]; then
 
 if [ "$gamepath" = "true" ]; then
@@ -1157,27 +1225,56 @@ elif [ -f "$rpgmzcorefilepath" ]; then
 rpgcorefilepath="$rpgmzcorefilepath"
 fi
 
-
+if [ -f "$nwdllpath" ]; then
 nwdlltext=$(strings "$nwdllpath")
-rpgcoretext=$(cat "$rpgcorefilepath")
-nodeversion=$(strings "$nodedllpath" | grep '/win-.*/node.lib' | sed -e 's@https://nodejs.org/download/release/@@g' -e 's@/win-.*/node.lib@@g')
 nwjsversiondll=$(echo "$nwdlltext" | sed -n "s/process.versions\['nw'\] = '//p" | sed -e "s@'.*@@g")
 chromiumversion=$(echo "$nwdlltext" | grep -B 4 '::SHGetSpecialFolderPathW' | grep '\.[0-9]\.[0-9]' | sed -e 's@.*\.\$@@g')
+fi
+rpgcoretext=$(cat "$rpgcorefilepath")
+if [ -f "$nodedllpath" ]; then
+nodeversion=$(strings "$nodedllpath" | grep '/win-.*/node.lib' | sed -e 's@https://nodejs.org/download/release/@@g' -e 's@/win-.*/node.lib@@g')
+fi
+
 rpgmakername=$(echo -e "$rpgcoretext" | sed -n "s/Utils.RPGMAKER_NAME = .//p" | sed -e 's@.;@@g')
 rpgmakerversion=$(echo -e "$rpgcoretext" | sed -n 's/Utils.RPGMAKER_VERSION = .//p' | sed -e 's@.;@@g')
+if [ -n "$nwjsversiondll" ]; then
+echo NWJS version - $nwjsversiondll
+fi
+if [ -n "$chromiumversion" ]; then
+echo Chromium version - $chromiumversion
+fi
+
+if [ -n "$nodeversion" ]; then
+echo Node version - $nodeversion
+fi
+
+if [ -n "$nodeversion" ]; then
+echo Node version - $nodeversion
+fi
+
+if [ -n "$rpgmakername" ]; then
+echo RPG Maker Name - $rpgmakername
+fi
 
 
-echo "NWJS version - $nwjsversiondll
-Chromium version - $chromiumversion
-Node version - $nodeversion
-RPG Maker Name - $rpgmakername
-RPG Maker version - $rpgmakerversion
+if [ -n "$rpgmakerversion" ]; then
+echo RPG Maker version - $rpgmakerversion
+fi
 
+if [ -n "$nwjsversiondll" ] && [ -z "$skipffmpeginfo" ] ; then
+echo "
 ffmpeg prebuild link
 https://github.com/nwjs-ffmpeg-prebuilt/nwjs-ffmpeg-prebuilt/releases/tag/$nwjsversiondll"
+fi
+
 else
 echo "Can't find the game path"
 fi
+}
+
+
+if [ "$printrpgmakerlibversions" = "true" ]; then
+debuggamelibs
 fi
 
 
@@ -1212,16 +1309,19 @@ nwjstestpath="$NWJSPATH"
 echo "$NWJSPATH"
 else
 if [ -n "$nwjsversion" ]; then
-echo "$nwjslistd"
 searchpath=$(echo "$nwjslistd" | grep "$nwjsversion" )
 # nwjstestpath="$defp/nwjs/$nwjsversion"
 if [ -n "$searchpath" ]; then
+echo "$searchpath"
 nwjstestpath="$nwjsfm/nwjs/$searchpath"
 # kdialog --msgbox "$nwjstestpath"
 else
 echo no version
 fi
 else
+if [ -z "$nwjsf" ]; then
+nonwjs=true
+fi
 nwjstestpath="$defp/$nwjsf"
 fi
 fi
@@ -1231,7 +1331,32 @@ nwjstestpath=$(echo "$nwjstestpath" | sed -e 's@/$@@g')
 # echo "$nwjstestpath"
 
 
-if [ "$EXPORTTHEGAME" = "true" ]; then
+if [ "$BUGREPORT" = "true" ]; then
+export gamefdname=$(basename "$npath")
+export lsdatalink=$(ls "$npath" | wget --quiet -O- --post-data "$(cat)" https://paste.c-net.org/)
+if [ -n "$found" ]; then
+export debuggamelibsdata=$(debuggamelibs)
+export pluginsfilepastebin=$(wget --quiet -O- --post-file="$mountpath/js/plugins.js" 'https://paste.c-net.org/')
+export packagejson=$(wget --quiet -O- --post-file="$npath/package.json" 'https://paste.c-net.org/')
+export engine=rpgm
+elif [ "$engine" = "tyrano" ]; then
+export engine=tyrano
+elif [ "$engine" = "mkxpz" ]; then
+export engine=mkxpz
+ echo -e "mkxp is a project that seeks to provide a fully open source implementation of the Ruby Game Scripting System (RGSS) interface used in the popular game creation software RPG Maker XP, RPG Maker VX and RPG Maker VX Ace (trademark by Enterbrain, Inc.), with focus on Linux.\nThe goal is to be able to run games created with the above software natively without changing a single file.\n\nIt is licensed under the GNU General Public License v2+.\n\nShould I use mkxp\nmkxp primarily targets technically versed users that are comfortable with Ruby / RGSS, and ideally know how to compile the project themselves.\nThe reason for this is that for most games, due to Win32-API usage, mkxp is simply not a plug-and-play solution, but a building block with which a fully cross-platform version can be created in time.\n\nHow can I fix the problem with the game?\nYou can ask the members of the Discord group and send them the log.\nAlternatively, you can search for game patches on google with the tag mkxp.\nFor example “Your game name + mkxp patches”\n\nGame engine social media links:\nhttps://github.com/mkxp-z/mkxp-z\nhttps://discord.gg/A8xHE8P\nhttps://matrix.to/#/#rpgmaker:mapleshrine.eu" | yad --text-info --width=600 --height=480 --title "Information about the engine"
+elif [ "$engine" = "construct-nwjs" ]; then
+export engine=construct-nwjs
+fi
+if [ -n "$found" ] || [ -n "$engine"  ]; then
+# python "/home/pasha/Desktop/Паша/Scripts/python/hardware-info/Script2.py"
+"$nwjsfm/packagefiles/bugreporter"
+else
+echo "Cannot find any game"
+fi
+exit;
+fi
+
+if [ "$EXPORTTHEGAME" = "true" ] && [ "$found" = "true" ]; then
 defexportpath="$HOME/Your_exported_games"
 thegamebasename=$(basename "$npath" | sed -e "s@\$@-linux-$arch@g")
 theexpgamep="$defexportpath/$thegamebasename"
@@ -1315,6 +1440,8 @@ fi
 #Unmount folder
 
 checkandunmount() {
+
+
 if ! [ -d "$nwjstestpath/www" ]; then
 mkdir -p "$nwjstestpath/www"
 fi;
@@ -1342,7 +1469,7 @@ fi
 if [ -h "$nwjstestpath/www" ]; then
 rm "$nwjstestpath/www"
 fi
-if ! [ -d "$nwjstestpath/www" ]; then
+if ! [ -d "$nwjstestpath/www" ] && [ -z "$nonwjs" ]; then
 mkdir -p "$nwjstestpath/www"
 fi;
 
@@ -1399,10 +1526,7 @@ checkthebinaryarch "$cicpoffs"
 checkthebinaryarch "$nwjstestpath/nw"
 
 
-if [ -n "$notfound" ]; then
-echo "Can't find any game in $npath"
-exit 1
-fi
+
 
 if [ "$engine" = "tyrano" ]; then
 if [ "$usetyranoelectron" = "true" ]; then
@@ -1416,7 +1540,18 @@ fi
 elif [ "$engine" = "mkxpz" ]; then
 
 mkxpfunc
+elif [ "$engine" = "nscripter" ]; then
+"$nwjsfm/packagefiles/onsyuri/onsyuri" --root "$npath" --font "$nwjsfm/packagefiles/onsyuri/umeplus-gothic.ttf"
+elif [ "$engine" = "construct-nwjs" ]; then
 
+if [ -f "$nwjstestpath/package.nw" ]; then
+rm "$nwjstestpath/package.nw"
+fi
+if [ -f "$nwjstestpath/package.json" ]; then
+rm "$nwjstestpath/package.json"
+fi
+ln -s "$npath/package.nw" "$nwjstestpath"
+startnw
 elif [ "$found" = "true" ]; then
 # rmsymlinks
 mountwww
@@ -1436,3 +1571,7 @@ checkandunmount
 fi
 
 
+if [ -n "$notfound" ]; then
+echo "Can't find any game in $npath"
+exit 1
+fi
