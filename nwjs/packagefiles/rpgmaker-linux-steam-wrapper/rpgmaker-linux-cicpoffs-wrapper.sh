@@ -16,6 +16,10 @@ if [[ $2 == *"iscriptevaluator.exe"* ]]; then
   exit 0
 fi
 
+if [ -z "$SteamAppId" ]; then
+  echo "no steam app id"
+  exit 0
+fi
 export LC_ALL=""
 startset=$(echo "$@" | sed -e 's@waitforexitandrun @@g' -e 's@ --in-process-gpu@@g')
 export gamef=$(dirname "$startset")
