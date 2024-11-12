@@ -29,7 +29,7 @@ wget -qO- "https://raw.githubusercontent.com/bakustarver/rpgmakermlinux-cicpoffs
 
 
 ## Custom path
-If you want to change the default installation location, use the following command before installation
+If you want to change the default installation directory, use the following command before installation
 ```
 echo "$HOME/somedirpath/" > "$HOME/.config/defrpgmakerlinuxpath.txt"
 ```
