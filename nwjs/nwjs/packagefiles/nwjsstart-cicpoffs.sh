@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-version='1.1.2'
+version='1.1.4'
 export mainfd="$HOME/desktopapps"
 export nwjsfm="$mainfd/nwjs/nwjs"
 export LD_LIBRARY_PATH="$mainfd/nwjs/nwjs/packagefiles/:$LD_LIBRARY_PATH"
