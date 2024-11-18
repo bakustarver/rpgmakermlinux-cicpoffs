@@ -18,12 +18,10 @@ export defpn="$nwjsfm"
 export DWNWJSNODEBUG=true
 
 nwjslist=$(ls -p "$defp" | grep -v "www" | grep /)
-if [ -z "$nwjslist" ]; then
-echo "the nwjs is not installed, please use $ rpgmaker-linux --installnwjs"
-exit;
-fi
+
 nwjsonlylist=$(echo "$nwjslist" | grep -v "sdk")
 nwjssdkonlylist=$(echo "$nwjslist" | grep "sdk")
+
 if echo "$nwjslist" | grep -q "\-sdk"; then
 # sdkinstalled=true
 latestinstallednwjsfd=$(echo "$nwjssdkonlylist" | sort -V | uniq | tail -n 1)
@@ -32,7 +30,7 @@ else
 latestinstallednwjsfd=$(echo "$nwjslist" | tail -n 1)
 fi
 allversionsnwjs=$(echo "$nwjslist" | sed -e 's@sdk-@@g' -e 's@nwjs-@@g' -e 's@-linux-.*@@g' | sort -V | uniq | tac)
-
+#
 # echo "$latestinstallednwjsfd"
 # exit
 githubscriptwget=$(timeout 7s wget -qO- "https://raw.githubusercontent.com/bakustarver/rpgmakermlinux-cicpoffs/main/installgithub.sh" )
@@ -249,10 +247,7 @@ ln -fs "$npath/data" "$mainfd/nwjs/nwjs/packagefiles/tyranobuilder/tyranoeng"
 
 
 mkxpzdownload() {
-if [ "$arch" = "i686" ]; then
-echo For this release, i686 not supported
 
-fi
 # mkxpzarch=$(echo "$arch" )
 
 if [ -n "$REINSTALLMKXPZ" ]; then
@@ -263,7 +258,7 @@ fi
 link="https://github.com/bakustarver/rpgmakermlinux-cicpoffs/releases/download/libraries/mkxp-z.$arch.zip"
 wget -O /tmp/mkxp-z.zip "$link"
 unzip -d "$mkxpzp" /tmp/mkxp-z.zip
-sed -e "s@\"RGSS@\"$mkxpzp/RGSS@g" -i "$mkxpzp/mkxp.json"
+sed -e "s@\"RGSS@\"$mkxpzp/RGSS@g" -e "s@\"Kawariki-patches@\"$mkxpzp/Kawariki-patches@g" -i "$mkxpzp/mkxp.json"
 rm /tmp/mkxp-z.zip
 # else
 # echo For this release, supported x86_64 only
@@ -273,7 +268,7 @@ rm /tmp/mkxp-z.zip
 mkxpzdialog() {
 $yadp --image="dialog-question" \
   --title "Rpg Maker VX Ace / VX/ XP Launcher: $line" \
-  --text "Mkxp-z module is not installed\nWould you like to download it?\n+292 mb" \
+  --text "Mkxp-z module is not installed\nWould you like to download it?\n+390 mb" \
   --button="Yes:0" \
   --button="No:1" \
 retmkxpz=$?
@@ -503,11 +498,14 @@ else
 export latestlocal=$(echo "$latestinstallednwjsfd" | sed -e 's@nwjs-@@g' -e 's@-linux.*@@g')
 "$nwjsfm/dwnwjs.sh"
 fi
+nwjslist=$(ls -p "$defp" | grep -v "www" | grep /)
+
 }
 
 nwjsversionfunc() {
 export skipdownloadifexist=true
 . "$nwjsfm/dwnwjs.sh" "$1"
+nwjsversion=$1
 # nwjsversion=(echo "$nwjsversion"
 }
 
@@ -524,7 +522,7 @@ if [ -z "$mkxpfound" ]; then
 if ! [ -f $mkxpzp/mkxp-z.$arch ]; then
 mkxpzdialog
 fi
-
+npath=$(echo "$npath" | sed -e 's@\&@\\&@g')
 sed -e "s@.*.gameFolder.*@    \"gameFolder\": \"$npath\",@g" -i "$mkxpzp/mkxp.json"
 if [ "$mkxpopt" = "wine" ]; then
 wine "$mkxpzp/mkxp-z.exe"
@@ -594,7 +592,7 @@ fi
 checkgamefilesfd() {
 npath=$(echo "$1" | sed -e 's@rpgmakermp:///@@g')
 # echo "$npath"
-if echo "$npath" | grep ".exe"; then
+if echo "$npath" | grep -q ".exe"; then
 exenpath="$npath"
 npath=$(dirname "$npath" | sed -e "s@^'@@g");
 else
@@ -804,12 +802,11 @@ do
         --chooselatestnwjs)
             latestnwjs=true
             ;;
-        --choosenwjsversion)
+        --nwjsversion)
             nwjsversionfunc "$2"
             ;;
-        --clearoldnwjs)
+        --deleteoldnwjs)
             clearoldnwjs=true
-            incompletefeaturefunc
             ;;
         --updatenwjs)
             updatenwjs
@@ -963,6 +960,10 @@ armhf"
     shift
 done
 
+if [ -z "$nwjslist" ]; then
+echo "the nwjs is not installed, please use $ rpgmaker-linux --updatenwjs"
+exit;
+fi
 # --chooselatestnwjs --choosenwjsversion --nwjspath
 #latestnwjs=true $nwjsversion #NWJSPATH
 if [ "$latestnwjs" = "true" ] && [ -n "$nwjsversion" ] || [ "$latestnwjs" = "true" ] && [ -n "$NWJSPATH" ] || [ -n "$nwjsversion" ]  && [ -n "$NWJSPATH" ]; then
@@ -993,7 +994,7 @@ Options:
   --updatenwjs                    Update the NW.js to the latest version.
   --chooselatestnwjs              Choose the latest version of NW.js available on your PC.
   --nwjsversion <version>         Choose the version of NW.js you want to use.
-  --clearoldnwjs                  Clear old NW.js versions (incomplete feature).
+  --deleteoldnwjs                 Delete old NW.js versions.
   --unmount <true|false>          Option to disable mounting of the game folder.
   --gamepath <path>               Specify the path to the RPG Maker game.
   --useoriginalgamepackagejson    Use the original game package.json file.
@@ -1160,6 +1161,25 @@ fi
 
 }
 
+if [ "$clearoldnwjs" = "true" ]; then
+latestversion=$(echo "$allversionsnwjs" | head -n 1)
+while IFS= read -r version; do
+
+if ! [[ "${version}" =~ "${latestversion}" ]]; then
+# if ! echo "$version" | grep -q "$latestversion"; then
+   echo Deleting "$nwjsfm/nwjs/$version"
+rm -rf "$nwjsfm/nwjs/$version"
+# else
+# echo fff
+# echo "$version"
+fi
+done <<< "$nwjslist"
+
+#         echo "cc $item - $base"
+
+exit
+fi
+
 
 if [ "$GUIMENU" = "true" ]; then
 if [ "$engine" = "tyrano" ]; then
@@ -1286,16 +1306,19 @@ nwjstestpath="$NWJSPATH"
 echo "$NWJSPATH"
 else
 if [ -n "$nwjsversion" ]; then
-echo "$nwjslistd"
 searchpath=$(echo "$nwjslistd" | grep "$nwjsversion" )
 # nwjstestpath="$defp/nwjs/$nwjsversion"
 if [ -n "$searchpath" ]; then
+echo "$searchpath"
 nwjstestpath="$nwjsfm/nwjs/$searchpath"
 # kdialog --msgbox "$nwjstestpath"
 else
 echo no version
 fi
 else
+if [ -z "$nwjsf" ]; then
+nonwjs=true
+fi
 nwjstestpath="$defp/$nwjsf"
 fi
 fi
@@ -1307,16 +1330,17 @@ nwjstestpath=$(echo "$nwjstestpath" | sed -e 's@/$@@g')
 
 if [ "$BUGREPORT" = "true" ]; then
 export gamefdname=$(basename "$npath")
-# export lsdatalink=$(ls "$npath" | wget --quiet -O- --post-data "$(cat)" https://paste.c-net.org/)
+export lsdatalink=$(ls "$npath" | wget --quiet -O- --post-data "$(cat)" https://paste.c-net.org/)
 if [ -n "$found" ]; then
 export debuggamelibsdata=$(debuggamelibs)
-# export pluginsfilepastebin=$(wget --quiet -O- --post-file="$mountpath/js/plugins.js" 'https://paste.c-net.org/')
-# export packagejson=$(wget --quiet -O- --post-file="$npath/package.json" 'https://paste.c-net.org/')
+export pluginsfilepastebin=$(wget --quiet -O- --post-file="$mountpath/js/plugins.js" 'https://paste.c-net.org/')
+export packagejson=$(wget --quiet -O- --post-file="$npath/package.json" 'https://paste.c-net.org/')
 export engine=rpgm
 elif [ "$engine" = "tyrano" ]; then
 export engine=tyrano
 elif [ "$engine" = "mkxpz" ]; then
 export engine=mkxpz
+ echo -e "mkxp is a project that seeks to provide a fully open source implementation of the Ruby Game Scripting System (RGSS) interface used in the popular game creation software RPG Maker XP, RPG Maker VX and RPG Maker VX Ace (trademark by Enterbrain, Inc.), with focus on Linux.\nThe goal is to be able to run games created with the above software natively without changing a single file.\n\nIt is licensed under the GNU General Public License v2+.\n\nShould I use mkxp\nmkxp primarily targets technically versed users that are comfortable with Ruby / RGSS, and ideally know how to compile the project themselves.\nThe reason for this is that for most games, due to Win32-API usage, mkxp is simply not a plug-and-play solution, but a building block with which a fully cross-platform version can be created in time.\n\nHow can I fix the problem with the game?\nYou can ask the members of the Discord group and send them the log.\nAlternatively, you can search for game patches on google with the tag mkxp.\nFor example “Your game name + mkxp patches”\n\nGame engine social media links:\nhttps://github.com/mkxp-z/mkxp-z\nhttps://discord.gg/A8xHE8P\nhttps://matrix.to/#/#rpgmaker:mapleshrine.eu\nhttps://github.com/bakustarver/rpgmakermlinux-cicpoffs/issues" | "$yadp" --text-info --width=600 --height=480 --title "Information about the engine"
 elif [ "$engine" = "construct-nwjs" ]; then
 export engine=construct-nwjs
 fi
@@ -1414,6 +1438,7 @@ fi
 
 checkandunmount() {
 
+
 if ! [ -d "$nwjstestpath/www" ]; then
 mkdir -p "$nwjstestpath/www"
 fi;
@@ -1441,7 +1466,7 @@ fi
 if [ -h "$nwjstestpath/www" ]; then
 rm "$nwjstestpath/www"
 fi
-if ! [ -d "$nwjstestpath/www" ]; then
+if ! [ -d "$nwjstestpath/www" ] && [ -z "$nonwjs" ]; then
 mkdir -p "$nwjstestpath/www"
 fi;
 
@@ -1547,3 +1572,4 @@ if [ -n "$notfound" ]; then
 echo "Can't find any game in $npath"
 exit 1
 fi
+# sleep 6666
