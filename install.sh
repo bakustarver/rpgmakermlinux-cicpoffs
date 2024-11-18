@@ -1,7 +1,7 @@
 #!/bin/bash
 
 installpath=$(dirname "$0")
-version='1.1.0'
+version='1.1.4'
 if ! [ -d "$installpath/nwjs" ]; then
 echo "Can't find nwjs folder"
 exit 1;
@@ -124,6 +124,12 @@ update-desktop-database -q ~/.local/share/applications
 xdg-mime default nwjsoptions.desktop x-scheme-handler/rpgmakermp
 echo "Installation Done"
 
+
+if [ ! -f "$HOME/.profile" ]; then
+if [ ! -f "$HOME/.bash_profile" ] || ! cat "$HOME/.bash_profile" | grep -q ".local/bin"; then
+echo 'if [ -d "$HOME/.local/bin" ]; then export PATH="$PATH:$HOME/.local/bin" ; fi' >> ~/.bash_profile
+fi
+fi
 
 
 if [ -d "$HOME/.steam/" ]; then
