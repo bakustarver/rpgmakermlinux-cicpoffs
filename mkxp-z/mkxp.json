@@ -1,0 +1,529 @@
+{
+    // Lines starting with '//' are comments.
+    //
+    // About filesystem paths specified in this config:
+    // to the directory containing the mkxp executable
+    // (the default behavior), or relative to the current
+    // working directory (when compiled with
+    // -DWORKDIR_CURRENT). All other paths are resolved
+    "gameFolder": "ggg",
+    // encrypted archives. Since this is JSON, any
+    // backslashes in paths need to be escaped (i.e. a
+    // single backslash becomes a double backslash). If
+    // that's too much hassle, you can use a single forward
+    // slash instead (even on Windows).
+
+    // Some influential environment variables, set them to either "1" or "0":
+    // "MKXPZ_WINDOWS_CONSOLE"
+    //     - Enables/disables the extra console window on Windows. It appears by
+    //       default whenever mkxp-z is started in debug mode.
+    // "MKXPZ_MACOS_METAL"
+    //     - Setting this will influence the rendering backend used.
+    //       Probably not a good idea to mess with it unless you have some kind of issue.
+    //       OpenGL is default on x86, and Metal is the default on Apple Silicon.
+    //       This takes priority over the config option if it's set.
+    // "MKXPZ_FOLDER_SELECT"
+    //     - Allows the manual selection of the game's folder at startup.
+    //       Only works on macOS at the moment.
+    // "MTL_HUD_ENABLED"
+    //     - On macOS 13 (Ventura) and over, provided the Metal backend is used,
+    //       this will enable a full performance HUD containing more details than
+    //       the built-in framerate display.
+
+
+    // Specify the RGSS version to run under.
+    // Possible values are 0, 1, 2, 3. If set to 0,
+    // mkxp will try to guess the required version
+    // If this fails, the version defaults to 1.
+    // (default: 0)
+    //
+    // "rgssVersion": 1,
+
+
+    // Continuously display average FPS in window title.
+    // This can always be toggled with F2 at runtime.
+    // (default: disabled)
+    //
+    // "displayFPS": false,
+
+
+    // Continuously print average FPS to console.
+    // This setting does not affect the window title
+    // FPS display toggled via F2
+    // (default: disabled)
+    //
+    // "printFPS": false,
+
+
+    // Game window is resizable
+    // (default: enabled)
+    //
+    // "winResizable": true,
+
+
+    // Start game in fullscreen (this can
+    // always be toggled with Alt-Enter at runtime)
+    // (default: disabled)
+    //
+    // "fullscreen": false,
+
+
+    // Preserve game screen aspect ratio,
+    // as opposed to stretch-to-fill
+    // (default: enabled)
+    //
+    // "fixedAspectRatio": true,
+
+
+    // Apply smooth interpolation when game screen
+    // is upscaled
+    // 0: Nearest-Neighbor
+    // 1: Bilinear
+    // 2: Bicubic
+    // 3: Lanczos3
+    // 4: xBRZ
+    // (default: 0)
+    //
+    // "smoothScaling": 0,
+
+
+    // Apply smooth interpolation when game screen
+    // is downscaled (same values as smoothScaling)
+    // (default: 0)
+    //
+    // "smoothScalingDown": 0,
+
+
+    // Apply smooth interpolation when bitmaps
+    // are upscaled (same values as smoothScaling)
+    // (default: 0)
+    //
+    // "bitmapSmoothScaling": 0,
+
+
+    // Apply smooth interpolation when bitmaps
+    // are downscaled (same values as smoothScaling)
+    // (default: 0)
+    //
+    // "bitmapSmoothScalingDown": 0,
+
+
+    // Apply mipmap interpolation when game screen
+    // or bitmaps are downscaled (requires
+    // "smoothScalingDown": 1 or "bitmapSmoothScalingDown": 1)
+    // (default: false)
+    //
+    // "smoothScalingMipmaps": false,
+
+
+    // Sharpness when using Bicubic scaling.
+    // A good starting range is 0 to 100,
+    // but you may wish to go outside that range in either direction.
+    // (default: 100)
+    //
+    // "bicubicSharpness": 100,
+
+
+    // Scaling factor for xBRZ interpolation
+    // (set to at least the ratio of your window size
+    // to the game's native resolution)
+    // (default: 1.0)
+    //
+    // "xbrzScalingFactor": 4.0,
+
+
+    // Replace the game's Bitmap files with external high-res files
+    // provided in the "Hires" directory.
+    // (You'll also need to set the below Scaling Factors.)
+    // (default: disabled)
+    //
+    // "enableHires": false,
+
+
+    // Scaling factor for textures (e.g. Bitmaps)
+    // (higher values will look better if you use high-res textures)
+    // (default: 1.0)
+    //
+    // "textureScalingFactor": 4.0,
+
+
+    // Scaling factor for screen framebuffer
+    // (higher values will look better if you use high-res textures)
+    // (default: 1.0)
+    //
+    // "framebufferScalingFactor": 4.0,
+
+
+    // Scaling factor for tileset atlas
+    // (higher values will look better if you use high-res textures)
+    // (default: 1.0)
+    //
+    // "atlasScalingFactor": 4.0,
+
+
+    // Sync screen redraws to the monitor refresh rate
+    // (default: disabled)
+    //
+    // "vsync": false,
+
+
+    // Specify the window width on startup. If set to 0,
+    // it will default to the default resolution width
+    // specific to the RGSS version (640 in RGSS1, 544
+    // in RGSS2 or higher).
+    // (default: 0)
+    //
+    // "defScreenW": 640,
+
+
+    // Specify the window height on startup. If set to 0,
+    // it will default to the default resolution height
+    // specific to the RGSS version (480 in RGSS1, 416
+    // in RGSS2 or higher).
+    // (default: 0)
+    //
+    // "defScreenH": 480,
+
+
+    // Override the game window title
+    // (default: none)
+    //
+    // "windowTitle": "Custom Title",
+
+
+    // Enforce a static frame rate
+    // (0 = disabled)
+    //
+    // "fixedFramerate": 0,
+
+
+    // Skip (don't draw) frames when behind.
+    // Can be changed at runtime, but this is the
+    // default value when the game starts.
+    // (default: disabled)
+    //
+    // "frameSkip": false,
+
+
+    // Use a fixed framerate that is approx. equal to the
+    // native screen refresh rate. This is different from
+    // "fixedFramerate" because the actual frame rate is
+    // reported back to the game, ensuring correct timers.
+    // If the screen refresh rate cannot be determined,
+    // this option is force-disabled.
+    // This option may be force-disabled at build time.
+    // (default: disabled)
+    //
+    // "syncToRefreshrate": false,
+
+
+    // A list of fonts to render without alpha blending.
+    // (default: none)
+    //
+    // "solidFonts": [
+    //     "Arial",
+    //     "Times New Roman",
+    // ],
+
+
+    // Prefer the use of Metal over OpenGL on macOS.
+    // This defaults to false under Intel machines,
+    // and true under ARM/Apple Silicon ones (which
+    // merely emulate OpenGL anyway)
+    //
+    // Try changing this if you have graphics problems.
+    // Metal is far better, but ANGLE may not initialize correctly
+    // on some Intel machines.
+    //
+    // On Apple Silicon it's probably better to not touch it.
+    // Emulated OpenGL is buggy, and it will also break things like
+    // the Steam overlay.
+    // (default: true if Apple Silicon, false if Intel)
+    //
+    // "preferMetalRenderer": true,
+    
+    
+    // Work around buggy graphics drivers which don't
+    // properly synchronize texture access, most
+    // apparent when text doesn't show up or the map
+    // tileset doesn't render at all
+    // (default: disabled)
+    //
+    // "subImageFix": false,
+
+
+    // Enable framebuffer blitting if the driver is
+    // capable of it. Some drivers carry buggy
+    // implementations of this functionality, so
+    // disabling it can be used as a workaround.
+    // Does nothing on macOS. Force-disabled when
+    // smoothScaling or smoothScalingDown isn't
+    // Nearest-Neighbor or Bilinear.
+    // (default: disabled)
+    //
+    // "enableBlitting": false,
+
+
+    // Limit the maximum size (width, height) of
+    // most textures mkxp will create (exceptions are
+    // rendering backbuffers and similar).
+    // If set to 0, the hardware maximum is used.
+    // This is useful for recording traces that can
+    // be played back on machines with lower specs.
+    // (default: 0)
+    //
+    // "maxTextureSize": 0,
+
+    // Scale up the game screen by an integer amount,
+    // as large as the current window size allows, before
+    // doing any last additional scalings to fill part or
+    // all of the remaining window space (or none at all
+    // if lastMileScaling is disabled).
+    // If fixedAspectRatio is disabled, the integer scale
+    // factors in horizontal and vertical direction can differ
+    // depending on how much space is available, otherwise
+    // they are forced to the smaller of the two.
+    // (default: disabled)
+    //
+    // "integerScalingActive": false,
+
+
+    // When integer scaling is enabled, this option controls
+    // whether the scaled game screen is further scaled
+    // (with linear interpolation when smoothScaling is enabled)
+    // to fill the rest of the game window.
+    // Note that this option still respects fixedAspectRatio.
+    // (default: enabled)
+    //
+    // "integerScalingLastMile": true,
+    
+    
+    // Set the base path of the game to '/path/to/game'
+    // (default: executable directory)
+    //
+
+
+    // Use either right or left Alt + Enter to toggle
+    // fullscreen
+    // (default: disabled)
+    //
+    // "anyAltToggleFS": false,
+
+
+    // Enable F12 game reset
+    // (default: enabled)
+    //
+    // "enableReset": true,
+    
+    // Enable F1/keybinding menu
+    // (default: enabled)
+    //
+    // "enableSettings": true,
+
+
+    // Allow symlinks for game assets to be followed
+    // (default: disabled)
+    //
+    // "allowSymlinks": false,
+
+
+    // Organisation / company and application / game
+    // name to build the directory path where mkxp
+    // will store game specific data (eg. key bindings).
+    // If not specified, mkxp-z will use a folder based
+    // on the name of the game, if possible, defaulting
+    // to "." for Org and "mkxp-z" for App otherwise.
+    // (default: none)
+    //
+    // "dataPathOrg": "mycompany",
+    // "dataPathApp": "mygame",
+
+
+    // Set the game window icon to 'path/to/icon.png'
+    // Only functions on Linux.
+    // (default: none)
+    //
+    // "iconPath": "/path/to/icon.png",
+
+
+    // Instead of playing an RPG Maker game,
+    // execute a single plain text script instead
+    // (default: none)
+    //
+    // "customScript": "/path/to/script.rb",
+
+
+    // Define raw scripts (e.g. compatibility wrappers)
+    // to be executed before the actual Scripts.rxdata
+    // execution starts
+    // (default: none)
+    //
+    // "preloadScript": [
+    //     "scripts/preload/ruby_classic_wrap.rb",
+    //     "scripts/preload/mkxp_wrap.rb",
+    //     "scripts/preload/win32_wrap.rb",
+    // ],
+    "preloadScript": [
+    "Kawariki-patches/preload.rb",
+    ],
+
+
+    // Index all accesible assets via their lower case path
+    // (emulates windows case insensitivity)
+    // (default: enabled)
+    //
+    // "pathCache": true,
+
+    // Add 'rtp1', 'rtp2.zip' and 'game.rgssad' to the asset search path
+    // (multiple allowed). You can use folders, RGSS archives, and any archive
+    // formats supported by PhysicsFS; see the compatibility list at:
+    // https://www.icculus.org/physfs/docs/html/
+    // (default: none)
+    //
+    "RTP": [
+    "RGSS3/RPGVXAce",
+    "RGSS2/RPGVX",
+    "RGSS/Standard"],
+
+    // Similar to the RTP option, except items are loaded before
+    // the game archive and folder, for incremental game updates
+    // or modding.
+    // (default: none)
+    //
+    // "patches": [
+    //     "/path/to/patch1.zip",
+    //     "/path/to/patch2",
+    // ],
+
+
+    // Use the script's name as filename in warnings and error messages
+    // (default: enabled)
+    //
+    // "useScriptNames": true,
+
+
+    // Font substitutions allow drop-in replacements of fonts
+    // to be used without changing the RGSS scripts,
+    // eg. providing 'Open Sans' when the game thinkgs it's
+    // using 'Arial'. Font family to be substituted and
+    // replacement family are separated by one sole '>'.
+    // Be careful not to include any spaces.
+    // This is not connected to the built-in font, which is
+    // always used when a non-existing font family is
+    // requested by RGSS.
+    // (default: none)
+    //
+    // "fontSub": [
+    //     "Arial>Open Sans",
+    //     "Times New Roman>Liberation Serif",
+    // ],
+
+
+    // Because mkxp is usually distributed as a stand alone
+    // build, no predefined load paths are initialized
+    // ($:, $LOAD_PATH) in the MRI backend. With this option,
+    // they can be specified manually (eg. when using a system
+    // libruby.so). It is however recommended to statically
+    // link all required gems into libruby.so.
+    // (default: none)
+    //
+    // "rubyLoadpath": [
+    //     "/usr/lib64/ruby/",
+    //     "/usr/local/share/ruby/site_ruby",
+    // ],
+
+    // Determines whether MJIT is enabled. This probably
+    // won't work unless you also have the header file
+    // that it needs. Only works with Ruby 2.6 or higher.
+    // This Ruby feature is experimental.
+    // (default: false)
+    //
+    // "JITEnable": false,
+    
+    // Determines what level of verbosity to use when
+    // logging MJIT events. Starts at 0, which is next
+    // to nothing. Set it higher to see more.
+    // (default: 0)
+    //
+    // "JITVerboseLevel": 0,
+    
+    // Determines how many compiled methods that Ruby
+    // will keep in its MJIT cache.
+    // (default: 100)
+    //
+    // "JITMaxCache": 100,
+    
+    // Determines how many times a function has to be
+    // called before it is compiled by MJIT.
+    // (default: 10000)
+    //
+    // "JITMinCalls": 10000,
+
+    // Determines whether YJIT is enabled.
+    // Only works with Ruby 3.1 or higher.
+    // This Ruby feature is experimental.
+    // (default: false)
+    //
+    // "YJITEnable": false,
+
+    // SoundFont to use for midi playback (via fluidsynth)
+    // (default: none)
+    //
+    // "midiSoundFont": "Audio/BGM/GMGSx.sf2",
+
+
+    // Activate "chorus" effect for midi playback
+    //
+    // "midiChorus": false,
+
+
+    // Activate "reverb" effect for midi playback
+    //
+    // "midiReverb": false,
+
+
+    // Number of OpenAL sources to allocate for SE playback.
+    // If there are a lot of sounds playing at the same time
+    // and audibly cutting each other off, try increasing
+    // this number. Maximum: 64.
+    //
+    // "SESourceCount": 6,
+    
+    // Number of streams to open for BGM tracks. If the game
+    // needs multitrack audio, this should be set to as many
+    // available tracks as the game needs. Maximum: 16.
+    //
+    // "BGMTrackCount": 1,
+
+
+    // The Windows game executable name minus ".exe". By default
+    // this is "Game", but some developers manually rename it.
+    // mkxp needs this name because both the .ini (game
+    // configuration) and .rgssad (encrypted data archive) must
+    // carry the same name minus their extension, and we cannot
+    // guess the executable's name.
+    // You could just as well rename them both to "Game.ini" and
+    // "Game.rgssad", but specifying the executable name here
+    // is a tiny bit less intrusive.
+    //
+    // "execName": "Game",
+    
+    // You can define alternate terminology for the different
+    // inputs recognized by RPG Maker. A, B, C, X, Y, Z, L, and R
+    // can all be set using this dictionary, and will be displayed
+    // on the F1 menu. This is only a cosmetic effect, so it will
+    // have no effect on the game's scripts.
+    //
+    // "bindingNames": {
+    //  "c": "Confirm",
+    //  "b": "Cancel",
+    //  "x": ...,
+    // },
+
+
+    // Dump tile atlas (for debugging purposes)
+    // (default: false)
+    //
+    // "dumpAtlas": false,
+
+}
