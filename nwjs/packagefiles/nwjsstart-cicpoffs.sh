@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-version='1.1.3'
+version='1.1.4'
 export mainfd="$HOME/desktopapps"
 export nwjsfm="$mainfd/nwjs/nwjs"
 export LD_LIBRARY_PATH="$mainfd/nwjs/nwjs/packagefiles/:$LD_LIBRARY_PATH"
@@ -247,10 +247,7 @@ ln -fs "$npath/data" "$mainfd/nwjs/nwjs/packagefiles/tyranobuilder/tyranoeng"
 
 
 mkxpzdownload() {
-if [ "$arch" = "i686" ]; then
-echo For this release, i686 not supported
 
-fi
 # mkxpzarch=$(echo "$arch" )
 
 if [ -n "$REINSTALLMKXPZ" ]; then
@@ -261,7 +258,7 @@ fi
 link="https://github.com/bakustarver/rpgmakermlinux-cicpoffs/releases/download/libraries/mkxp-z.$arch.zip"
 wget -O /tmp/mkxp-z.zip "$link"
 unzip -d "$mkxpzp" /tmp/mkxp-z.zip
-sed -e "s@\"RGSS@\"$mkxpzp/RGSS@g" -i "$mkxpzp/mkxp.json"
+sed -e "s@\"RGSS@\"$mkxpzp/RGSS@g" -e "s@\"Kawariki-patches@\"$mkxpzp/Kawariki-patches@g" -i "$mkxpzp/mkxp.json"
 rm /tmp/mkxp-z.zip
 # else
 # echo For this release, supported x86_64 only
@@ -271,7 +268,7 @@ rm /tmp/mkxp-z.zip
 mkxpzdialog() {
 $yadp --image="dialog-question" \
   --title "Rpg Maker VX Ace / VX/ XP Launcher: $line" \
-  --text "Mkxp-z module is not installed\nWould you like to download it?\n+292 mb" \
+  --text "Mkxp-z module is not installed\nWould you like to download it?\n+390 mb" \
   --button="Yes:0" \
   --button="No:1" \
 retmkxpz=$?
@@ -525,7 +522,7 @@ if [ -z "$mkxpfound" ]; then
 if ! [ -f $mkxpzp/mkxp-z.$arch ]; then
 mkxpzdialog
 fi
-
+npath=$(echo "$npath" | sed -e 's@\&@\\&@g')
 sed -e "s@.*.gameFolder.*@    \"gameFolder\": \"$npath\",@g" -i "$mkxpzp/mkxp.json"
 if [ "$mkxpopt" = "wine" ]; then
 wine "$mkxpzp/mkxp-z.exe"
@@ -595,7 +592,7 @@ fi
 checkgamefilesfd() {
 npath=$(echo "$1" | sed -e 's@rpgmakermp:///@@g')
 # echo "$npath"
-if echo "$npath" | grep ".exe"; then
+if echo "$npath" | grep -q ".exe"; then
 exenpath="$npath"
 npath=$(dirname "$npath" | sed -e "s@^'@@g");
 else
@@ -1343,12 +1340,11 @@ elif [ "$engine" = "tyrano" ]; then
 export engine=tyrano
 elif [ "$engine" = "mkxpz" ]; then
 export engine=mkxpz
- echo -e "mkxp is a project that seeks to provide a fully open source implementation of the Ruby Game Scripting System (RGSS) interface used in the popular game creation software RPG Maker XP, RPG Maker VX and RPG Maker VX Ace (trademark by Enterbrain, Inc.), with focus on Linux.\nThe goal is to be able to run games created with the above software natively without changing a single file.\n\nIt is licensed under the GNU General Public License v2+.\n\nShould I use mkxp\nmkxp primarily targets technically versed users that are comfortable with Ruby / RGSS, and ideally know how to compile the project themselves.\nThe reason for this is that for most games, due to Win32-API usage, mkxp is simply not a plug-and-play solution, but a building block with which a fully cross-platform version can be created in time.\n\nHow can I fix the problem with the game?\nYou can ask the members of the Discord group and send them the log.\nAlternatively, you can search for game patches on google with the tag mkxp.\nFor example “Your game name + mkxp patches”\n\nGame engine social media links:\nhttps://github.com/mkxp-z/mkxp-z\nhttps://discord.gg/A8xHE8P\nhttps://matrix.to/#/#rpgmaker:mapleshrine.eu" | yad --text-info --width=600 --height=480 --title "Information about the engine"
+ echo -e "mkxp is a project that seeks to provide a fully open source implementation of the Ruby Game Scripting System (RGSS) interface used in the popular game creation software RPG Maker XP, RPG Maker VX and RPG Maker VX Ace (trademark by Enterbrain, Inc.), with focus on Linux.\nThe goal is to be able to run games created with the above software natively without changing a single file.\n\nIt is licensed under the GNU General Public License v2+.\n\nShould I use mkxp\nmkxp primarily targets technically versed users that are comfortable with Ruby / RGSS, and ideally know how to compile the project themselves.\nThe reason for this is that for most games, due to Win32-API usage, mkxp is simply not a plug-and-play solution, but a building block with which a fully cross-platform version can be created in time.\n\nHow can I fix the problem with the game?\nYou can ask the members of the Discord group and send them the log.\nAlternatively, you can search for game patches on google with the tag mkxp.\nFor example “Your game name + mkxp patches”\n\nGame engine social media links:\nhttps://github.com/mkxp-z/mkxp-z\nhttps://discord.gg/A8xHE8P\nhttps://matrix.to/#/#rpgmaker:mapleshrine.eu\nhttps://github.com/bakustarver/rpgmakermlinux-cicpoffs/issues" | "$yadp" --text-info --width=600 --height=480 --title "Information about the engine"
 elif [ "$engine" = "construct-nwjs" ]; then
 export engine=construct-nwjs
 fi
 if [ -n "$found" ] || [ -n "$engine"  ]; then
-# python "/home/pasha/Desktop/Паша/Scripts/python/hardware-info/Script2.py"
 "$nwjsfm/packagefiles/bugreporter"
 else
 echo "Cannot find any game"
@@ -1575,3 +1571,4 @@ if [ -n "$notfound" ]; then
 echo "Can't find any game in $npath"
 exit 1
 fi
+# sleep 6666
