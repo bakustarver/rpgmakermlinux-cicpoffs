@@ -216,11 +216,74 @@ module Preload
         ImportedKeyExpr = /^\s*(?:\$imported|\(\s*\$imported(?:\s*\|\|=\s*\{\s*\})?\s*\))\[(:\w+|'[^']+'|"[^"]+")\]\s*=\s*(.+)\s*$/
 
         def _extract_imported
-            match = ImportedKeyExpr.match(source)
-            @imported_entry = !match.nil?
-            return unless @imported_entry
-            @imported_key = match[1][0] == ':' ? match[1][1..].to_sym : match[1][1...-1]
-            @imported_value = match[2]
+        if source.nil?
+            puts "Warning: 'source' is nil at the beginning of _extract_imported"
+            return
+        end
+
+        # Ensure 'source' is a string, and log the class type if it's not
+        unless source.is_a?(String)
+            puts "Warning: 'source' is not a string, it's a #{source.class}!"
+            return
+        end
+
+        # Log the encoding type for debugging purposes
+        # puts "Source encoding before: #{source.encoding.name}"
+
+        # Force early return if source is unexpectedly nil just before encoding
+        if source.nil?
+            puts "Warning: 'source' unexpectedly nil before encoding"
+            return
+        end
+
+        # Backup the original source value before encoding, to see if it changes unexpectedly
+        original_source = source.dup
+
+        # Force encode to ASCII-8BIT (binary ASCII), replacing non-ASCII characters with '?'
+        if source.encoding.name != "ASCII-8BIT"
+            begin
+                # puts "Attempting to encode source..."
+                # Try encoding, but ensure that source remains unchanged if encoding fails
+                encoded_source = source.encode("ASCII-8BIT", invalid: :replace, undef: :replace, replace: "?")
+
+                # If encoding results in an empty string or nil, restore original source
+                if encoded_source.nil? || encoded_source.empty?
+                    # puts "Warning: 'source' became nil or empty after encoding! Reverting to original source."
+                    source = original_source
+                    return
+                else
+                    # Otherwise, use the encoded result
+                    source = encoded_source
+                end
+
+                # puts "Encoding successful, source encoding is now: #{source.encoding.name}"
+            rescue Encoding::UndefinedConversionError, Encoding::InvalidByteSequenceError => e
+                puts "Encoding failed: #{e.message}"
+                return
+            rescue StandardError => e
+                puts "Unexpected error during encoding: #{e.message}"
+                return
+            end
+        end
+
+        # Check source after encoding to ensure it isn't nil
+        if source.nil?
+            # puts "Warning: 'source' is nil after encoding!"
+            return
+        end
+
+        # After encoding (or skipping), match the regex pattern
+        match = ImportedKeyExpr.match(source)
+
+        # Check if a match was found
+        @imported_entry = !match.nil?
+
+        return unless @imported_entry
+
+        # Extract the imported key and value from the match result
+        @imported_key = match[1][0] == ':' ? match[1][1..].to_sym : match[1][1...-1]
+        @imported_value = match[2]
+
         end
 
         def imported_entry?
@@ -436,7 +499,9 @@ module Preload
             print "Patched #{script.loc}: #{script.log.join(', ')}" if script.log.size > 0
             # Warn if Win32API references in source
             if script.source.include? "Win32API.new" then
+
                  print "Warning: Script #{script.loc} uses Win32API."
+                script.source.gsub!(/class\s+Win32API/, 'module Win32API')
                  require "Win32API.rb"
             end
             # Restore encoding
@@ -557,6 +622,8 @@ game_ini_path = find_game_ini_in_directory(_config["gameFolder"].to_s)
 
 def checkini(file_path)
     # Check if the file exists
+    file_path = file_path.nil? || file_path.empty? ? Dir.pwd : file_path
+
     if File.exist?(file_path)
         # Read the content of the file
         input_string = File.read(file_path, encoding: 'ASCII-8BIT')
@@ -570,7 +637,7 @@ def checkini(file_path)
         elsif input_string =~ /rxdata/
                             return 1
         else
-            return 0 # Return nil if none of the patterns match
+            return 3 # Return nil if none of the patterns match
         end
     else
         puts "File does not exist!"

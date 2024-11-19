@@ -18,6 +18,23 @@ module Preload
             .include?('Win32API.new(self.steam_dll_name')
             # .remove!,
             .replace!("achievements.rb"),
+        Patch.new("Advanced Text System fix")
+            .include?('Advanced Text System')
+            .include?('modern algebra (rmrk.net)')
+            # .remove!,
+            .replace!("Advanced-Text-System.rb"),
+        Patch.new("AudioUtilities plugin fix")
+            .include?('waveOutOpen=Win32API.new("winmm.dll","waveOutOpen","plplll","l")')
+            .include?('def pbPlaySoundData(samples,volume,async=false,sampleFreq=11025)')
+            # .remove!,
+            # .replace!("dummyAudioUtilities.rb")
+             .sub!(/when (\d+):/, 'when \1'),
+        Patch.new("dummyPSystem_Utilities plugin fix")
+            .include?('pbNextComb')
+            # .include?('def pbIsJsonString')
+            # .remove!,
+             .replace!("dummyPSystem_Utilities.rb"),
+             # .sub!(/when (\d+):/, 'when \1'),
         Patch.new("XIV's Simple Reputation System (SRS) for RGSS3 fix") #XIV's Simple Reputation System (SRS) for RGSS3 Romance Level Version: 1.1
             .include?("Simple Reputation System (SRS)")
             .sub!("$scene1 = Scene_Menu.new(0)", "$scene1 = Scene_Menu.new"),
@@ -172,6 +189,11 @@ module Preload
             .imported?(nil)
             .include?('text.push(self.to_s.scan(/#<(\S+):/)[0][0].to_s)')
             .remove!,
+        Patch.new("tktk_bitmap dll test debug")
+            .imported?(nil)
+            .include?("DLL_NAME = 'tktk_bitmap'")
+            # .remove!,
+            .replace!("bitmap_tktk.rb"),
         Patch.new("Flirt quest")
             .imported?(nil)
             .include?('class Spriteset_BattleUnit')
