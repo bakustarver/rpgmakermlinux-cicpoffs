@@ -493,6 +493,8 @@ module Preload
             e = script.source.encoding
             script.source.force_encoding "ASCII-8BIT"
             # Apply patches
+            script.source.gsub!(".encode('SHIFT_JIS')", '')
+
             Patches.each do |patch|
                 break if patch.eval script
             end

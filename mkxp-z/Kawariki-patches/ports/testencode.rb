@@ -826,6 +826,7 @@ unless defined? Abstract
         # ◆(内部専用)◆ ワイド文字列( Unicode ) へ変換
         #--------------------------------------------------------------------------
         def self.to_widechar(str, codepage)
+            puts "vvvvxzz"
             # Convert the string from the specified encoding to UTF-16 (which is Ruby's default wide character encoding)
             return ""
         end
@@ -1009,6 +1010,7 @@ module MessageBox
             # マウスカーソルを表示
             Input.mouse_show if Input.method_defined?(:mouse_show)
             # メッセージボックス
+            puts  error_message , title , MB_FATAL
             messagebox( error_message , title , MB_FATAL )
         rescue Hangup
             nil # ！※例外時にここを通過せずに外部に投げられる恐れあり

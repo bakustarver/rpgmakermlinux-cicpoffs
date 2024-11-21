@@ -41,6 +41,29 @@ URL::       http://www.tktkgame.com/
 ############################################
 =end
 
+def dummy_blend_blt(dest_id, x, y, src_id, src_x, src_y, width, height, blend_mode, opacity)
+  puts "Blending operation started!"
+  puts "Destination Image ID: #{dest_id}"
+  puts "Source Image ID: #{src_id}"
+  puts "Blending Position: (#{x}, #{y})"
+  puts "Source Image Rectangle: (#{src_x}, #{src_y}, #{width}, #{height})"
+  puts "Blend Mode: #{blend_mode}"
+  puts "Opacity: #{opacity}"
+  puts "Simulating image blending operation..."
+  # More logic to simulate the blending can go here
+  puts "Finished blending images with the specified settings."
+end
+
+# Example usage:
+# dest_bmp = Object.new
+# src_bmp = Object.new
+# rect = OpenStruct.new(x: 0, y: 0, width: 100, height: 100)
+
+# Call the dummy blend function directly without a class
+# dummy_blend_blt(
+#   dest_bmp.object_id, 10, 20, src_bmp.object_id, rect.x, rect.y, rect.width, rect.height, 'multiply', 0.7
+# )
+
 module TKTK_Bitmap
   LARGE_BITMAP = true # 大容量のBitmap作成機能を使うかどうか
   DLL_NAME = 'tktk_bitmap'
@@ -83,7 +106,21 @@ module TKTK_Bitmap
 
   # 色の反転
   def invert(bitmap)
-    return @@invert.call(bitmap.object_id)
+    # $game_self_switches.delete(7,["A"])
+    # puts "ggg"
+    # $game_switches.each_with_index do |
+    # switch, index|
+    # # puts "Switch #{index + 1}:    #{switch}"
+    # end
+    $game_switches[11] = false
+    # puts $game_switches[8]
+    # puts $game_switches[9]
+    # puts $game_switches[10]
+    # puts $game_switches[11]
+    # puts $game_switches[12]
+
+
+    return 0
   end
 
   # モザイク効果
@@ -115,10 +152,17 @@ module TKTK_Bitmap
   end
   
   def blend_blt(dest_bmp, x, y, src_bmp, rect, blend_type=0, opacity=255)
-    @@blend_blt.call(dest_bmp.object_id, x, y, src_bmp.object_id,
-                rect.x, rect.y, rect.width, rect.height,
-                blend_type, opacity)
+    $game_switches[11] = false
+
+    # @@blend_blt.call(dest_bmp.object_id, x, y, src_bmp.object_id,
+    #             rect.x, rect.y, rect.width, rect.height,
+    #             blend_type, opacity)
+    # return 0
+    # dest_bmp.object_id, 10, 20, src_bmp.object_id, rect.x, rect.y, rect.width, rect.height, 'multiply', 0.7
+    # dest_bmp.object_id, 10, 20, src_bmp.object_id, rect.x, rect.y, rect.width, rect.height, 'multiply', 0.7
+
   end
+
 
   # ビットマップのサイズを変更（危険）
   def change_size(bitmap, new_width, new_height)

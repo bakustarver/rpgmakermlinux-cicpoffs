@@ -46,8 +46,15 @@ module Preload
             .include?("CustomGab.display_message(stat + XpLevel::MAX_LVL_MESSAGE)")
             .include?("$scene4 = Scene_Menu.new(0)")
             .sub!("$scene4 = Scene_Menu.new(0)", "$scene4 = Scene_Menu.new"),
+        Patch.new("Audio_EX2 WF-RGSS patch") #【WF-RGSS】共通rev29 base
+            .include?("module WFRGSS_AudioEX")
+            .sub!("return true if @audio__init", "return true"),
+            # .include?("self.to_widechar(")
         Patch.new("WF-RGSS base patch") #【WF-RGSS】共通rev29 base
-            .include?("'MultiByteToWideChar', %w(i l p i p i)")
+            .include?("MultiByteToWideChar")
+            .include?("self.to_widechar(")
+            # .match?(/module WFRGSS\$/)
+            # .if? {|script| script.source.match? '/.*module WFRGSS\$/'}
             # .remove!,
             .replace!("testencode.rb"), #Window_Base
         Patch.new("window check content height fix (mgq paradox)")
@@ -189,11 +196,17 @@ module Preload
             .imported?(nil)
             .include?('text.push(self.to_s.scan(/#<(\S+):/)[0][0].to_s)')
             .remove!,
-        Patch.new("tktk_bitmap dll test debug")
+        # Patch.new("tktk_bitmap dll test debug")
+        #     .imported?(nil)
+        #     .include?("DLL_NAME = 'tktk_bitmap'")
+        #     # .remove!,
+        #     .replace!("bitmap_tktk.rb"),
+        Patch.new("HN_Light tktk dll disable ")
             .imported?(nil)
-            .include?("DLL_NAME = 'tktk_bitmap'")
-            # .remove!,
-            .replace!("bitmap_tktk.rb"),
+            .include?("HN_Light version")
+            .include?("tktkgame")
+            .sub!("@dark_sprite.update", "@dark_sprite.dispose"),
+
         Patch.new("Flirt quest")
             .imported?(nil)
             .include?('class Spriteset_BattleUnit')
