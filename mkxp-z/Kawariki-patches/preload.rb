@@ -657,9 +657,11 @@ puts ENV["vcode"]
 ENV["rpgvers"] = vers.to_s
 # puts "nbnn"+ENV["vcode"]
 # Ensure Zlib is loaded
+system("testecho.sh 55555")
 Kernel.require 'zlib' unless Kernel.const_defined? :Zlib
 # Load patch definitions
 Kernel.require File.join(Preload::Path, 'patches.rb')
+
 # Inject user scripts
 Dir['*.kawariki.rb'].each do |filename|
     Preload.print "Loading user script #{filename}"
@@ -667,5 +669,7 @@ Dir['*.kawariki.rb'].each do |filename|
 end
 # Apply patches to scripts
 Preload._run_preload
+puts "bbbb------------"
+puts $data_system
 # Run load hooks just before control returns to MKXP to run the scripts
 Preload._run_load

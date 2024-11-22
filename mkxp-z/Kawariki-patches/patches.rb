@@ -23,6 +23,11 @@ module Preload
             .include?('modern algebra (rmrk.net)')
             # .remove!,
             .replace!("Advanced-Text-System.rb"),
+        Patch.new("NWConst::Warp plugin fix")
+            .include?('module NWConst::Warp')
+            .include?('@popup_confirm_window.select(0)')
+            # .sub!('@popup_confirm_window.select(0)', '@popup_confirm_window.select'),
+            .replace!("tempcheckwarp.rb"),
         Patch.new("AudioUtilities plugin fix")
             .include?('waveOutOpen=Win32API.new("winmm.dll","waveOutOpen","plplll","l")')
             .include?('def pbPlaySoundData(samples,volume,async=false,sampleFreq=11025)')
@@ -48,11 +53,12 @@ module Preload
             .sub!("$scene4 = Scene_Menu.new(0)", "$scene4 = Scene_Menu.new"),
         Patch.new("Audio_EX2 WF-RGSS patch") #【WF-RGSS】共通rev29 base
             .include?("module WFRGSS_AudioEX")
-            .sub!("return true if @audio__init", "return true"),
+            # .sub!("return true if @audio__init", "return true"),
             # .include?("self.to_widechar(")
+            .replace!("dummy_Audio_EX2.rb"),
         Patch.new("WF-RGSS base patch") #【WF-RGSS】共通rev29 base
             .include?("MultiByteToWideChar")
-            .include?("self.to_widechar(")
+            .include?("to_widechar(")
             # .match?(/module WFRGSS\$/)
             # .if? {|script| script.source.match? '/.*module WFRGSS\$/'}
             # .remove!,

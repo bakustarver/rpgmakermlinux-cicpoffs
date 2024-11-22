@@ -826,7 +826,7 @@ unless defined? Abstract
         # ◆(内部専用)◆ ワイド文字列( Unicode ) へ変換
         #--------------------------------------------------------------------------
         def self.to_widechar(str, codepage)
-            puts "vvvvxzz"
+            # puts "vvvvxzz"
             # Convert the string from the specified encoding to UTF-16 (which is Ruby's default wide character encoding)
             return ""
         end
