@@ -26,8 +26,20 @@ module Preload
         Patch.new("NWConst::Warp plugin fix")
             .include?('module NWConst::Warp')
             .include?('@popup_confirm_window.select(0)')
-            # .sub!('@popup_confirm_window.select(0)', '@popup_confirm_window.select'),
-            .replace!("tempcheckwarp.rb"),
+            .sub!('@popup_confirm_window.select(0)', "items = @popup_confirm_window.instance_variable_get(:@list)\nif items.is_a?(Array) && !items.empty?\n@popup_confirm_window.select(0)\nend"),
+            # .if? {|script| script.source&.gsub!('@popup_confirm_window.select(0)', 'items = @popup_confirm_window.instance_variable_get(:@list)')&.gsub!('@popup_confirm_window.select(0)', "if items.is_a?(Array) && !items.empty?\n@popup_confirm_window.select(0)\nend") },
+            # .replace!("tempcheckwarp.rb"),
+        Patch.new("NWRegexpBaseItemfix plugin fix")
+            .include?('module NWConst::Shop')
+            # .replace!("NWRegexpBaseItemfix.rb"),
+            .sub!('@select_actor_window.show.activate.select(0)', "if @select_actor_window.show.activate.is_a?(Array) && @select_actor_window.show.activate.empty?\n@select_actor_window.show.activate.select(0)\nend"),
+        Patch.new("NWConst::Synthesize plugin fix")
+            .include?('module NWConst::Synthesize')
+            .include?('Container.item')
+            # .replace!("NWRegexpBaseItemfix.rb"),
+            .sub!('@popup_confirm_window.select(0)', "if @popup_confirm_window.is_a?(Array) && @popup_confirm_window.empty?\n@popup_confirm_window.select(0)\nend")
+            .sub!('@before_actors_window.show.activate.select(0)', "if @before_actors_window.show.activate.is_a?(Array) && @before_actors_window.show.activate.empty?\n@before_actors_window.show.activate.select(0)\nend")
+            .sub!('@after_actors_window.show.activate.select(0)', "if @after_actors_window.show.activate.is_a?(Array) && @after_actors_window.show.activate.empty?\n@after_actors_window.show.activate.select(0)\nend"),
         Patch.new("AudioUtilities plugin fix")
             .include?('waveOutOpen=Win32API.new("winmm.dll","waveOutOpen","plplll","l")')
             .include?('def pbPlaySoundData(samples,volume,async=false,sampleFreq=11025)')

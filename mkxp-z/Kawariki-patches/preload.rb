@@ -194,6 +194,7 @@ module Preload
             @script[3].gsub!(*p)
         end
 
+
         def source=(code)
             @script[3] = code
         end
