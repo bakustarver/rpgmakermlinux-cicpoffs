@@ -18,11 +18,11 @@ module Preload
             .include?('Win32API.new(self.steam_dll_name')
             # .remove!,
             .replace!("achievements.rb"),
-        Patch.new("Advanced Text System fix")
-            .include?('Advanced Text System')
-            .include?('modern algebra (rmrk.net)')
+        #Patch.new("Advanced Text System fix")
+        #    .include?('Advanced Text System')
+        #    .include?('modern algebra (rmrk.net)')
         #     # .remove!,
-            .replace!("Advanced-Text-System-.rb"),
+        #    .replace!("Advanced-Text-System-.rb"),
         Patch.new("NWConst::Warp plugin fix")
             .include?('module NWConst::Warp')
             .include?('@popup_confirm_window.select(0)')
