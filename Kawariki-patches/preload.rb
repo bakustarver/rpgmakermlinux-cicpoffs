@@ -268,16 +268,21 @@ module Preload
         # Backup the original source value before encoding, to see if it changes unexpectedly
         original_source = source.dup
 
+        # puts "Before encoding: source = #{source.inspect}"  # Debugging log for source
+
         # Force encode to ASCII-8BIT (binary ASCII), replacing non-ASCII characters with '?'
         if source.encoding.name != "ASCII-8BIT"
             begin
-                # puts "Attempting to encode source..."
-                # Try encoding, but ensure that source remains unchanged if encoding fails
+
+                # Ensure source is in UTF-8 first to avoid mix of encodings (UTF-8 and ASCII-8BIT)
+                # source = source.encode("UTF-8", invalid: :replace, undef: :replace, replace: "?")
+
+                # Now attempt to encode to ASCII-8BIT (ensure no mix of encodings)
+                # Force both source and encoded_source to be in the same encoding (UTF-8)
                 encoded_source = source.encode("ASCII-8BIT", invalid: :replace, undef: :replace, replace: "?")
 
                 # If encoding results in an empty string or nil, restore original source
                 if encoded_source.nil? || encoded_source.empty?
-                    # puts "Warning: 'source' became nil or empty after encoding! Reverting to original source."
                     source = original_source
                     return
                 else
@@ -285,15 +290,16 @@ module Preload
                     source = encoded_source
                 end
 
-                # puts "Encoding successful, source encoding is now: #{source.encoding.name}"
             rescue Encoding::UndefinedConversionError, Encoding::InvalidByteSequenceError => e
                 puts "Encoding failed: #{e.message}"
                 return
             rescue StandardError => e
-                puts "Unexpected error during encoding: #{e.message}"
+                # puts "Unexpected error during encoding: #{e.message}"
                 return
             end
         end
+
+
 
         # Check source after encoding to ensure it isn't nil
         if source.nil?
@@ -521,6 +527,8 @@ module Preload
             # Encodings are a mess in RGSS. Can break Regexp matching
             e = script.source.encoding
             script.source.force_encoding "ASCII-8BIT"
+            # script.source.force_encoding("UTF-8")
+            # script.source.encode!("ASCII-8BIT", invalid: :replace, undef: :replace, replace: "?")
             # Apply patches
             script.source.gsub!(".encode('SHIFT_JIS')", '')
 
@@ -551,11 +559,16 @@ module Preload
             Dir.mkdir dump unless Dir.exist? dump
             fn_format = "%0#{ctx.script_id_digits}d%s%s%s"
             ctx.each_script do |script|
-                filename = fn_format % [script.index,
-                                        script.name.empty? ? "" : " ",
-                                        script.name.tr(NoFilenameChars, "_"),
-                                        script.source.empty? ? "" : ".rb"]
-                File.write File.join(dump, filename), script.source
+                if script.name.valid_encoding?
+                    filename = fn_format % [script.index,
+                                            script.name.empty? ? "" : " ",
+                                            script.name.tr(NoFilenameChars, "_"),
+                                            script.source.empty? ? "" : ".rb"]
+                    File.write File.join(dump, filename), script.source
+                else
+                    puts "Invalid encoding for script name: #{script.name.inspect}"
+                    next
+                end
             end
         end
     end
@@ -576,6 +589,8 @@ module Preload
         # Initialize
         @ctx = ctx = Context.new $RGSS_SCRIPTS
         # ctx.add_script("5555555555555555555555555555555555555555Script1", "puts 'Hello, world!'")
+        script_file = '/home/pasha/desktopapps/mkxp-z/cheats/cheat3.rb'
+        script_file2 = '/home/pasha/desktopapps/mkxp-z/Kawariki-patches/ports/wxexittest.rb'
         ctx.read_system
         ctx.read_env
 
@@ -659,23 +674,28 @@ game_ini_path = find_game_ini_in_directory(_config["gameFolder"].to_s)
 
 
 def checkini(file_path)
-    # Check if the file exists
+    # Check if the file path is nil or empty and set it to the current directory if necessary
     file_path = file_path.nil? || file_path.empty? ? Dir.pwd : file_path
 
+    # Check if the path is a valid file and not a directory
     if File.exist?(file_path)
-        # Read the content of the file
-        input_string = File.read(file_path, encoding: 'ASCII-8BIT')
+        if File.file?(file_path)
+            # Read the content of the file
+            input_string = File.read(file_path, encoding: 'ASCII-8BIT')
 
-        # Match the content of the file and return the appropriate value
-        # Match the pattern in the input string and return corresponding values
-        if input_string =~ /rvdata2/
-                            return 3
-        elsif input_string =~ /rvdata/
-                            return 2
-        elsif input_string =~ /rxdata/
-                            return 1
+            # Match the content of the file and return the appropriate value
+            if input_string =~ /rvdata2/
+                return 3
+            elsif input_string =~ /rvdata/
+                return 2
+            elsif input_string =~ /rxdata/
+                return 1
+            else
+                return 3 # Return 3 if no pattern matches
+            end
         else
-            return 3 # Return nil if none of the patterns match
+            puts "The specified path is a directory, not a file."
+            return 3
         end
     else
         puts "File does not exist!"

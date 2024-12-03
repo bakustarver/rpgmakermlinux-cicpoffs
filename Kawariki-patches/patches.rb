@@ -18,15 +18,19 @@ module Preload
             .include?('Win32API.new(self.steam_dll_name')
             # .remove!,
             .replace!("achievements.rb"),
-        # Patch.new("Advanced Text System fix")
-        #     .include?('Advanced Text System')
-        #     .include?('modern algebra (rmrk.net)')
+        Patch.new("Advanced Text System fix")
+            .include?('Advanced Text System')
+            .include?('modern algebra (rmrk.net)')
         #     # .remove!,
-        #     .replace!("Advanced-Text-System.rb"),
+            .replace!("Advanced-Text-System-.rb"),
         Patch.new("NWConst::Warp plugin fix")
             .include?('module NWConst::Warp')
             .include?('@popup_confirm_window.select(0)')
             .sub!('@popup_confirm_window.select(0)', "items = @popup_confirm_window.instance_variable_get(:@list)\nif items.is_a?(Array) && !items.empty?\n@popup_confirm_window.select(0)\nend"),
+        Patch.new("class Scene_MultiPartyEdit") ##パーティ分割_scene.rb
+            .include?('class Scene_MultiPartyEdit < Scene_MenuBase')
+            .include?('@popup_confirm_window.show.activate.select(0)')
+            .sub!('@popup_confirm_window.show.activate.select(0)', "if @popup_confirm_window.show.activate.is_a?(Array) && @popup_confirm_window.show.activate.empty?\n@popup_confirm_window.show.activate.select(0)\nend"),
         Patch.new("NWRegexpBaseItemfix plugin fix")
             .include?('module NWConst::Shop')
             # .replace!("NWRegexpBaseItemfix.rb"),
@@ -76,10 +80,12 @@ module Preload
             .sub!("if contents_width > 0 && contents_height > 0", "if contents_height > 10000\nself.contents = Bitmap.new(1, 1)\nelsif contents_width > 0 && contents_height > 0")
             .sub!("result = text.to_s.clone","result = text.to_s.clone\nresult = result.dup if result.frozen?"),
         Patch.new("temp bitmap load crash fix monster girl paradox disable preview") #ベース/Module
-            #maybe the memory buffer is filled up too much??
-             # .if? {|script| script.name == "Window_Base"}
-             .include?('thumnail_file = "Save/Save#{Regexp.last_match(1)}.png"')
-            .sub!("@thumbnails[Regexp.last_match(1).to_i - 1] = Bitmap.new(thumnail_file)", "@thumbnails[Regexp.last_match(1).to_i - 1] = @dummy_thumbnail #Bitmap.new(thumnail_file)"),
+        #     #maybe the memory buffer is filled up too much??
+        #      # .if? {|script| script.name == "Window_Base"}
+        .include?('thumnail_file = "Save/Save#{Regexp')
+        # .sub!("@thumbnails[Regexp.last_match(1).to_i - 1] = Bitmap.new(thumnail_file)", "@thumbnails[Regexp.last_match(1).to_i - 1] = @dummy_thumbnail #Bitmap.new(thumnail_file)")
+        .sub!("@thumbnails[Regexp.last_match(1).to_i - 1] = Bitmap.new(thumnail_file)", "@thumbnails[Regexp.last_match(1).to_i - 1] = @dummy_thumbnail #Bitmap.new(thumnail_file)"),
+        # .replace!("base_Module.rb"),
              # .replace!("savebitmanwin32api.rb"),
         Patch.new("WF-RGSS Exit-EX patch test") #▼ メイン【WF-RGSS】Exit-EX 終了処理
               .include?("Win32API.new('System/WFExit','hookExit','v','l')")
@@ -210,6 +216,10 @@ module Preload
             .imported?(nil)
             .include?('text.push(self.to_s.scan(/#<(\S+):/)[0][0].to_s)')
             .remove!,
+        Patch.new("Diesel_ADV")
+            .imported?(nil)
+            .include?('Diesel_ADV')
+            .sub!("b.visible = now", "b.visible = !!now"),
         # Patch.new("tktk_bitmap dll test debug")
         #     .imported?(nil)
         #     .include?("DLL_NAME = 'tktk_bitmap'")
@@ -232,6 +242,13 @@ module Preload
             .include?('class Spriteset_BattleUnit')
             .include?('Spriteset_Kiseki')
             .sub!(/\bsuper\b(?!\s*\()/, 'super()'),
-
+        Patch.new("test subscribe")
+             .imported?(nil)
+             .include?("exit if steam.is_subscribed != true")
+             .remove!,
+        Patch.new("module ScreenShot")
+             .imported?(nil)
+             .include?("module ScreenShot")
+             .remove!,
     ]
 end
