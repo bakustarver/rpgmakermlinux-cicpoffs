@@ -5,13 +5,12 @@ Initially, it supported only RPG Maker MV and MZ, but it now also supports RPG M
 Priority is primarily on RPG Maker MV/MZ. (if you have errors with XP, VX, Vx Ace address this [link](https://github.com/mkxp-z/mkxp-z)).
 
 #### Contains the following features (RPG Maker MV / MZ):
+- Downloading and selecting any version of NWJS (using the command line and GUI).
+- Installing the Text hooker plug-in that copies the game's dialogs automatically to your clipboard.
 - Sharp increase in fps (from 2 to 4 times more compared to Wine, can be viewed by pressing the F2 key)
 - Updating Pixi 5 libraries for RPG Maker MV games (that's supposed to increase performance)
-- Downloading and selecting any version of NWJS (using the command line and GUI).
-- Starting a game with the Japanese locale option.
 - Launching a game using a command line.
-- Showing the NWJS, Nodejs, Chromium versions of your game.
-- Installing the Text hooker plug-in that copies the game's dialogs automatically to your clipboard.
+- Displaying the NW.js, Node.js, and Chromium versions of your game.
 - Can be used as compatibility tool in steam for Windows games.
 - The Native support of 4 architectures: x86-64, i386, armhf, arm64
 
@@ -64,7 +63,7 @@ rpgmaker-linux --version
 rpgmaker-linux --updatenwjs
 ```
 
-#### Show versions of rpg maker game libraries
+#### To show the versions of the RPG Maker game libraries
 ```
 rpgmaker-linux --gamepath /path/rpg-maker-game/ --printrpgmakerlibversions
 ```
@@ -73,7 +72,7 @@ rpgmaker-linux --gamepath /path/rpg-maker-game/ --printrpgmakerlibversions
 ```
 rpgmaker-linux --nwjsversion 0.40.0 --gamepath /path/rpg-maker-game/
 ```
-####  Sends an anonymous report to developer about game data, system information, engine for fixing bugs and errors :
+####  Send an anonymous report to developer about game data, system information, engine for fixing bugs and errors :
 ```
 rpgmaker-linux --bugreport
 ```
