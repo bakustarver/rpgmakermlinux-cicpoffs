@@ -5,14 +5,14 @@ Initially, it supported only RPG Maker MV and MZ, but it now also supports RPG M
 Priority is primarily on RPG Maker MV/MZ. (if you have errors with XP, VX, Vx Ace address this [link](https://github.com/mkxp-z/mkxp-z)).
 
 #### Contains the following features (RPG Maker MV / MZ):
-- Downloading and selecting any version of NWJS (using the command line and GUI).
-- Installing the Text hooker plug-in that copies the game's dialogs automatically to your clipboard.
-- Sharp increase in fps (from 2 to 4 times more compared to Wine, can be viewed by pressing the F2 key)
-- Updating Pixi 5 libraries for RPG Maker MV games (that's supposed to increase performance)
-- Launching a game using a command line.
-- Displaying the NW.js, Node.js, and Chromium versions of your game.
+- Download and select any version of NW.js (using the command line and GUI).
+- Install the Text Hooker plug-in, which automatically copies the game's dialogues to your clipboard.
+- Significant increase in FPS (2 to 4 times more compared to Wine, viewable by pressing the F2 key).
+- Update Pixi 5 libraries for RPG Maker MV games to enhance performance.
+- Launch a game using the command line.
+- Display the NW.js, Node.js, and Chromium versions of your game.
 - Can be used as compatibility tool in steam for Windows games.
-- The Native support of 4 architectures: x86-64, i386, armhf, arm64
+- Native support for four architectures: x86-64, i386, armhf, and arm64.
 
 
  
