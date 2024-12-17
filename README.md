@@ -46,7 +46,7 @@ rm -rf "$HOME/desktopapps/nwjs" && rm "$HOME/.local/share/applications/nwjstest.
 
 ## Command line Commands
 
-#### to start the rpg maker game
+#### To start the RPG Maker game, use the following command
 ```
 rpgmaker-linux 
 ```
