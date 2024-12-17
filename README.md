@@ -1,5 +1,6 @@
 #  RPG Maker MV / MZ for Linux [ cicpoffs mount]
-The bash wrapper that uses native linux libraries to run various game engines. Previously supported only RPG Maker MV/MZ.  Now supports RPG Maker XP, VX, VX Ace, MV, MZ, TyranoBuilder, Godot, Construct 2/3, Nscripter. 
+The bash wrapper enforces the use of [Dependencies list](native Linux libraries) to run various game engines. It can be considered an alternative to WINE. This software creates a local port of the Linux version from the Windows port and then executes it. Initially, it supported only RPG Maker MV and MZ, but it now also supports RPG Maker XP, VX, VX Ace, MV, MZ, TyranoBuilder, Godot, Construct 2/3, and Nscripter.
+
 Priority is primarily on RPG Maker MV/MZ. (if you have errors with XP, VX, Vx Ace address this [link](https://github.com/mkxp-z/mkxp-z)).
 
 #### Contains the following features (RPG Maker MV / MZ):
@@ -13,7 +14,6 @@ Priority is primarily on RPG Maker MV/MZ. (if you have errors with XP, VX, Vx Ac
 - Can be used as compatibility tool in steam for Windows games.
 - The Native support of 4 architectures: x86-64, i386, armhf, arm64
 
-[Dependencies list](DEPENDENCIES.md)
 
  
 After installing the program you can run the game using an application - "RPG Maker MV/MZ (cicpoffs mount)"
