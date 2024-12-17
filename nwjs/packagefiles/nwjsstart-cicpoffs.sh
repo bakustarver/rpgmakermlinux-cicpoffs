@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-version='1.1.4'
+version='1.1.5'
 export mainfd="$HOME/desktopapps"
 export nwjsfm="$mainfd/nwjs/nwjs"
 export LD_LIBRARY_PATH="$mainfd/nwjs/nwjs/packagefiles/:$LD_LIBRARY_PATH"
@@ -208,7 +208,7 @@ https://www.buymeacoffee.com/rpgmakerlinux"
 }
 
 incompletefeaturefunc() {
-echo "$arg" in development, wait for it on this site.
+echo "$arg" in development, wait for it.
 echo "https://github.com/bakustarver/rpgmakermlinux-cicpoffs"
 }
 
@@ -248,8 +248,10 @@ ln -fs "$npath/data" "$mainfd/nwjs/nwjs/packagefiles/tyranobuilder/tyranoeng"
 
 mkxpzdownload() {
 
-# mkxpzarch=$(echo "$arch" )
-
+if [ "$arch" = "i686" ]; then
+echo For this release, i686 not supported
+exit;
+fi
 if [ -n "$REINSTALLMKXPZ" ]; then
 echo Reinstalling mkxpz
 rm -rf "$mkxpzp"
@@ -260,9 +262,6 @@ wget -O /tmp/mkxp-z.zip "$link"
 unzip -d "$mkxpzp" /tmp/mkxp-z.zip
 sed -e "s@\"RGSS@\"$mkxpzp/RGSS@g" -e "s@\"Kawariki-patches@\"$mkxpzp/Kawariki-patches@g" -i "$mkxpzp/mkxp.json"
 rm /tmp/mkxp-z.zip
-# else
-# echo For this release, supported x86_64 only
-# fi
 }
 
 mkxpzdialog() {
@@ -348,6 +347,9 @@ fi
 }
 
 godotdownloadsdk() {
+if ! timeout 15s wget -q --spider "https://downloads.tuxfamily.org/godotengine/"; then
+echo "Cannot connect to the godot server"
+fi
 if [ -z "$execpath" ]; then
 exen=$(ls -p "$npath" | grep -v "/$" | grep "\.exe$" )
 fi
@@ -356,7 +358,6 @@ fi
 while IFS= read -r line; do
 godotold=""
 exenn=$(echo "$line" | sed "s@.exe@@g" )
-# echo hhh
 strgodotexe=$(strings "$npath/$line")
 versiongodot=$(echo "$strgodotexe" | grep -m 1 'Godot Engine v' | sed -e 's@.* v@@g' -e 's@.official@@g' )
 if [ -z "$versiongodot" ]; then
@@ -390,7 +391,7 @@ elif [[ $retgodotcustom -eq 1 ]]; then
 exit;
 fi
 fi
-
+echo $versiongodot
 # https://downloads.tuxfamily.org/godotengine/3.5.2/
 if [ "$godotold" = "true"  ]; then
 # echo "ccc $garch"
@@ -415,7 +416,14 @@ fi
 archivngodot=$(basename "$godotsdklink")
 binname=$(echo "$archivngodot" | sed -e 's@.zip@@g')
 if ! [ -f "$npath/$exenn.$garch" ]; then
+if wget -q --spider "$godotsdklink"; then
+echo "$godotsdklink"
 wget -c "$godotsdklink" -P "$npath"
+else
+echo "Can't connect to the godot server"
+exit;
+fi
+
 unzip -d "$npath" "$npath/$archivngodot";
 mv "$npath/$binname" "$npath/$exenn.$garch";
 rm "$npath/$archivngodot";
@@ -444,14 +452,16 @@ usetyranoelectron=true
 
 searchforpackedexe() {
 # echo fffvvvv
-local gfexe=$(ls -p "$1" | grep -v "/$" | grep "\.exe$")
+local gfexe=$(ls -p "$1" | grep -v "/$" | grep "\.exe$" | head -n 6)
 # echo "$gfexe"
 npath="$1"
 if [ -n "$gfexe" ]; then
 while IFS= read -r line; do
 # check=$()
-allstrings=$(strings "$npath/$line")
-if echo "$allstrings" | grep -m 1 -q "\!CreatePipe(\&pipe\[0\]" && echo "$allstrings" | grep -m 1 -q "Godot Engine"; then
+# echo "$npath/$line"
+#check 1 kb of the binary
+allstrings=$(head -c 5120 "$npath/$line" | strings)
+if echo "$allstrings" | grep -q "8MZu" && echo "$allstrings" | grep -q "pck"; then
 # echo vvv
 # "$pckextract" "$npath/$line"
 linenoexe=$(echo "$line.pck" | sed "s@\.exe@@g")
@@ -460,6 +470,7 @@ if ! [ -f "$linenoexe" ]; then
 cp "$line" "$linenoexe"
 fi
 fi
+# echo "jjj"
 # !CreatePipe(&pipe[0]
 if ! [ -d "$npath/$line-extracted" ]; then
 # echo hmmm
@@ -816,7 +827,6 @@ do
             ;;
         --updatescripts)
             updatescriptsgithub=true
-            incompletefeaturefunc
             ;;
         --makeshortcut)
             case "$arg2" in
@@ -1052,17 +1062,48 @@ if [ -n "$newupdate" ]; then
 echo "$newupdate" > "$path" ;
 chmod +x "$path"
 else
-echo "Can't update the steamwrapper"
+echo "Can't update" $basenfile
 fi
 }
 
 if [ "$updatescriptsgithub" = "true" ]; then
 
 updatescript "https://raw.githubusercontent.com/bakustarver/rpgmakermlinux-cicpoffs/main/nwjs/packagefiles/rpgmaker-linux-steam-wrapper/rpgmaker-linux-cicpoffs-wrapper.sh" "$HOME/.steam/steam/compatibilitytools.d/rpgmaker-linux-steam-wrapper/rpgmaker-linux-cicpoffs-wrapper.sh"
-updatescript "https://raw.githubusercontent.com/bakustarver/rpgmakermlinux-cicpoffs/main/nwjs/packagefiles/nwjsstart-cicpoffs.sh" "$mainfd/nwjs/nwjs/packagefiles/nwjsstart-cicpoffs.sh"
 updatescript "https://raw.githubusercontent.com/bakustarver/rpgmakermlinux-cicpoffs/main/nwjs/dwnwjs.sh" "$mainfd/nwjs/nwjs/dwnwjs.sh"
+updatescript "https://raw.githubusercontent.com/bakustarver/rpgmakermlinux-cicpoffs/main/nwjs/packagefiles/nwjsstart-cicpoffs.sh" "$mainfd/nwjs/nwjs/packagefiles/nwjsstart-cicpoffs.sh"
 
 fi
+
+
+exclude_list=(
+    "credits.html"
+    "www"
+    "icudtl.dat"
+    "notification_helper.exe"
+    "package.json"
+    "d3dcompiler_47.dll"
+    "libegl.dll"
+    "nw_100_percent.pak"
+    "resources.pak"
+    "debug.log"
+    "libglesv2.dll"
+    "nw_200_percent.pak"
+    "ffmpeg.dll"
+    "locales"
+    "nw.dll"
+    "swiftshader"
+    "game.exe"
+    "game_en.exe"
+    "node.dll"
+    "nw_elf.dll"
+    "v8_context_snapshot.bin"
+    "patch-config.txt"
+    "dazed"
+    "ffmpegsumo.dll"
+    "installscript.vdf"
+    "snapshot_blob.bin"
+    "nw.pak"
+)
 
 yaddata() {
 updatenwjsvar=$(echo "$@" | awk '{print $1}')
@@ -1077,6 +1118,8 @@ sdkvar=$(echo "$@" | awk '{print $9}')
 
 # kdialog --msgbox "$updatenwjsvar $pixiupdate $localshortcut $texthookerset dc $desktopshortcut $addtomenuvar $sdkvar $nwjsguivar hh $fivehundredsaveslotspluginvar"
 }
+
+
 
 guirpgmakermfn() {
 if [ -d "$HOME/.config" ]; then
@@ -1104,6 +1147,7 @@ exit;
 fi
 yaddata "$guim"
 # echo "$guim"
+
 
 
 # exit;
@@ -1345,6 +1389,7 @@ elif [ "$engine" = "construct-nwjs" ]; then
 export engine=construct-nwjs
 fi
 if [ -n "$found" ] || [ -n "$engine"  ]; then
+# python "/home/pasha/Desktop/Паша/Scripts/python/hardware-info/Script2.py"
 "$nwjsfm/packagefiles/bugreporter"
 else
 echo "Cannot find any game"
@@ -1371,32 +1416,7 @@ cp "$nwjsfm/packagefiles/libulockmgr.so.1" "$theexpgamep/lib"
 cp "$mainfd/nwjs/nwjs/packagefiles/package.json" "$theexpgamep"
 cp "$nwjsfm/packagefiles/filestoexport/start_your_game.sh" "$theexpgamep"
 cp -r "$mountpath" "$theexpgamep/www-case"
-exclude_list=(
-    "credits.html"
-    "www"
-    "icudtl.dat"
-    "notification_helper.exe"
-    "package.json"
-    "d3dcompiler_47.dll"
-    "libegl.dll"
-    "nw_100_percent.pak"
-    "resources.pak"
-    "debug.log"
-    "libglesv2.dll"
-    "nw_200_percent.pak"
-    "ffmpeg.dll"
-    "locales"
-    "nw.dll"
-    "swiftshader"
-    "game.exe"
-    "game_en.exe"
-    "node.dll"
-    "nw_elf.dll"
-    "v8_context_snapshot.bin"
-    "update-patch.bat"
-    "patch-config.txt"
-    "dazed"
-)
+
   # Loop through files and folders in the game directory
 for item in "$mountpath"/*; do
       # Get the basename of the item and convert it to lowercase
@@ -1418,11 +1438,13 @@ fi
 
 
 startnw() {
+# cd "$gamef" &
 if [ -n "$armsys" ]; then
 "$nwjstestpath/nw" --ozone-platform=x11
 else
 if [[ "$XDG_SESSION_TYPE" == "wayland" ]]; then
 echo "wayland detected"
+# firejail --protocol=unix,inet,inet6,netlink
 "$nwjstestpath/nw" --ozone-platform=wayland
 else
 echo "wayland not detected, starting in x11"
@@ -1480,6 +1502,32 @@ echo Mounting the folder: Time passed $SECONDS seconds;
 done
 echo -e "Mounting done.
 Total time: $SECONDS seconds"
+
+}
+
+
+checkreaddirSynfunc() {
+for file in "$nwjstestpath"/*; do
+  if [ -L "$file" ]; then
+    rm -f "$file"
+  fi
+done
+
+if grep -q -r "readdirSyn" "$mountpath/js/plugins/"; then
+
+# echo hhh;
+for file in "$npath"/*; do
+
+        base0=$(basename "$file" )
+        base=$(echo "$base0" | tr '[:upper:]' '[:lower:]')
+
+    if ! [[ " ${exclude_list[@]} " =~ " ${base} " ]]; then
+
+        ln -s "$file" "$nwjstestpath"
+    fi
+done
+
+fi
 
 }
 
@@ -1549,7 +1597,11 @@ fi
 ln -s "$npath/package.nw" "$nwjstestpath"
 startnw
 elif [ "$found" = "true" ]; then
-# rmsymlinks
+checkreaddirSynfunc
+
+
+
+
 mountwww
 plugins-autoinstall
 if [ -n "$MAKELOCALSHORTCUT" ]; then
@@ -1571,4 +1623,3 @@ if [ -n "$notfound" ]; then
 echo "Can't find any game in $npath"
 exit 1
 fi
-# sleep 6666
