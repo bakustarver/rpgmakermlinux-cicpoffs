@@ -5,7 +5,7 @@ Initially, it supported only RPG Maker MV and MZ, but it now also supports RPG M
 Priority is primarily on RPG Maker MV/MZ. (if you have errors with XP, VX, Vx Ace address this [link](https://github.com/mkxp-z/mkxp-z)).
 
 #### Contains the following features (RPG Maker MV / MZ):
-- Significant increase in FPS (2 to 4 times more compared to Wine, viewable by pressing the F2 key).
+- Sharp increase in FPS (2 to 4 times more compared to Wine, viewable by pressing the F2 key).
 - Download and select any version of NW.js (using the command line and GUI).
 - Install the Text Hooker plug-in, which automatically copies the game's dialogues to your clipboard.
 - Update Pixi 5 libraries for RPG Maker MV games to enhance performance.
