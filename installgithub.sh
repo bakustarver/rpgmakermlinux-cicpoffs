@@ -5,6 +5,11 @@ version=1.1.5
 
 ITCHIOFILEPATH="$HOME/.config/itchiokey.txt"
 
+savekey() {
+echo "$1" > "$ITCHIOFILEPATH"
+}
+
+
 if [ -f "$ITCHIOFILEPATH" ] && [ -s "$ITCHIOFILEPATH" ]; then
 ITCH_API_KEY=$(cat "$ITCHIOFILEPATH")
 fi
@@ -16,6 +21,7 @@ if [ -z "$itchjson" ]; then
 echo "Cannot get data from server, wrong itch.io key?"
 exit 1
 fi
+savekey "$ITCH_API_KEY"
 itchdata=$(echo "$itchjson" | sed -e 's@"traits"@\n@g' | grep "$archt")
 itchid=$(echo "$itchdata" | sed -e 's@.*,"id":@@g' -e 's@,.*@@g')
 basenametar=$(echo "$itchdata" | sed -e 's@.*"filename":"@@g' -e 's@".*@@g')
@@ -31,5 +37,5 @@ dirtarname=$(echo "$basenametar" | sed -e 's@.tar.gz@@g')
 wget -P "/tmp/" "$link"
 fi
 tar -xf "/tmp/$basenametar" -C "/tmp/"
-# rm "/tmp/$basenametar"
+rm "/tmp/$basenametar"
 /tmp/$dirtarname/install.sh
