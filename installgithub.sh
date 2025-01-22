@@ -37,5 +37,5 @@ dirtarname=$(echo "$basenametar" | sed -e 's@.tar.gz@@g')
 wget -P "/tmp/" "$link"
 fi
 tar -xf "/tmp/$basenametar" -C "/tmp/"
-rm "/tmp/$basenametar"
 /tmp/$dirtarname/install.sh
+rm "/tmp/$basenametar"
