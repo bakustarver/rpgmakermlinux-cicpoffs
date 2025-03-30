@@ -164,6 +164,21 @@ module Preload
         .imported?(nil)
         .include?("======\nMoonpearl's Scene_Base\n-----")
         .flag!(:redefinitions_overwrite_class),
+        Patch.new("CHANGED: F12 Crash fix")
+            .if? {|script| script.name == "Super"}
+            .if? {|script| script.context[:rgss_version] == 2}
+            .include?("# A N T I L A G    V X")
+            .remove!,
+        Patch.new("CHANGED: Font fix")
+            .if? {|script| script.name == "Main"}
+            .if? {|script| script.context[:rgss_version] == 2}
+            .sub!('Font.default_name = ["Source Han Sans K Normal"', 'Font.default_name = ["Source Han Sans K"'),
+        Patch.new("Changed-special: Spriteset_Map fix")
+            .if? {|script| script.name == "Spriteset_Map"}
+            .if? {|script| script.context[:rgss_version] == 2}
+            .include?("def update_parallax")
+            .sub!('@parallax.ox = $game_map.calc_parallax_x(@parallax.bitmap)', "begin; @parallax.ox = $game_map.calc_parallax_x(@parallax.bitmap)")
+            .sub!('@parallax.oy = $game_map.calc_parallax_y(@parallax.bitmap)', "@parallax.oy = $game_map.calc_parallax_y(@parallax.bitmap); rescue; end"),
         # Generic Inline Patches
         Patch.new("Disable all font effects")
             .flag?(:no_font_effects) # KAWARIKI_MKXP_NO_FONT_EFFECTS
