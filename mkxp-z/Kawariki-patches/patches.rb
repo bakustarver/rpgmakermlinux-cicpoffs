@@ -2,6 +2,17 @@
 # See preload.rb for Patch implementation
 
 module Preload
+    swap_chan = """
+def self.swap_chan(d, w)
+    rs = w*4
+    r = d.bytes.each_slice(rs).map { |rw| rw.pack('C*') }
+    fd = r.reverse.join
+    c = fd.unpack('C*').each_slice(4).to_a
+    s = c.map { |r, g, b, a| [b, g, r, a] }
+    s.flatten.pack('C*')
+end
+"""
+
     Patches = [
         # Ports
         Patch.new("Zeus Fullscreen: Use mkxp builtin fullscreen instead (Alt+Enter)")
@@ -179,6 +190,14 @@ module Preload
             .include?("def update_parallax")
             .sub!('@parallax.ox = $game_map.calc_parallax_x(@parallax.bitmap)', "begin; @parallax.ox = $game_map.calc_parallax_x(@parallax.bitmap)")
             .sub!('@parallax.oy = $game_map.calc_parallax_y(@parallax.bitmap)', "@parallax.oy = $game_map.calc_parallax_y(@parallax.bitmap); rescue; end"),
+        Patch.new("CHANGED: Save bitmap fix")
+            .if? {|script| script.name == "Save"}
+            .if? {|script| script.context[:rgss_version] == 2}
+            .include?("RtlMoveMemory_pi = Win32API.new('kernel32', 'RtlMoveMemory', 'pii', 'i')")
+            .include?("RtlMoveMemory_ip = Win32API.new('kernel32', 'RtlMoveMemory', 'ipi', 'i')")
+            .sub!("RtlMoveMemory_ip = Win32API.new('kernel32', 'RtlMoveMemory', 'ipi', 'i')", swap_chan)
+            .sub!('RtlMoveMemory_pi.call(data, address, data.length)', "data = Bitmap.swap_chan(self.raw_data, width)")
+            .sub!('RtlMoveMemory_ip.call(b.address, Zlib::Inflate.inflate(zdata), w * h * 4)', "b.raw_data = self.swap_chan(Zlib::Inflate.inflate(zdata), w)"),
         # Generic Inline Patches
         Patch.new("Disable all font effects")
             .flag?(:no_font_effects) # KAWARIKI_MKXP_NO_FONT_EFFECTS
