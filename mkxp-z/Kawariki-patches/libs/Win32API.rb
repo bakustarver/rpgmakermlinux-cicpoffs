@@ -285,7 +285,9 @@ module Win32API
 
 
         end
-
+        RtlMoveMemory = ->(dest, src, length) do
+            dest[0, length] = src[0, length]
+        end
 
 
 
