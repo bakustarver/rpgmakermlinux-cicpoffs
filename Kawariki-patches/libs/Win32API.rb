@@ -256,6 +256,9 @@ module Win32API
             #Preload.require "PreloadIni.rb"
             #Preload::Ini.writeIniString filename, appname, keyname, value
         end
+        RtlMoveMemory = ->(dest, src, length) do
+            dest[0, length] = src[0, length]
+        end
     end
 
     module User32
