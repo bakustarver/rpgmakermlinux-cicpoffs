@@ -30,7 +30,7 @@ fi
 
 jsondata=$(wget -qO- "https://api.itch.io/games/2577304/uploads?api_key=$apikey")
 
-if [ -z "$itchjson" ]; then
+if [ -z "$jsondata" ]; then
 if [ "$gui" = "true" ]; then
 /tmp/yad --text "Cannot get data from server, wrong itch.io key?"
 # else
