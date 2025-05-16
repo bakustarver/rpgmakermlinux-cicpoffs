@@ -20,6 +20,8 @@ itchjson=$(wget -qO- "https://api.itch.io/games/2577304/uploads?api_key=$ITCH_AP
 if [ -z "$itchjson" ]; then
 echo "Cannot get data from server, wrong itch.io key?"
 exit 1
+else
+echo "$apikey" > "$ITCHIOFILEPATH"
 fi
 savekey "$ITCH_API_KEY"
 itchdata=$(echo "$itchjson" | sed -e 's@"traits"@\n@g' | grep "$archt")
