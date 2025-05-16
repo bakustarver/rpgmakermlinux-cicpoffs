@@ -21,7 +21,7 @@ if [ -z "$@" ]; then
 if ! [ -f "/tmp/yad" ]; then
 yadinstall
 fi
-apikey=$(/tmp/yad --entry --entry-label="Your itch io api key" --title="Pro version installer")
+apikey=$(/tmp/yad --width=600 --entry --entry-label="Your itch io api key" --title="Pro version installer")
 gui=true
 else
 apikey=$(echo "$@")
