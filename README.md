@@ -97,11 +97,6 @@ rpgmaker-linux --steamskipgui true
 ### Professional version:
 <a href="https://bakurpg.itch.io/rpg-maker-mv-mz-for-linux"><img src="https://github.com/user-attachments/assets/421edc23-fdd5-47d4-aa8b-3d914be4a177" width="600"></a>
 
-Get an itch api key and install
-```
-wget -qO- "https://raw.githubusercontent.com/bakustarver/rpgmakermlinux-cicpoffs/refs/heads/main/proversion/proversion_install.sh" | bash 
-```
-
 
 
   
