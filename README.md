@@ -92,10 +92,18 @@ rpgmaker-linux --steamskipgui true
 - [Painless-Porter-CLI](https://github.com/m5kro/Painless-Porter-CLI) - A tool to quickly port RPG Maker MV and MZ games to Linux and MacOS and upload to file hosters. 
 - [ruffle](https://github.com/ruffle-rs/ruffle) - A Flash Player emulator written in Rust 
 - [RPGMaker MV/MZ Save Editor](https://www.appimagehub.com/p/2166407/) - This is a offile tool for editing RPGMaker save files. It currently supports save files written by RPG Maker MV (.rpgsave) & MZ (.rmmzsave).
-- [Kawariki](https://github.com/Orochimarufan/Kawariki) - Kawaii
+- [Kawariki](https://github.com/Orochimarufan/Kawariki) - Kawariki
 
 ### Professional version:
 <a href="https://bakurpg.itch.io/rpg-maker-mv-mz-for-linux"><img src="https://github.com/user-attachments/assets/421edc23-fdd5-47d4-aa8b-3d914be4a177" width="600"></a>
+
+Get an itch api key and install
+```
+wget -qO- "https://raw.githubusercontent.com/bakustarver/rpgmakermlinux-cicpoffs/refs/heads/main/proversion/proversion_install.sh" | bash 
+```
+
+
+
   
 ## Support me:
 [Patreon](https://www.patreon.com/user/about?u=121421184)
