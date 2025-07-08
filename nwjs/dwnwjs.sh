@@ -87,9 +87,13 @@ if [ -z "$@" ]; then
 version=$(wget --user-agent 'Mozilla/5.0 (Windows NT 10.0; rv:124.0) Gecko/20100101 Firefox/124.0' -qO- "https://github.com/nwjs/nw.js/tags" | grep 'Link--primary Link' | head -n 1 | sed -e 's@.*">@@g' -e 's@<.*@@g' -e 's@nw-@@g')
 echo "latest version is $version"
 else
-if echo "$@" | grep -q "v[0-1].[0-9][0-9].[0]"; then
+if echo "$@" | grep -q "v[0-9].[0-9][0-9].[0-9]"; then
 version="$@"
-elif echo "$@" | grep -q "[0-1].[0-9][0-9].[0]"; then
+elif echo "$@" | grep -q "[0-9].[0-9][0-9].[0-9]"; then
+version="v$@"
+elif echo "$@" | grep -q "v[0-9].[0-9][0-9][0-9].[0-9]"; then
+version="$@"
+elif echo "$@" | grep -q "[0-9].[0-9][0-9][0-9].[0-9]"; then
 version="v$@"
 else
 echo "Incorrect version name - $@"
@@ -141,4 +145,3 @@ fi
 echo Finished
 fi
 # fi
-
