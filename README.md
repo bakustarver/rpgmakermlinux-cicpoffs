@@ -95,8 +95,7 @@ rpgmaker-linux --steamskipgui true
 - [Kawariki](https://github.com/Orochimarufan/Kawariki) - Kawariki
 
 ### Professional version:
-<a href="https://bakurpg.itch.io/rpg-maker-mv-mz-for-linux"><img src="https://github.com/user-attachments/assets/421edc23-fdd5-47d4-aa8b-3d914be4a177" width="600"></a>
-
+<a href="https://bakurpg.itch.io/rpg-maker-mv-mz-for-linux"><img src="https://github.com/user-attachments/assets/ed684afc-9959-4eb1-892b-f48236bd091e" width="600"></a>
 
 
   
