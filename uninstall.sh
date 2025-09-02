@@ -2,7 +2,6 @@
 
 
 
-
 mainfdf="$HOME/.config/defrpgmakerlinuxpath.txt"
 if [ -f "$mainfdf" ] && [ -s "$mainfdf" ]; then
 mainfd=$(cat "$mainfdf")
@@ -11,7 +10,8 @@ rm -rf "$mainfd/desktopapps/";
 fi
 else
 rm -rf "$HOME/desktopapps/";
-firm "$HOME/.local/share/applications/nwjstest.desktop";
+fi
+rm "$HOME/.local/share/applications/nwjstest.desktop";
 rm "$HOME/.local/share/applications/nwjsoptions.desktop";
 rm "$HOME/.local/bin/rpgmaker-linux";
 rm -rf "$HOME/.local/share/Steam/compatibilitytools.d/rpgmaker-linux-steam-wrapper/";
