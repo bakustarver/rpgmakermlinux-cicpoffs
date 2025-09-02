@@ -15,8 +15,11 @@ mkdir -p "$defp"
 fi;
 
 nwjslist=$(ls -p "$defp/nwjs" | grep /)
-
+if [ -n "$mainfd" ]; then
+nwjsfm="$mainfd/nwjs/nwjs"
+else
 nwjsfm="$HOME/desktopapps/nwjs/nwjs"
+fi
 
 if [ -f "$nwjsfm/packagefiles/usesdk.txt" ]; then
 SDKNWJS=true
