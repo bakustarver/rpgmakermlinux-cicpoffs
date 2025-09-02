@@ -1,17 +1,38 @@
 #!/bin/bash
 
+version='1.1.6'
 
-version='1.1.5'
-export mainfd="$HOME/desktopapps"
+default_dir="$HOME/desktopapps"
+mainfdtxt="$HOME/.config/defrpgmakerlinuxpath.txt"
+
+if [[ -r "$mainfdtxt" ]] && read -r line < "$mainfdtxt" && [[ -n "$line" ]]; then
+  mainfd="${line%/}"
+else
+  mainfd="$default_dir"
+fi
+export mainfd
 export nwjsfm="$mainfd/nwjs/nwjs"
 export LD_LIBRARY_PATH="$mainfd/nwjs/nwjs/packagefiles/:$LD_LIBRARY_PATH"
 
-export yadp="$nwjsfm/packagefiles/yad"
+
+
+if command -v yad > /dev/null 2>&1; then
+yadp="$(command -v yad)"
+else
+yadp="$nwjsfm/packagefiles/yad"
+fi
+export yadp
+if command -v strings > /dev/null 2>&1; then
+stringsbin="$(command -v strings)"
+else
+stringsbin="$nwjsfm/packagefiles/strings"
+fi
 tyranounpacker="$nwjsfm/packagefiles/tyranodataextract"
 electronfd="$mainfd/electron-tyrano"
 mkxpzp="$mainfd/mkxp-z"
 evbunpack="$nwjsfm/packagefiles/evbunpack"
 ndmodulesfd="$nwjsfm/packagefiles/tyranobuilder/node_modules"
+configfile="$HOME/.config/rpgmenu-config.json"
 
 defp="$nwjsfm/nwjs"
 export defpn="$nwjsfm"
@@ -221,7 +242,8 @@ unpackexe() {
 gameexe="$1"
 gameexefd="$1-extracted"
 originalexe=$(echo "$1" | sed -e 's@\.exe@@g' -e 's@$@_original.exe-extracted@g')
-"$evbunpack" "$gameexe" "$gameexefd"
+# "$evbunpack" "$gameexe" "$gameexefd"
+evbunpack "$gameexe" "$gameexefd"
 # find "$gameexefd" -type f \( -name "*.exe" \) -delete
 cp -r "$gameexefd"/* "$npath"
 mkdir "$originalexe"
@@ -347,9 +369,9 @@ fi
 }
 
 godotdownloadsdk() {
-if ! timeout 15s wget -q --spider "https://downloads.tuxfamily.org/godotengine/"; then
-echo "Cannot connect to the godot server"
-fi
+# if ! timeout 15s wget -q --spider "https://downloads.tuxfamily.org/godotengine/"; then
+# echo "Cannot connect to the godot server"
+# fi
 if [ -z "$execpath" ]; then
 exen=$(ls -p "$npath" | grep -v "/$" | grep "\.exe$" )
 fi
@@ -358,7 +380,7 @@ fi
 while IFS= read -r line; do
 godotold=""
 exenn=$(echo "$line" | sed "s@.exe@@g" )
-strgodotexe=$(strings "$npath/$line")
+strgodotexe=$("$stringsbin" "$npath/$line")
 versiongodot=$(echo "$strgodotexe" | grep -m 1 'Godot Engine v' | sed -e 's@.* v@@g' -e 's@.official@@g' )
 if [ -z "$versiongodot" ]; then
 # echo zzz
@@ -400,15 +422,34 @@ if [ "$garch" = "64" ] && [ "$garch" = "32" ]; then
 echo "The Godot version don't have any arm versin";
 exit;
 fi
+
+# https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_linux.x86_64.zip
+# https://github.com/godotengine/godot/releases/download/4.1-stable/Godot_v4.1-stable_linux.x86_64.zip
 versinid="_x11.$garch.zip"
-godotsdklink="https://downloads.tuxfamily.org/godotengine/$n1godot/Godot_v$n1godot-$n2godot$versinid"
-else
-if [ "$n2godot" = "stable" ]; then
-godotsdklink="https://downloads.tuxfamily.org/godotengine/$n1godot/Godot_v$n1godot-$n2godot$versinid"
-else
-godotsdklink="https://downloads.tuxfamily.org/godotengine/$n1godot/$n2godot/Godot_v$n1godot-$n2godot$versinid"
+# godotsdklink="https://downloads.tuxfamily.org/godotengine/$n1godot/Godot_v$n1godot-$n2godot$versinid"
+if [ "$n2godot" = "mono" ]; then
+stablepr="stable_"
+versinid="_x11_$garch.zip"
 fi
+if [ "$n2godot" = "beta" ]; then
+$n2godot="stable"
 fi
+godotsdklink="https://github.com/godotengine/godot/releases/download/$n1godot-stable/Godot_v$n1godot-$stablepr$n2godot$versinid"
+# else
+# # if [ "$n2godot" = "stable" ]; then
+# # godotsdklink="https://downloads.tuxfamily.org/godotengine/$n1godot/Godot_v$n1godot-$n2godot$versinid"
+#
+# # godotsdklink="https://github.com/godotengine/godot/releases/download/$n1godot-stable/Godot_v$n1godot-$stablepr$n2godot$versinid"
+# # echo "https://downloads.tuxfamily.org/godotengine/$n1godot/Godot_v$n1godot-$n2godot$versinid"
+# # echo "https://downloads.tuxfamily.org/godotengine/$n1godot/$n2godot/Godot_v$n1godot-$n2godot$versinid"
+#
+# else
+# # godotsdklink="https://downloads.tuxfamily.org/godotengine/$n1godot/$n2godot/Godot_v$n1godot-$n2godot$versinid"
+# fi
+fi
+# echo "$n1godot-$stablepr$n2godot$versinid"
+
+# echo "$godotsdklink"
 if wget -q --spider "$godotsdklink"; then
 dglink="$godotdownloadsdk"
 fi
@@ -420,6 +461,7 @@ if wget -q --spider "$godotsdklink"; then
 echo "$godotsdklink"
 wget -c "$godotsdklink" -P "$npath"
 else
+# echo "$godotsdklink"
 echo "Can't connect to the godot server"
 exit;
 fi
@@ -460,7 +502,7 @@ while IFS= read -r line; do
 # check=$()
 # echo "$npath/$line"
 #check 1 kb of the binary
-allstrings=$(head -c 5120 "$npath/$line" | strings)
+allstrings=$(head -c 5120 "$npath/$line" | "$stringsbin")
 if echo "$allstrings" | grep -q "8MZu" && echo "$allstrings" | grep -q "pck"; then
 # echo vvv
 # "$pckextract" "$npath/$line"
@@ -754,14 +796,79 @@ fi
 if [ -h "$nwjstestpath/package.json" ]; then
 rm "$nwjstestpath/package.json"
 fi
-echo "$newpackagejson" > "$nwjstestpath/package.json"
+echo "$newpackagejson" | sed -e "s@packagefiles@$nwjsfm/packagefiles@g" > "$nwjstestpath/package.json"
 }
 
+enhancedprotection() {
+if [ "$1" = "false" ]; then
+echo '{
+  "lastScript": null,
+  "uiVisibility": {
+    "scriptSelect": true,
+    "executeButton": true,
+    "disableexec": false,
+    "disablenet": false,
+    "resultDisplay": true
+  }
+}' > "$configfile"
+echo "Enhanced protection disabled."
+else
+if [ -e "$configfile" ]; then
+sed -e 's@"disablenet":.*@"disablenet": true,@g' -e 's@"disableexec":.*@"disableexec": true,@g'  -i "$configfile"
+else
+echo '{
+  "lastScript": null,
+  "uiVisibility": {
+    "scriptSelect": true,
+    "executeButton": true,
+    "disableexec": true,
+    "disablenet": true,
+    "resultDisplay": true
+  }
+}' > "$configfile"
+fi
+echo "Enhanced protection enabled successfully."
+fi
+# echo "Failed to enable enhanced protection. Please check your configuration."
+}
 
+editconfigfunc () {
+  local option="$1"
+  local state="$2"
+  if [[ ! -f "$configfile" ]]; then
+  echo "Error: Config file '$configfile' not found." >&2
+  exit 1
+  fi
+
+  # Validate option argument
+  if [[ "$option" != "disableexec" && "$option" != "disablenet" ]]; then
+    echo -e "Use\nrpgmaker-linux editconfig disableexec <true|false>\nrpgmaker-linux editconfig disablenet <true|false>"
+    return 2
+  fi
+
+  # Validate state
+  if [[ "$state" != "true" && "$state" != "false" ]]; then
+    echo "Error: Invalid state '${state}'. Valid states are 'true' or 'false'." >&2
+    return 3
+  fi
+
+  # Apply the setting (placeholder for real logic)
+  sed "s@.$option.:.*@\"$option\": $state,@g"  -i "$configfile"
+  if [[ "$state" == "true" ]]; then
+    echo "Operation successful: '${option}' has been enabled."
+  else
+    echo "Operation successful: '${option}' has been disabled."
+  fi
+
+  return 0
+
+
+}
 while [ $# -ne 0 ]
 do
     arg="$1"
     arg2="$2"
+    arg3="$3"
     case "$arg" in
         --help)
             help=true
@@ -851,14 +958,47 @@ do
                     ;;
             esac
             ;;
-        --unmount)
+        --enhancedprotection)
             case "$arg2" in
+                true)
+                    enhancedprotection
+                    ;;
                 false)
-                    unmount=false
+                    enhancedprotection false
+                    ;;
+
+                *)
+                    echo -e "Use --enhancedprotection <true|false>"
+                    ;;
+            esac
+
+            info=true
+            ;;
+        editconfig)
+            info=true
+            editconfigfunc "$arg2" "$arg3"
+            ;;
+        --mounttype)
+            case "$arg2" in
+                cicpoffs)
+                    CICPOFFSMOUNT=true
+                    ;;
+                jskawariki)
+                    JSCASEINSENSITIVEPATCH=true
+                    ;;
+                link)
+                    export DISABLECASEINSENSITIVEPATCH=true
+                    ;;
+                none)
+                    NOMOUNT=true
                     ;;
                 *)
-                    echo -e "Use --unmount false
-                    --unmount true"
+                      echo -e 'Options:
+  --mount-type <mode>   Select mount mode. Valid modes are:
+                          cicpoffs        Mount using cicpoffs
+                          jskawariki      Use jskawariki patch
+                          link            Create only a symbolic link
+                          none            Do nothing'
                     info=true
                     ;;
             esac
@@ -1005,7 +1145,6 @@ Options:
   --chooselatestnwjs              Choose the latest version of NW.js available on your PC.
   --nwjsversion <version>         Choose the version of NW.js you want to use.
   --deleteoldnwjs                 Delete old NW.js versions.
-  --unmount <true|false>          Option to disable mounting of the game folder.
   --gamepath <path>               Specify the path to the RPG Maker game.
   --useoriginalgamepackagejson    Use the original game package.json file.
   --custompackagejsonpath <path>  Specify a custom path for the package.json file.
@@ -1013,7 +1152,6 @@ Options:
   --cicpoffspath <path>           Specify the cicpoffs binary path.
   --printrpgmakerlibversions      Show versions of RPG Maker MV/MZ game libraries.
   --forceaarch <architecture>     Force the use of specified architecture (e.g., x86_64, i386, aarch64) (incomplete feature).
-  --jpnlocale                     Use Japanese locale for certain games.
   --checkbetaupdates              Check for beta updates (incomplete feature).
   --updatescripts                 Quickly update only the scripts in this tool from the github (Warning: May be missing files if you updating)
   --fullupdate                    Perform a full update of the rpgmaker-linux.
@@ -1026,6 +1164,20 @@ Options:
   --reinstallmkxpz                Reinstall the mkxpz module.
   --steamskipgui <true|false>     Disable gui in steam.
   --makeshortcut <type>           Create a shortcut for the game (type: local, desktop, menu, all).
+  --enhancedprotection <true|false>
+        Toggle enhanced protection mode. When enabled, the game runs in a hardened sandbox:
+          • Network and child-process spawning are blocked.
+          • Dynamic code evaluation is restricted.
+  --mount-type <mode>
+        Select how the game folder is exposed to NW.js. Modes:
+          cicpoffs       Mount with cicpoffs (case-insensitive file access).
+          jskawariki     Use the jskawariki patch for case-insensitive handling.
+          link           Don’t mount—just symlink the game folder.
+          none           Disable mounting entirely;
+  editconfig <option> <true|false>
+        Edit rpgmaker-linux’s config file on the fly. Valid options are:
+          disableexec    Disable in-game script execution for extra safety.
+          disablenet     Disable all network access for the game.
   --bugreport                     Sends an anonymous report to developer about game data, system information, engine for fixing bugs and errors.
                                   You can describe in detail the issue or enhancement you would like to see.
   --exportthegame                 This option allows users to export their RPG Maker game into a distributable format. When this argument is used, the program will package the game
@@ -1233,8 +1385,13 @@ if [ "$tyranover" = "v5" ]; then
 tyranocheckelectron
 fi
 elif  [ "$engine" = "mkxpz" ]; then
+if [ -n "$SteamEnv" ] && [ -f "$HOME/.config/steamskipgui.txt" ] ; then
+echo skipping gui
+mkxpopt=linux
+else
 echo mkxpz;
 mkxpzdialogoptions
+fi
 else
 if [ -n "$SteamEnv" ] && [ -f "$HOME/.config/steamskipgui.txt" ] ; then
 echo skipping gui
@@ -1267,13 +1424,13 @@ rpgcorefilepath="$rpgmzcorefilepath"
 fi
 
 if [ -f "$nwdllpath" ]; then
-nwdlltext=$(strings "$nwdllpath")
+nwdlltext=$("$stringsbin" "$nwdllpath")
 nwjsversiondll=$(echo "$nwdlltext" | sed -n "s/process.versions\['nw'\] = '//p" | sed -e "s@'.*@@g")
 chromiumversion=$(echo "$nwdlltext" | grep -B 4 '::SHGetSpecialFolderPathW' | grep '\.[0-9]\.[0-9]' | sed -e 's@.*\.\$@@g')
 fi
 rpgcoretext=$(cat "$rpgcorefilepath")
 if [ -f "$nodedllpath" ]; then
-nodeversion=$(strings "$nodedllpath" | grep '/win-.*/node.lib' | sed -e 's@https://nodejs.org/download/release/@@g' -e 's@/win-.*/node.lib@@g')
+nodeversion=$("$stringsbin" "$nodedllpath" | grep '/win-.*/node.lib' | sed -e 's@https://nodejs.org/download/release/@@g' -e 's@/win-.*/node.lib@@g')
 fi
 
 rpgmakername=$(echo -e "$rpgcoretext" | sed -n "s/Utils.RPGMAKER_NAME = .//p" | sed -e 's@.;@@g')
@@ -1350,11 +1507,11 @@ nwjstestpath="$NWJSPATH"
 echo "$NWJSPATH"
 else
 if [ -n "$nwjsversion" ]; then
-searchpath=$(echo "$nwjslistd" | grep "$nwjsversion" )
+nwjsf=$(echo "$nwjslistd" | grep "$nwjsversion" )
 # nwjstestpath="$defp/nwjs/$nwjsversion"
-if [ -n "$searchpath" ]; then
-echo "$searchpath"
-nwjstestpath="$nwjsfm/nwjs/$searchpath"
+if [ -n "$nwjsf" ]; then
+# echo "$nwjsf"
+nwjstestpath="$nwjsfm/nwjs/$nwjsf"
 # kdialog --msgbox "$nwjstestpath"
 else
 echo no version
@@ -1389,7 +1546,6 @@ elif [ "$engine" = "construct-nwjs" ]; then
 export engine=construct-nwjs
 fi
 if [ -n "$found" ] || [ -n "$engine"  ]; then
-# python "/home/pasha/Desktop/Паша/Scripts/python/hardware-info/Script2.py"
 "$nwjsfm/packagefiles/bugreporter"
 else
 echo "Cannot find any game"
@@ -1439,18 +1595,21 @@ fi
 
 startnw() {
 # cd "$gamef" &
-if [ -n "$armsys" ]; then
+versionnum=$(echo "$nwjsf" | sed -e 's@.*v0\.@@g' -e 's@\..*@@g')
+# echo "version $nwjsf $versionnum"
+echo "$nwjsf"
+if [ "$versionnum" -lt 102 ]; then
 "$nwjstestpath/nw" --ozone-platform=x11
 else
 if [[ "$XDG_SESSION_TYPE" == "wayland" ]]; then
 echo "wayland detected"
-# firejail --protocol=unix,inet,inet6,netlink
 "$nwjstestpath/nw" --ozone-platform=wayland
 else
 echo "wayland not detected, starting in x11"
 "$nwjstestpath/nw" --ozone-platform=x11
 fi
 fi
+
 }
 
 
@@ -1601,8 +1760,19 @@ checkreaddirSynfunc
 
 
 
-
+if [ "$CICPOFFSMOUNT" = "true" ]; then
 mountwww
+elif [ "$NOMOUNT" = "true" ]; then
+:
+else
+
+checkandunmount
+packagejsonfunc
+# echo "$nwjstestpath/www"
+rm -rf "$nwjstestpath/www"
+ln -s "$mountpath" "$nwjstestpath/www"
+
+fi
 plugins-autoinstall
 if [ -n "$MAKELOCALSHORTCUT" ]; then
 makelocalshortcut
