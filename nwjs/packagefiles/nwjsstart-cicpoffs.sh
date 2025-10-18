@@ -1672,7 +1672,7 @@ for file in "$nwjstestpath"/*; do
   fi
 done
 
-if grep -q -r "readdirSyn" "$mountpath/js/plugins/"; then
+if grep -q -r "readdirSyn\|accessSync" "$mountpath/js/plugins/"; then
 
 # echo hhh;
 for file in "$npath"/*; do
