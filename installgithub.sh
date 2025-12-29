@@ -26,7 +26,9 @@ echo "Cannot get data from server, wrong itch.io key?"
 exit 1
 fi
 savekey "$ITCH_API_KEY"
-rpgmprotarurl=$(echo "$itchlinks" | grep "$archt" | sed -e 's@.*-> @@g')
+rpgmprotardata=$(echo "$itchlinks" | grep "$archt")
+rpgmprotarurl=$(echo "$rpgmprotardata" | sed -e 's@.*-> @@g')
+basenametar=$(echo "$rpgmprotardata" | sed -e 's@ ->.*@@g')
 wget "$rpgmprotarurl" -O "/tmp/$basenametar"
 
 else
