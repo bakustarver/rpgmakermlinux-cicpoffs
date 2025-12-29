@@ -17,22 +17,17 @@ fi
 
 if [ -n "$ITCH_API_KEY" ]; then
 echo "Installing the professional version"
-itchlinksurl="https://github.com/bakustarver/rpgmakermlinux-cicpoffs/releases/download/libraries/itchiogetlinks.$arch_t"
+itchlinksurl="https://github.com/bakustarver/rpgmakermlinux-cicpoffs/releases/download/libraries/itchlinks.$arch_t"
 wget "$itchlinksurl" -O "/tmp/itchlinks"
 chmod +x "/tmp/itchlinks"
-itchjson=$(wget -qO- "https://api.itch.io/games/2577304/uploads?api_key=$ITCH_API_KEY")
-if [ -z "$itchjson" ]; then
+itchlinks=$(/tmp/itchlink https://bakurpg.itch.io/rpg-maker-mv-mz-for-linux)
+if echo "$itchlinks" | grep -q "Client Error"; then 
 echo "Cannot get data from server, wrong itch.io key?"
 exit 1
-else
-echo "$apikey" > "$ITCHIOFILEPATH"
 fi
 savekey "$ITCH_API_KEY"
-itchdata=$(echo "$itchjson" | sed -e 's@"traits"@\n@g' | grep "$archt")
-itchid=$(echo "$itchdata" | sed -e 's@.*,"id":@@g' -e 's@,.*@@g')
-basenametar=$(echo "$itchdata" | sed -e 's@.*"filename":"@@g' -e 's@".*@@g')
-dirtarname=$(echo "$basenametar" | sed -e 's@.tar.gz@@g')
-wget "https://api.itch.io/uploads/$itchid/download?api_key=$ITCH_API_KEY" -O "/tmp/$basenametar"
+rpgmprotarurl=$(echo "$itchlinks" | grep "$archt" | sed -e 's@.*-> @@g')
+wget "$rpgmprotarurl" -O "/tmp/$basenametar"
 
 else
 echo "Installing the base version"
