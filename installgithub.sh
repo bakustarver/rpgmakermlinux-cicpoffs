@@ -17,6 +17,9 @@ fi
 
 if [ -n "$ITCH_API_KEY" ]; then
 echo "Installing the professional version"
+itchlinksurl="https://github.com/bakustarver/rpgmakermlinux-cicpoffs/releases/download/libraries/itchiogetlinks.$arch_t"
+wget "$itchlinksurl" -O "/tmp/itchlinks"
+chmod +x "/tmp/itchlinks"
 itchjson=$(wget -qO- "https://api.itch.io/games/2577304/uploads?api_key=$ITCH_API_KEY")
 if [ -z "$itchjson" ]; then
 echo "Cannot get data from server, wrong itch.io key?"
