@@ -20,7 +20,7 @@ echo "Installing the professional version"
 itchlinksurl="https://github.com/bakustarver/rpgmakermlinux-cicpoffs/releases/download/libraries/itchlinks.$archt"
 wget "$itchlinksurl" -O "/tmp/itchlinks"
 chmod +x "/tmp/itchlinks"
-itchlinks=$(/tmp/itchlink https://bakurpg.itch.io/rpg-maker-mv-mz-for-linux)
+itchlinks=$(/tmp/itchlinks https://bakurpg.itch.io/rpg-maker-mv-mz-for-linux)
 if echo "$itchlinks" | grep -q "Client Error"; then 
 echo "Cannot get data from server, wrong itch.io key?"
 exit 1
