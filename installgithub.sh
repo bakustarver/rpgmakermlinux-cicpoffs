@@ -36,9 +36,9 @@ echo "Installing the base version"
 link="https://github.com/bakustarver/rpgmakermlinux-cicpoffs/releases/download/v$version/rpgmakerlinux-$archt-v$version.tar.gz"
 
 basenametar=$(basename "$link")
-dirtarname=$(echo "$basenametar" | sed -e 's@.tar.gz@@g')
 wget -P "/tmp/" "$link"
 fi
+dirtarname=$(echo "$basenametar" | sed -e 's@.tar.gz@@g')
 tar -xf "/tmp/$basenametar" -C "/tmp/"
 /tmp/$dirtarname/install.sh
 rm "/tmp/$basenametar"
