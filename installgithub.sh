@@ -17,7 +17,7 @@ fi
 
 if [ -n "$ITCH_API_KEY" ]; then
 echo "Installing the professional version"
-itchlinksurl="https://github.com/bakustarver/rpgmakermlinux-cicpoffs/releases/download/libraries/itchlinks.$arch_t"
+itchlinksurl="https://github.com/bakustarver/rpgmakermlinux-cicpoffs/releases/download/libraries/itchlinks.$archt"
 wget "$itchlinksurl" -O "/tmp/itchlinks"
 chmod +x "/tmp/itchlinks"
 itchlinks=$(/tmp/itchlink https://bakurpg.itch.io/rpg-maker-mv-mz-for-linux)
