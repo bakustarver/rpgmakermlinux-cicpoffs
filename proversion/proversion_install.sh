@@ -28,19 +28,6 @@ apikey=$(echo "$@")
 fi
 
 
-jsondata=$(wget -qO- "https://api.itch.io/games/2577304/uploads?api_key=$apikey")
-
-if [ -z "$jsondata" ]; then
-if [ "$gui" = "true" ]; then
-/tmp/yad --text "Cannot get data from server, wrong itch.io key?"
-# else
-fi
-echo "Cannot get data from server, wrong itch.io key?"
-exit 1
-else
-echo "$apikey" > "$ITCHIOFILEPATH"
-fi
-
 export ITCH_API_KEY="$apikey"
 
 
