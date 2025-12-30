@@ -33,7 +33,7 @@ if [ -z "$id" ]; then
 fi
 savekey "$ITCH_API_KEY"
 listtar=$(wget -qO- "https://api.itch.io/games/2577304/uploads?download_key_id=$id&api_key=$ITCH_API_KEY" | "$jq" -r '.uploads[] | "\(.filename)->https://api.itch.io/uploads/\(.id)/download"')
-echo "$listtar"
+#echo "$listtar"
 
 rpgmprotardata=$(echo "$listtar" | grep "$archt")
 rpgmprotarurl=$(echo "$rpgmprotardata" | sed -e 's@.*->@@g')
