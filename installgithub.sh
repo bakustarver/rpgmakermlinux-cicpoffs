@@ -20,10 +20,12 @@ echo "Installing the professional version"
 if command -v jq >/dev/null 2>&1; then
 jq="jq"
 else
+if ! [ -f "/tmp/jq" ]; then
 jqurl="https://github.com/bakustarver/rpgmakermlinux-cicpoffs/releases/download/libraries/jq.$archt"
 wget "$jqurl" -O "/tmp/jq"
 chmod +x "/tmp/jq"
 jq="/tmp/jq"
+fi
 fi
 list=$(wget  -qO- "https://api.itch.io/profile/owned-keys?api_key=$ITCH_API_KEY" )
 id=$(echo "$list" | "$jq" -r '.owned_keys[] | select(.game_id==2577304) | .id')
