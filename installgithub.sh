@@ -17,19 +17,31 @@ fi
 
 if [ -n "$ITCH_API_KEY" ]; then
 echo "Installing the professional version"
-itchlinksurl="https://github.com/bakustarver/rpgmakermlinux-cicpoffs/releases/download/libraries/itchlinks.$archt"
-wget "$itchlinksurl" -O "/tmp/itchlinks"
-chmod +x "/tmp/itchlinks"
-itchlinks=$(/tmp/itchlinks https://bakurpg.itch.io/rpg-maker-mv-mz-for-linux)
-if echo "$itchlinks" | grep -q "Client Error"; then 
-echo "Cannot get data from server, wrong itch.io key?"
-exit 1
+if command -v jq >/dev/null 2>&1; then
+jq="jq"
+else
+jqurl="https://github.com/bakustarver/rpgmakermlinux-cicpoffs/releases/download/libraries/jq.$archt"
+wget "$itchlinksurl" -O "/tmp/jq"
+chmod +x "/tmp/jq"
+jq="/tmp/jq"
+fi
+list=$(wget  -qO- "https://api.itch.io/profile/owned-keys?api_key=$ITCH_API_KEY" )
+id=$(echo "$list" | "$jq" -r '.owned_keys[] | select(.game_id==2577304) | .id')
+if [ -z "$id" ]; then
+  echo "Cannot get data from server, wrong itch.io key?"
+  exit
 fi
 savekey "$ITCH_API_KEY"
-rpgmprotardata=$(echo "$itchlinks" | grep "$archt")
-rpgmprotarurl=$(echo "$rpgmprotardata" | sed -e 's@.*-> @@g')
-basenametar=$(echo "$rpgmprotardata" | sed -e 's@ ->.*@@g')
-wget "$rpgmprotarurl" -O "/tmp/$basenametar"
+listtar=$(wget -qO- "https://api.itch.io/games/2577304/uploads?download_key_id=$id&api_key=$ITCH_API_KEY" | "$jq" -r '.uploads[] | "\(.filename)->https://api.itch.io/uploads/\(.id)/download"')
+echo "$listtar"
+
+rpgmprotardata=$(echo "$listtar" | grep "$archt")
+rpgmprotarurl=$(echo "$rpgmprotardata" | sed -e 's@.*->@@g')
+basenametar=$(echo "$rpgmprotardata" | sed -e 's@->.*@@g')
+
+
+
+wget "$rpgmprotarurl?download_key_id=$id&api_key=$ITCH_API_KEY" -O "/tmp/$basenametar"
 
 else
 echo "Installing the base version"
