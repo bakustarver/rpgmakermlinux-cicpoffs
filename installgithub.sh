@@ -21,7 +21,7 @@ if command -v jq >/dev/null 2>&1; then
 jq="jq"
 else
 jqurl="https://github.com/bakustarver/rpgmakermlinux-cicpoffs/releases/download/libraries/jq.$archt"
-wget "$itchlinksurl" -O "/tmp/jq"
+wget "$jqurl" -O "/tmp/jq"
 chmod +x "/tmp/jq"
 jq="/tmp/jq"
 fi
