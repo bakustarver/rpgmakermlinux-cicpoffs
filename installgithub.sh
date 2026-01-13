@@ -27,12 +27,28 @@ chmod +x "/tmp/jq"
 jq="/tmp/jq"
 fi
 fi
-list=$(wget  -qO- "https://api.itch.io/profile/owned-keys?api_key=$ITCH_API_KEY" )
-id=$(echo "$list" | "$jq" -r '.owned_keys[] | select(.game_id==2577304) | .id')
-if [ -z "$id" ]; then
-  echo "Cannot get data from server, wrong itch.io key?"
-  exit
-fi
+page=1
+sleep_between=0.5
+while [ -z "$id" ]; do
+list=$(wget  -qO- "https://api.itch.io/profile/owned-keys?api_key=$ITCH_API_KEY&page=$page" ) || {
+    echo "Error:  Cannot get data from server, wrong itch.io key?" >&2
+    exit 2
+  }
+
+  len=$(printf '%s' "$list" | "$jq" '.owned_keys | length' 2>/dev/null) || {
+    echo "Error: failed to parse JSON on page with jq" >&2
+    exit 3
+  }
+
+  if [ "$len" -eq 0 ]; then
+    echo "Query finished: the professional version was not detected with the provided API key"
+    exit
+  fi
+  id=$(echo "$list" | "$jq" -r '.owned_keys[] | select(.game_id==2577304) | .id')
+
+  page=$((page + 1))
+  sleep "$sleep_between"
+done
 savekey "$ITCH_API_KEY"
 listtar=$(wget -qO- "https://api.itch.io/games/2577304/uploads?download_key_id=$id&api_key=$ITCH_API_KEY" | "$jq" -r '.uploads[] | "\(.filename)->https://api.itch.io/uploads/\(.id)/download"')
 #echo "$listtar"
