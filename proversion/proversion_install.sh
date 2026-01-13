@@ -39,18 +39,40 @@ jq="/tmp/jq"
 fi
 fi
 
-
-
-list=$(wget  -qO- "https://api.itch.io/profile/owned-keys?api_key=$apikey" )
-id=$(echo "$list" | "$jq" -r '.owned_keys[] | select(.game_id==2577304) | .id')
-if [ -z "$id" ]; then
+errmsg() {
 if [ "$gui" = "true" ]; then
-/tmp/yad --text "Cannot get data from server, wrong itch.io key?"
-# else
-fi
-echo "Cannot get data from server, wrong itch.io key?"
+/tmp/yad --text "$1"
+exit
+else
+echo "$1"
 exit 1
 fi
+}
+
+
+page=1
+sleep_between=0.5
+while [ -z "$id" ]; do
+list=$(wget  -qO- "https://api.itch.io/profile/owned-keys?api_key=$apikey&page=$page" ) || {
+    errmsg "Error:  Cannot get data from server, wrong itch.io key?"
+    exit 2
+  }
+
+  len=$(printf '%s' "$list" | "$jq" '.owned_keys | length' 2>/dev/null) || {
+    errmsg "Error: failed to parse JSON on page with jq"
+    exit 3
+  }
+
+  if [ "$len" -eq 0 ]; then
+    errmsg "Query finished: the professional version not detected with provided API key."
+    exit
+  fi
+  id=$(echo "$list" | "$jq" -r '.owned_keys[] | select(.game_id==2577304) | .id')
+
+  page=$((page + 1))
+  sleep "$sleep_between"
+done
+
 export ITCH_API_KEY="$apikey"
 
 
