@@ -1,4 +1,43 @@
-
+//=============================================================================
+// Cheat Menu Plugin Class
+//=============================================================================
+/*:
+ * @url https://github.com/emerladCoder/RPG-Maker-MV-Cheat-Menu-Plugin
+ *
+ * @author emerladCoder
+ * @help
+ * A plugin for RPG Maker MV/MZ that allows users to access a Cheat Menu in game. The controls are all input via the number keys [0]-[9] (not the NUMPAD) (other keys may be used as well now) or the mouse.
+ *
+ * Open the Menu by pressing the [1] Key.
+ * Move menu to different positions with ` (key with tilde ~)
+ * Scroll between cheats with [2] and [3] Keys.
+ * Any [#] indicates a number key to press to cause an action, if you don't want to click.
+ *
+ * The menu can also be interacted with by clicking (everything except opening the menu can be done with the mouse).
+ * Clicking is done with left click and clickable elements will be highlighted red on hover over.
+ *
+ * Available Cheats Are
+ *
+ *     God Mode for any Actor (infinite hp and mp, skills shouldn't cost anything)
+ *     Set Enemy/Party HP to 0 hp or 1 hp, Party Full Recover (HP, MP, Status)
+ *     Toggle No Clip
+ *     Edit Exp
+ *     Edit Stats
+ *     Edit Gold
+ *     Edit Items, Weapons, Armor
+ *     Change player movement speed
+ *     Clear Status/States Effects
+ *     Edit Variables/Switches
+ *     Save/Recall Location and Teleport
+ *         Be careful not to skip game events
+ *         If you teleport off the map lower X,Y and teleport again to fix it.
+ *     Open javascript console/developer tools with F8
+ *         With this you can edit game Variables and Switches (at your own risk) in the $gameVariables and $gameSwitches, as well as other advanced stuff
+ *     Open Switch/Variable Debug Menu from playtest Mode with F9
+ *         Better/easier method for editing the Switches and Variables than using the console, slower if you want to edit variables by large amounts
+ *
+ *
+ */
 
 /////////////////////////////////////////////////
 // Cheat Menu Plugin Class

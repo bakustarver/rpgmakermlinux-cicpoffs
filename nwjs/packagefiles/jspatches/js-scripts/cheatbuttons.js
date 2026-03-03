@@ -1,4 +1,26 @@
-
+//=============================================================================
+// cheatbuttons
+//=============================================================================
+/*:
+ * @url https://github.com/bakustarver/rpgmakermlinux-cicpoffs/blob/main/nwjs/packagefiles/jspatches/js-scripts/cheatbuttons.js
+ *
+ * @help
+ * Adds a small on-screen debug panel with buttons to modify gold, player speed,
+ * force battle victory, open save/load/debug screens, toggle debug walking, return to title,
+ * and reload the game.
+ *
+ *
+ * Click buttons to perform common development actions at runtime:
+ * - Set party gold to 1,000,000
+ * - Set player move speed to 6
+ * - Force a battle victory
+ * - Open Save or Load scenes
+ * - Toggle debug walking (walk-through)
+ * - Open the Debug scene
+ * - Return to the Title screen
+ * - Reload Game
+ *
+ */
     if (window.Utils && Utils.RPGMAKER_NAME) {
 
 
@@ -9,8 +31,11 @@
         <button id="winBattleButton" style="position: fixed; top: 260px; right: 10px; z-index: 1000000;">Win Battle</button>
         <button id="saveScreenButton" style="position: fixed; top: 300px; right: 10px; z-index: 1000000;">Save Screen</button>
         <button id="loadScreenButton" style="position: fixed; top: 340px; right: 10px; z-index: 1000000;">Load Screen</button>
-        <button id="debugWalkButton" style="position: fixed; top: 380px; right: 10px; z-index: 1000000;">Enable Debug Walking</button>
-        <button id="debugscreenbutton" style="position: fixed; top: 420px; right: 10px; z-index: 1000000;">Debug Screen</button>
+        <button id="returntothemenu" style="position: fixed; top: 380px; right: 10px; z-index: 1000000;">Return to Title</button>
+        <button id="debugWalkButton" style="position: fixed; top: 420px; right: 10px; z-index: 1000000;">Enable Debug Walking</button>
+        <button id="debugscreenbutton" style="position: fixed; top: 460px; right: 10px; z-index: 1000000;">Debug Screen</button>
+        <button id="reloadthepage" style="position: fixed; top: 500px; right: 10px; z-index: 1000000;">Reload Game</button>
+
 
         `;
 
@@ -72,12 +97,15 @@
         });
 
         // Define the debug walking function
-
+        let debugWalkingEnabled = false;
         // Add event listener for the debug walking button
         document.getElementById('debugWalkButton').addEventListener('click', function() {
+            debugWalkingEnabled = !debugWalkingEnabled; // Toggle state
+
             $gamePlayer.isDebugThrough = function() {
-                return true; // Always return true
+                return debugWalkingEnabled;
             };
+             this.textContent = debugWalkingEnabled ? "Disable Debug Walking" : "Enable Debug Walking";
             document.getElementById('debugWalkButton').disabled = false;
             document.getElementById('debugWalkButton').blur()
         });
@@ -89,8 +117,25 @@
             } else {
                 alert('SceneManager is not defined.');
             }
-            document.getElementById('setGoldButton').disabled = false;
-            document.getElementById('setGoldButton').blur()
+            document.getElementById('debugscreenbutton').disabled = false;
+            document.getElementById('debugscreenbutton').blur()
+        });
+
+        document.getElementById('reloadthepage').addEventListener('click', function() {
+            location.reload();
+        });
+        document.getElementById('returntothemenu').addEventListener('click', function() {
+            if (typeof SceneManager !== 'undefined') {
+                // SceneManager.push(Scene_GameEnd);
+                // Scene_Base.prototype.fadeOutAll();
+                SceneManager._scene.fadeOutAll();
+                SceneManager.goto(Scene_Title);
+                Window_TitleCommand.initCommandPosition();
+            } else {
+                alert('SceneManager is not defined.');
+            }
+            document.getElementById('debugscreenbutton').disabled = false;
+            document.getElementById('debugscreenbutton').blur()
         });
 
     };

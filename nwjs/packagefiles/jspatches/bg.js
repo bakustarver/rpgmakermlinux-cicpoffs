@@ -1,53 +1,83 @@
 // bg.js
 // Background script to guard against malware downloaders.
+
 const pathlib = require('path');
 const fslib   = require('fs');
 
+// Resolve home and main directories safely
+const homeDir = (process.env.HOME || '').trim();
+const mainfd = (process.env.mainfd || process.env.mainfdrpgmlinux || pathlib.join(homeDir || '', 'desktopapps')).trim();
 
-const mainfd = process.env.mainfd || pathlib.join(homeDir.trim(), 'desktopapps');
-const scriptsjsDir = pathlib.join(mainfd.trim(), 'nwjs', 'nwjs', 'packagefiles', 'jspatches');
+// Paths to helper patches
+const scriptsjsDir = pathlib.join(mainfd, 'nwjs', 'nwjs', 'packagefiles', 'jspatches');
 const caseinsensitive = pathlib.join(scriptsjsDir, 'case-insensitive-nw.js');
 const disablechild = pathlib.join(scriptsjsDir, 'disable-child.js');
 const disablenet = pathlib.join(scriptsjsDir, 'disable-net.js');
-const homeDir = process.env.HOME
-const configPath = pathlib.join(homeDir.trim(), ".config", 'rpgmenu-config.json');
 
+// Config path
+const configPathrpgmlinux = pathlib.join(homeDir || '', ".config", 'rpgmenu-config.json');
 
 function loadConfig() {
     try {
-        return JSON.parse(fslib.readFileSync(configPath, 'utf8'));
-    } catch {
-        // default visibility: all shown
+        const raw = fslib.readFileSync(configPathrpgmlinux, 'utf8');
+        const cfg = JSON.parse(raw || '{}');
+
+        // Backwards compatibility: if old uiVisibility exists, derive menuHidden
+        if (typeof cfg.menuHidden === 'undefined' && cfg.uiVisibility) {
+            const keys = ['scriptSelect','executeButton','resultDisplay','infoButton'];
+            const allHidden = keys.every(k => cfg.uiVisibility[k] === false);
+            cfg.menuHidden = !!allHidden;
+            delete cfg.uiVisibility;
+            try { fslib.writeFileSync(configPathrpgmlinux, JSON.stringify(cfg, null, 2), 'utf8'); } catch (e) {}
+        }
+
+        // Ensure expected fields
+        return {
+            lastScript: typeof cfg.lastScript !== 'undefined' ? cfg.lastScript : null,
+            menuHidden: !!cfg.menuHidden,
+            disableexec: typeof cfg.disableexec !== 'undefined' ? !!cfg.disableexec : false,
+            disablenet: typeof cfg.disablenet !== 'undefined' ? !!cfg.disablenet : false
+        };
+    } catch (e) {
+        // Default config
         return {
             lastScript: null,
-            uiVisibility: {
-                scriptSelect: true,
-                executeButton: true,
-                disableexec: true,
-                disablenet: false,
-                resultDisplay: true
-            }
+            menuHidden: true,
+            disableexec: false,
+            disablenet: false
         };
     }
 }
 
 function saveConfig(cfg) {
     try {
-        fs.writeFileSync(configPath, JSON.stringify(cfg, null, 2), 'utf8');
+        const out = {
+            lastScript: cfg.lastScript || null,
+            menuHidden: !!cfg.menuHidden,
+            disableexec: !!cfg.disableexec,
+            disablenet: !!cfg.disablenet
+        };
+        // Ensure config directory exists
+        try {
+            const dir = pathlib.dirname(configPathrpgmlinux);
+            if (!fslib.existsSync(dir)) fslib.mkdirSync(dir, { recursive: true });
+        } catch (e) {}
+        fslib.writeFileSync(configPathrpgmlinux, JSON.stringify(out, null, 2), 'utf8');
     } catch (err) {
         console.error('Failed to save config:', err);
     }
 }
+
 
 const config = loadConfig();
 if (!process.env.DISABLECASEINSENSITIVEPATCH || process.env.DISABLECASEINSENSITIVEPATCH.trim() === '') {
 require(caseinsensitive)
 }
 // console.log("bb",JSON.stringify(config, null, 2));
-if (config && config.uiVisibility?.disableexec === true) {
+if (config && config.disableexec === true) {
 require(disablechild); // child_process load and run guard
 }
-if (config && config.uiVisibility?.disablenet === true) {
+if (config && config.disablenet === true) {
 
 require(disablenet); // Node-level http/https/net/tls/dns guard
 

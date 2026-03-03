@@ -21,7 +21,7 @@
  *
  * @param SaveFileNumber
  * @desc max save file number(1...100)
- * @default 20
+ * @default 500
  *
  * @help Customize max save file number
  *
@@ -35,7 +35,7 @@
  *
  * @param セーブファイル数
  * @desc 最大セーブファイル数です。
- * @default 20
+ * @default 50
  *
  * @help 最大セーブファイル数をパラメータで指定した値に変更します。
  *
@@ -66,7 +66,7 @@
         }
         return null;
     };
-    var paramSaveFileNumber = 500;
+    var paramSaveFileNumber = getParamNumber(['SaveFileNumber', 'セーブファイル数'], 0);
 
     //=============================================================================
     // DataManager

@@ -1,5 +1,4 @@
 (()=>{
-    console.log("ccsc22")
     const path = require('path');
     const {URL} = require('url');
     const fs_module = require('fs');

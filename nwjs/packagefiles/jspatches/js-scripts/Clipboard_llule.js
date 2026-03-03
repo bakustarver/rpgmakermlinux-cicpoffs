@@ -3,16 +3,16 @@
 // Libellule Text extractor to clipboard plugin 
 
 // Clipboard_llule.js
-
 //=============================================================================
 
-/* 
 
+/*
  * Install and configure with the patcher here : 
 
  * https://www.dropbox.com/sh/p83yxde8e8nrz35/AADkJzbz7VuM7HqwiwhhfhHTa?dl=0
 
  * Help : http://www.ulmf.org/bbs/showthread.php?t=29359
+ * https://ulmf.org/threads/rpgmakermvgame-hook-patcher-how-to-hook-rpg-maker-mv-games.8960/
 
  */
 
