@@ -81,6 +81,16 @@ if [[ "$arch" == *"arm"* ]]; then
 armsys=true
 fi
 
+bringtofront() {
+    local target="$1"
+    grep -Fx "$target"
+    grep -Fxv "$target"
+}
+
+
+
+
+basegamef=$(basename "$gamef")
 checkthebinaryarch() {
 if ! [ -f "$1" ]; then
 echo "Missing file $1"
@@ -126,7 +136,7 @@ fi
 if ! [ -f "$dsavepath/$ndrbasen.desktop" ]; then
 echo "[Desktop Entry]
 Name=$ndrbasen
-Exec=env gamef=\"$ndirname\" $nwjsfm/packagefiles/nwjsstart-cicpoffs.sh
+Exec=env gamef=\"$gamef\" $nwjsfm/packagefiles/nwjsstart-cicpoffs.sh
 Type=Application
 Categories=Game
 StartupNotify=true
@@ -204,13 +214,13 @@ fi
 
 fivehundredslotsplugininstall() {
 pluginset='{"name":"CustomizeMaxSaveFile","status":true,"description":"Customize max save file number","parameters":{"SaveFileNumber":"500"}},'
-plugininstallfunc "$nwjsfm/packagefiles/plugins/CustomizeMaxSaveFile.js"
+plugininstallfunc "$nwjsfm/packagefiles/filestoexport/plugins/CustomizeMaxSaveFile.js"
 
 }
 
 texthookerplugininstall() {
 pluginset='{"name":"Clipboard_llule","status":true,"description":"","parameters":{}},'
-plugininstallfunc "$nwjsfm/packagefiles/plugins/Clipboard_llule.js"
+plugininstallfunc "$nwjsfm/packagefiles/filestoexport/plugins/Clipboard_llule.js"
 
 }
 
@@ -369,13 +379,12 @@ fi
 }
 
 godotdownloadsdk() {
-# if ! timeout 15s wget -q --spider "https://downloads.tuxfamily.org/godotengine/"; then
-# echo "Cannot connect to the godot server"
-# fi
+
 if [ -z "$execpath" ]; then
-exen=$(ls -p "$npath" | grep -v "/$" | grep "\.exe$" )
+exen=$(ls -p "$npath" | grep -v "/$" | grep "\.exe$" | bringtofront "$basegamef" )
 fi
 
+# kdialog --msgbox "$exen"
 
 while IFS= read -r line; do
 godotold=""
@@ -414,7 +423,6 @@ exit;
 fi
 fi
 echo $versiongodot
-# https://downloads.tuxfamily.org/godotengine/3.5.2/
 if [ "$godotold" = "true"  ]; then
 # echo "ccc $garch"
 garch=$(echo "$garch" | sed -e 's@x86_64@64@g' -e 's@x86_32@32@g')
@@ -423,10 +431,8 @@ echo "The Godot version don't have any arm versin";
 exit;
 fi
 
-# https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_linux.x86_64.zip
-# https://github.com/godotengine/godot/releases/download/4.1-stable/Godot_v4.1-stable_linux.x86_64.zip
+
 versinid="_x11.$garch.zip"
-# godotsdklink="https://downloads.tuxfamily.org/godotengine/$n1godot/Godot_v$n1godot-$n2godot$versinid"
 if [ "$n2godot" = "mono" ]; then
 stablepr="stable_"
 versinid="_x11_$garch.zip"
@@ -435,21 +441,9 @@ if [ "$n2godot" = "beta" ]; then
 $n2godot="stable"
 fi
 godotsdklink="https://github.com/godotengine/godot/releases/download/$n1godot-stable/Godot_v$n1godot-$stablepr$n2godot$versinid"
-# else
-# # if [ "$n2godot" = "stable" ]; then
-# # godotsdklink="https://downloads.tuxfamily.org/godotengine/$n1godot/Godot_v$n1godot-$n2godot$versinid"
-#
-# # godotsdklink="https://github.com/godotengine/godot/releases/download/$n1godot-stable/Godot_v$n1godot-$stablepr$n2godot$versinid"
-# # echo "https://downloads.tuxfamily.org/godotengine/$n1godot/Godot_v$n1godot-$n2godot$versinid"
-# # echo "https://downloads.tuxfamily.org/godotengine/$n1godot/$n2godot/Godot_v$n1godot-$n2godot$versinid"
-#
-# else
-# # godotsdklink="https://downloads.tuxfamily.org/godotengine/$n1godot/$n2godot/Godot_v$n1godot-$n2godot$versinid"
-# fi
-fi
-# echo "$n1godot-$stablepr$n2godot$versinid"
 
-# echo "$godotsdklink"
+fi
+
 if wget -q --spider "$godotsdklink"; then
 dglink="$godotdownloadsdk"
 fi
@@ -461,7 +455,6 @@ if wget -q --spider "$godotsdklink"; then
 echo "$godotsdklink"
 wget -c "$godotsdklink" -P "$npath"
 else
-# echo "$godotsdklink"
 echo "Can't connect to the godot server"
 exit;
 fi
@@ -494,7 +487,7 @@ usetyranoelectron=true
 
 searchforpackedexe() {
 # echo fffvvvv
-local gfexe=$(ls -p "$1" | grep -v "/$" | grep "\.exe$" | head -n 6)
+local gfexe=$(ls -p "$1" | grep -v "/$" | grep "\.exe$" | head -n 6 | bringtofront "$basegamef")
 # echo "$gfexe"
 npath="$1"
 if [ -n "$gfexe" ]; then
@@ -645,7 +638,7 @@ fi
 checkgamefilesfd() {
 npath=$(echo "$1" | sed -e 's@rpgmakermp:///@@g')
 # echo "$npath"
-if echo "$npath" | grep -q ".exe"; then
+if echo "$npath" | grep -q ".exe\|.dll"; then
 exenpath="$npath"
 npath=$(dirname "$npath" | sed -e "s@^'@@g");
 else
@@ -691,7 +684,10 @@ fi
 fi
 }
 
-
+if [ -n "$gamef" ]; then
+# kdialog --msgbox "$gamef"
+checkgamefilesfd "$gamef"
+fi
 
 checkgamepath() {
 # path="$1"
@@ -705,9 +701,12 @@ fi
 # kdialog --msbox "$path"
 checkgamefilesfd "$path"
 }
+if [ -z "$engine" ]; then
+
 searchforpackedexe "$PWD"
 
 if [ -z "$gamepath" ]; then
+
 if [ -d ./www ] && [ -f ./package.json ]; then
 mountpath="$PWD/www"
 found=true
@@ -747,12 +746,9 @@ fi
 fi
 # fi
 #
-if [ -z "$found" ]; then
-if [ -n "$gamef" ]; then
-# kdialog --msgbox "$gamef"
-checkgamefilesfd "$gamef"
 fi
-fi
+
+
 
 
 
@@ -803,14 +799,11 @@ enhancedprotection() {
 if [ "$1" = "false" ]; then
 echo '{
   "lastScript": null,
-  "uiVisibility": {
-    "scriptSelect": true,
-    "executeButton": true,
-    "disableexec": false,
-    "disablenet": false,
-    "resultDisplay": true
-  }
-}' > "$configfile"
+  "menuHidden": false,
+  "disableexec": false,
+  "disablenet": false
+}
+' > "$configfile"
 echo "Enhanced protection disabled."
 else
 if [ -e "$configfile" ]; then
@@ -818,14 +811,11 @@ sed -e 's@"disablenet":.*@"disablenet": true,@g' -e 's@"disableexec":.*@"disable
 else
 echo '{
   "lastScript": null,
-  "uiVisibility": {
-    "scriptSelect": true,
-    "executeButton": true,
-    "disableexec": true,
-    "disablenet": true,
-    "resultDisplay": true
-  }
-}' > "$configfile"
+  "menuHidden": false,
+  "disableexec": true,
+  "disablenet": true
+}
+' > "$configfile"
 fi
 echo "Enhanced protection enabled successfully."
 fi
@@ -1672,7 +1662,7 @@ for file in "$nwjstestpath"/*; do
   fi
 done
 
-if grep -q -r ""readdirSyn\|accessSync"" "$mountpath/js/plugins/"; then
+if grep -q -r "readdirSyn\|accessSync" "$mountpath/js/plugins/"; then
 
 # echo hhh;
 for file in "$npath"/*; do
@@ -1692,7 +1682,7 @@ fi
 
 
 plugins-autoinstall() {
-cpfd="$nwjsfm/plugins-autoinstall"
+cpfd="$nwjsfm/patchgame/plugins-autoinstall"
 pluginslistfile="$mountpath/js/plugins.js"
 # echo ggvv
 if [ -n "$(ls -A "$cpfd/js/plugins" )" ] && [ -s "$cpfd/pluginsconf.txt" ] && ! [ -f "$mountpath/pluginsconf.txt" ] ; then
