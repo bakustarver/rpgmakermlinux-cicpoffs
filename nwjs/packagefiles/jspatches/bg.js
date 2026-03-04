@@ -15,9 +15,9 @@ const disablechild = pathlib.join(scriptsjsDir, 'disable-child.js');
 const disablenet = pathlib.join(scriptsjsDir, 'disable-net.js');
 
 // Config path
-const configPathrpgmlinux = pathlib.join(homeDir || '', ".config", 'rpgmenu-config.json');
+const configPathrpgmlinux = path.join(homeDirrpgmlinux.trim(), ".config", 'rpgmenu-config.json');
 
-function loadConfig() {
+function loadConfigrpgm() {
     try {
         const raw = fslib.readFileSync(configPathrpgmlinux, 'utf8');
         const cfg = JSON.parse(raw || '{}');
@@ -49,35 +49,16 @@ function loadConfig() {
     }
 }
 
-function saveConfig(cfg) {
-    try {
-        const out = {
-            lastScript: cfg.lastScript || null,
-            menuHidden: !!cfg.menuHidden,
-            disableexec: !!cfg.disableexec,
-            disablenet: !!cfg.disablenet
-        };
-        // Ensure config directory exists
-        try {
-            const dir = pathlib.dirname(configPathrpgmlinux);
-            if (!fslib.existsSync(dir)) fslib.mkdirSync(dir, { recursive: true });
-        } catch (e) {}
-        fslib.writeFileSync(configPathrpgmlinux, JSON.stringify(out, null, 2), 'utf8');
-    } catch (err) {
-        console.error('Failed to save config:', err);
-    }
-}
 
-
-const config = loadConfig();
+const configrpgm = loadConfigrpgm();
 if (!process.env.DISABLECASEINSENSITIVEPATCH || process.env.DISABLECASEINSENSITIVEPATCH.trim() === '') {
 require(caseinsensitive)
 }
 // console.log("bb",JSON.stringify(config, null, 2));
-if (config && config.disableexec === true) {
+if (configrpgm && configrpgm.disableexec === true) {
 require(disablechild); // child_process load and run guard
 }
-if (config && config.disablenet === true) {
+if (configrpgm && configrpgm.disablenet === true) {
 
 require(disablenet); // Node-level http/https/net/tls/dns guard
 

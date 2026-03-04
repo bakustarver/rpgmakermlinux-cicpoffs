@@ -12,7 +12,7 @@ const scriptsDir = scriptsDirrpgmlinux; // used by executeScript
 const configPathrpgmlinux = path.join(homeDirrpgmlinux.trim(), ".config", 'rpgmenu-config.json');
 const plugins_autoload_path = path.join(baseDir.trim(), 'nwjs', 'nwjs', 'packagefiles','jspatches', 'plugins_autoload');
 
-function loadConfig() {
+function loadConfigrpgm() {
   try {
     const cfg = JSON.parse(fs.readFileSync(configPathrpgmlinux, 'utf8'));
     // Backwards-compat: if old uiVisibility exists, derive menuHidden from it
@@ -40,7 +40,7 @@ function loadConfig() {
   }
 }
 
-function saveConfig(cfg) {
+function saveConfigrpgm(cfg) {
   try {
     // Persist minimal shape: lastScript, menuHidden, and any global flags you want to keep
     const out = {
@@ -283,35 +283,39 @@ function executeScript(filename, options = {}) {
 
 
 // --- begin: automatic preload from plugins_autoload ---
-function autoloadplugins () {
-try {
-    if (fs.existsSync(plugins_autoload_path)) {
-        const preloadFiles = fs.readdirSync(plugins_autoload_path)
-        .filter(f => f.toLowerCase().endsWith('.js'))
-        .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+function autoloadplugins() {
+    try {
+        if (fs.existsSync(plugins_autoload_path)) {
+            const preloadFiles = fs.readdirSync(plugins_autoload_path)
+            .filter(f => f.toLowerCase().endsWith('.js'))
+            .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
 
-        preloadFiles.forEach(f => {
-            const fullPath = path.join(plugins_autoload_path, f);
-            try {
-                executeScript(fullPath);
-            } catch (err) {
-                console.error(`Failed to preload script ${fullPath}:`, err);
+            if (preloadFiles.length === 0) {
+                // console.log(`Preload folder is empty: ${plugins_autoload_path}`);
+                return;
             }
-        });
 
-        if (preloadFiles.length) {
+            preloadFiles.forEach(f => {
+                const fullPath = path.join(plugins_autoload_path, f);
+                try {
+                    executeScript(fullPath);
+                } catch (err) {
+                    console.error(`Failed to preload script ${fullPath}:`, err);
+                }
+            });
+
             console.log(`Preloaded ${preloadFiles.length} plugin(s) from ${plugins_autoload_path}`);
+        } else {
+            console.log(`Preload folder not found: ${plugins_autoload_path}`);
         }
-    } else {
-        console.log(`Preload folder not found: ${plugins_autoload_path}`);
+    } catch (err) {
+        console.error('Error while preloading plugins:', err);
     }
-} catch (err) {
-    console.error('Error while preloading plugins:', err);
 }
-}
+
 // --- UI injection and menu logic ---
 
-const config = loadConfig();
+const configrpgm = loadConfigrpgm();
 
 function injectmenu() {
     // helper to persist visibility state for the whole menu (menuHidden)
@@ -321,8 +325,8 @@ function injectmenu() {
         try { if (typeof executeButton !== 'undefined' && executeButton) executeButton.style.visibility = v; } catch (e) {}
         try { if (typeof resultDisplay !== 'undefined' && resultDisplay) resultDisplay.style.visibility = v; } catch (e) {}
         try { if (typeof infoButton !== 'undefined' && infoButton) infoButton.style.visibility = v; } catch (e) {}
-        config.menuHidden = !!hidden;
-        try { if (typeof saveConfig === 'function') saveConfig(config); } catch (e) {}
+        configrpgm.menuHidden = !!hidden;
+        try { if (typeof saveConfigrpgm === 'function') saveConfigrpgm(configrpgm); } catch (e) {}
         try { localStorage.setItem('menuHidden', hidden); } catch (e) {}
     }
 
@@ -390,8 +394,8 @@ function injectmenu() {
     function setGroupVisibility(visible) {
       // visible === true => controls visible; menuHidden should be false
       Object.keys(uiControls).forEach(k => setElementVisibility(uiControls[k], !!visible));
-      config.menuHidden = !visible;
-      try { if (typeof saveConfig === 'function') saveConfig(config); } catch (e) {}
+      configrpgm.menuHidden = !visible;
+      try { if (typeof saveConfigrpgm === 'function') saveConfigrpgm(configrpgm); } catch (e) {}
     }
 
     // create a right-side vertical stack where Execute is on top and Info sits below it
@@ -663,8 +667,8 @@ function injectmenu() {
     });
 
     scriptSelect.addEventListener('change', () => {
-        config.lastScript = scriptSelect.value;
-        try { if (typeof saveConfig === 'function') saveConfig(config); } catch (e) {}
+        configrpgm.lastScript = scriptSelect.value;
+        try { if (typeof saveConfigrpgm === 'function') saveConfigrpgm(configrpgm); } catch (e) {}
     });
 
     const COOL_DOWN_MS = 200;           // button cool-down time
@@ -729,15 +733,15 @@ function injectmenu() {
     container.append(leftStack, rightStack);
 
     // apply saved visibility state (menuHidden)
-    try { setVisibility(!!config.menuHidden); } catch (e) {}
+    try { setVisibility(!!configrpgm.menuHidden); } catch (e) {}
 
-    if (config.lastScript) {
-        try { scriptSelect.value = config.lastScript; } catch (e) {}
+    if (configrpgm.lastScript) {
+        try { scriptSelect.value = configrpgm.lastScript; } catch (e) {}
     }
 
     // Apply saved state (menuHidden) using group helper
     try {
-      setGroupVisibility(!config.menuHidden);
+      setGroupVisibility(!configrpgm.menuHidden);
     } catch (e) {
       setGroupVisibility(true);
     }
@@ -745,7 +749,7 @@ function injectmenu() {
     // F10 toggles the whole group
     document.addEventListener('keydown', event => {
       if (event.key === 'F10') {
-        const newVisible = !!config.menuHidden; // if currently hidden => show
+        const newVisible = !!configrpgm.menuHidden; // if currently hidden => show
         setGroupVisibility(newVisible);
       }
     });
