@@ -19,7 +19,7 @@ const disablenet = pathlib.join(scriptsjsDir, 'disable-net.js');
 
 function loadConfigrpgm() {
     try {
-        const raw = fslib.readFileSync(path.join(homeDirrpgmlinuxn.trim(), ".config", 'rpgmenu-config.json'), 'utf8');
+        const raw = fslib.readFileSync(pathlib.join(homeDirrpgmlinuxn.trim(), ".config", 'rpgmenu-config.json'), 'utf8');
         const cfg = JSON.parse(raw || '{}');
 
         // Backwards compatibility: if old uiVisibility exists, derive menuHidden
@@ -28,7 +28,7 @@ function loadConfigrpgm() {
             const allHidden = keys.every(k => cfg.uiVisibility[k] === false);
             cfg.menuHidden = !!allHidden;
             delete cfg.uiVisibility;
-            try { fslib.writeFileSync(path.join(homeDirrpgmlinuxn.trim(), ".config", 'rpgmenu-config.json'), JSON.stringify(cfg, null, 2), 'utf8'); } catch (e) {}
+            try { fslib.writeFileSync(pathlib.join(homeDirrpgmlinuxn.trim(), ".config", 'rpgmenu-config.json'), JSON.stringify(cfg, null, 2), 'utf8'); } catch (e) {}
         }
 
         // Ensure expected fields
