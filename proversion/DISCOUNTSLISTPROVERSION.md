@@ -1,0 +1,113 @@
+On each of the dates listed, you can purchase rpgmakermlinux-cicpoffs at the discount shown below.
+
+## January
+| Date | Event | Description | Discount |
+|------|-------|-------------|----------|
+| Jan 05 | Steam for Linux Beta Anniversary | Marks Valve’s early push to bring Steam natively to Linux users | **35%** |
+| Jan 08 | Heroic Games Launcher Release Anniversary | Open-source Epic Games launcher alternative | 10% |
+| Jan 10 | Tux Racer Nostalgia Day | Celebrates an early iconic Linux game | 10% |
+| Jan 11 | Open-Source AMD Vulkan Driver Push | Highlights AMD’s Vulkan driver contributions | 22% |
+| Jan 19 | Loadable Kernel Modules Introduction | Enabled dynamic kernel functionality | 19% |
+| Jan 29 | Linux Gaming Subreddit Growth Day | Community growth milestone | 12% |
+| Jan 30 | FUSE Filesystem Integration | User-space filesystem support | 20% |
+
+## February
+| Date | Event | Description | Discount |
+|------|-------|-------------|----------|
+| Feb 13 | Zink OpenGL-on-Vulkan Breakthrough | OpenGL over Vulkan compatibility layer | 18% |
+| Feb 14 | Proton Release Anniversary | Enables Windows games on Linux | **42%** |
+| Feb 22 | DRM Subsystem Expansion Milestone | GPU and graphics improvements | 19% |
+| Feb 25 | OpenXR on Linux Milestone Day | VR/AR progress on Linux | 18% |
+| Feb 27 | vkBasalt Release Day | Vulkan post-processing effects | 13% |
+
+## March
+| Date | Event | Description | Discount |
+|------|-------|-------------|----------|
+| Mar 01 | Esync/fsync Implementation Day | Reduced CPU overhead in Wine/Proton | 20% |
+| Mar 02 | FAudio Integration Day | Improved audio compatibility | 16% |
+| Mar 06 | Lutris Public Launch Anniversary | Open gaming platform launch | 20% |
+| Mar 17 | WineD3D Performance Leap Day | Improved Direct3D translation | 17% |
+| Mar 18 | cgroups Introduction | Resource control for processes | 21% |
+| Mar 22 | RetroArch Linux Popularization Day | Growth of retro gaming | 14% |
+
+## April
+| Date | Event | Description | Discount |
+|------|-------|-------------|----------|
+| Apr 09 | DXVK Async Patch Popularization Day | Reduced stutter in games | 17% |
+| Apr 16 | X.Org Server Modularization | Modernized display architecture | 20% |
+| Apr 18 | Wine 1.0 Release Anniversary | First stable Wine release | 25% |
+| Apr 19 | Lutris Script Sharing Milestone | Easier game installations | 16% |
+| Apr 25 | Vulkan Release Anniversary | Launch of Vulkan API | **30%** |
+
+## May
+| Date | Event | Description | Discount |
+|------|-------|-------------|----------|
+| May 07 | Flatpak Gaming Expansion Day | Growth of sandboxed apps | 14% |
+| May 09 | OverlayFS Merge into Kernel | Filesystem layering support | 19% |
+| May 24 | OBS Game Capture Milestone | Improved streaming support | 16% |
+
+## June
+| Date | Event | Description | Discount |
+|------|-------|-------------|----------|
+| Jun 08 | Gamemode Adoption Day | Performance optimization tool | 15% |
+| Jun 10 | Wayland Gaming Progress Milestone | Modern display improvements | 18% |
+| Jun 13 | ALSA Integration Milestone | Audio system improvements | 14% |
+| Jun 14 | VKD3D-Proton Milestone | Direct3D 12 translation | 25% |
+| Jun 20 | Proton GE First Release Day | Community Proton builds | 24% |
+
+## July
+| Date | Event | Description | Discount |
+|------|-------|-------------|----------|
+| Jul 03 | MangoHud Release Anniversary | Performance overlay tool | 12% |
+| Jul 05 | Linux Anti-Cheat Progress Day | Compatibility improvements | 20% |
+| Jul 07 | AMDGPU Driver Introduction | Open-source GPU driver milestone | 28% |
+| Jul 11 | DXVK 1.0 Release Anniversary | Stable DXVK release | 24% |
+| Jul 21 | KMS Introduction | Graphics initialization improvement | 23% |
+
+## August
+| Date | Event | Description | Discount |
+|------|-------|-------------|----------|
+| Aug 12 | Vulkan Support in Mesa | Vulkan integration in Mesa | 28% |
+| Aug 13 | id Tech 4 Source Release Anniversary | Doom 3 engine open-sourced | 22% |
+| Aug 16 | Bottles Project Milestone | Easier Wine management | 14% |
+| Aug 21 | Steam Play Announcement Day | Proton in Steam | **45%** |
+| Aug 25 | Linux Kernel Initial Release | First Linux kernel | **50%** |
+| Aug 26 | SDL Wayland Support Day | Wayland compatibility | 15% |
+| Aug 30 | Mesa Milestone Day | GPU driver improvements | 26% |
+
+## September
+| Date | Event | Description | Discount |
+|------|-------|-------------|----------|
+| Sep 02 | udev Adoption Milestone | Device management system | 12% |
+| Sep 04 | Mesa RADV Breakthrough | AMD Vulkan performance | 22% |
+| Sep 11 | Gallium3D Introduction | Driver architecture | 20% |
+| Sep 15 | Gamescope Release Anniversary | Gaming compositor | 24% |
+| Sep 15 | PulseAudio Adoption | Sound server popularity | 18% |
+| Sep 17 | Debian Project Anniversary | Major Linux distribution | 28% |
+| Sep 19 | Feral Interactive Milestone | Linux game ports | 18% |
+| Sep 23 | Shader Cache Breakthrough | Reduced stutter | 21% |
+| Sep 27 | Ubuntu First Release Anniversary | User-friendly Linux distro | 32% |
+| Sep 30 | ProtonDB Gold Surge Day | Compatibility growth | 19% |
+
+## October
+| Date | Event | Description | Discount |
+|------|-------|-------------|----------|
+| Oct 05 | GNU Project Anniversary | Free software foundation | 30% |
+| Oct 08 | Wayland First Release | Modern display protocol | 26% |
+| Oct 28 | Wine Staging Update Day | Experimental features | 17% |
+
+## November
+| Date | Event | Description | Discount |
+|------|-------|-------------|----------|
+| Nov 06 | CoreCtrl Milestone | Hardware control tool | 12% |
+| Nov 12 | Proton Experimental Launch | Testing branch | 26% |
+| Nov 17 | NVIDIA Driver Breakthrough | Driver improvements | 27% |
+| Nov 24 | USB Support in Kernel | Hardware compatibility | 25% |
+
+## December
+| Date | Event | Description | Discount |
+|------|-------|-------------|----------|
+| Dec 01 | SDL2 Adoption Milestone | Widely used game library | 15% |
+| Dec 03 | ext2 Filesystem Release | Early Linux filesystem | 14% |
+| Dec 18 | Steam Deck Verified Announcement | Compatibility ratings | 23% |
+| Dec 21 | Steam Runtime Soldier Update | Improved runtime | 20% |
