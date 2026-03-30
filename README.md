@@ -98,7 +98,7 @@ rpgmaker-linux --steamskipgui true
 ### Professional version:
 <a href="https://bakurpg.itch.io/rpg-maker-mv-mz-for-linux"><img src="https://github.com/user-attachments/assets/ed684afc-9959-4eb1-892b-f48236bd091e" width="600"></a>
 
-For limited Linux Gaming celebration days, you can get the professional version at a [reduced price](proversion/DISCOUNTSLISTPROVERSION.md).
+For limited [Linux Gaming celebration days](proversion/DISCOUNTSLISTPROVERSION.md), you can get the professional version at a reduced price.
 
   
 ## Support me:
