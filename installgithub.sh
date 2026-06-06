@@ -3,6 +3,7 @@
 archt=$(uname -m | sed -e 's/armv7l/armhf/g')
 version=1.1.7
 versionpro=1.1.7
+mkxpzver=1.0.0
 
 ITCHIOFILEPATH="$HOME/.config/itchiokey.txt"
 
