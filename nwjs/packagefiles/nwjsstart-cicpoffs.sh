@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='1.1.6'
+version='1.1.8'
 
 default_dir="$HOME/desktopapps"
 mainfdtxt="$HOME/.config/defrpgmakerlinuxpath.txt"
@@ -58,19 +58,43 @@ githubscriptwget=$(timeout 7s wget -qO- "https://raw.githubusercontent.com/bakus
 
 # latestinstallednwjsfd=$(ls -p "$defp" | grep / | sort -V | tail -n 1 )
 
+# Define colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
 
 if [ -n "$githubscriptwget" ]; then
-githubversion=$(echo "$githubscriptwget" | sed -n 's/version=//p')
-if [ "$version" != "$githubversion" ]; then
-if { echo "$version"; echo "$githubversion"; } | sort --version-sort -C; then
-echo "A new rpgmaker-linux update has been found, to get the latest version use
-$ rpgmaker-linux --fullupdate
+    githubversion=$(echo "$githubscriptwget" | sed -n 's/version=//p')
 
+    if [ "$version" != "$githubversion" ]; then
+        if { echo "$version"; echo "$githubversion"; } | sort --version-sort -C; then
+            # echo -e "${YELLOW}=== UPDATE ALERT ===${NC}"
+            echo -e "${CYAN}A new RPGMaker-Linux update has been detected. To install the latest version, run:${NC}"
+            # echo -e "${GREEN}New version detected.${NC}"
+            echo -e "Run: ${GREEN}rpgmaker-linux --fullupdate${NC}\n"
+        fi
+    fi
+        if [ -d "$mainfd/mkxp-z" ]; then
+            mkxpzversion=$(echo "$githubscriptwget" | sed -n 's/mkxpzver=//p')
+            if [ -s "$mainfd/mkxp-z/version.txt" ] ; then
+                localmkxpz=$(sed -n 's/version=//p' "$mainfd/mkxp-z/version.txt")
+                if { echo "$localmkxpz"; echo "$mkxpzversion"; } | sort --version-sort -C && [ "$localmkxpz" != "$mkxpzversion" ]; then
+                echo -e "${CYAN}A new mkxpz update (RPG Maker XP/VX/VX Ace engine) is available!${NC}"
+                # echo -e "${GREEN}New version detected.${NC}"
+                echo -e "Run: ${GREEN}rpgmaker-linux --reinstallmkxpz${NC}\n"
+                fi
+            else
+                echo -e "${CYAN}A new mkxpz update (RPG Maker XP/VX/VX Ace engine) is available!${NC}"
+                # echo -e "${GREEN}New version detected.${NC}"
+                echo -e "Run: ${GREEN}rpgmaker-linux --reinstallmkxpz${NC}\n"
+            fi
+        fi
+    # echo -e "${YELLOW}====================${NC}"
 
-"
 fi
-fi
-fi
+
 
 
 
@@ -81,6 +105,16 @@ if [[ "$arch" == *"arm"* ]]; then
 armsys=true
 fi
 
+bringtofront() {
+    local target="$1"
+    grep -Fx "$target"
+    grep -Fxv "$target"
+}
+
+
+
+
+basegamef=$(basename "$gamef")
 checkthebinaryarch() {
 if ! [ -f "$1" ]; then
 echo "Missing file $1"
@@ -126,7 +160,7 @@ fi
 if ! [ -f "$dsavepath/$ndrbasen.desktop" ]; then
 echo "[Desktop Entry]
 Name=$ndrbasen
-Exec=env gamef=\"$ndirname\" $nwjsfm/packagefiles/nwjsstart-cicpoffs.sh
+Exec=env gamef=\"$gamef\" $nwjsfm/packagefiles/nwjsstart-cicpoffs.sh
 Type=Application
 Categories=Game
 StartupNotify=true
@@ -204,13 +238,13 @@ fi
 
 fivehundredslotsplugininstall() {
 pluginset='{"name":"CustomizeMaxSaveFile","status":true,"description":"Customize max save file number","parameters":{"SaveFileNumber":"500"}},'
-plugininstallfunc "$nwjsfm/packagefiles/plugins/CustomizeMaxSaveFile.js"
+plugininstallfunc "$nwjsfm/packagefiles/filestoexport/plugins/CustomizeMaxSaveFile.js"
 
 }
 
 texthookerplugininstall() {
 pluginset='{"name":"Clipboard_llule","status":true,"description":"","parameters":{}},'
-plugininstallfunc "$nwjsfm/packagefiles/plugins/Clipboard_llule.js"
+plugininstallfunc "$nwjsfm/packagefiles/filestoexport/plugins/Clipboard_llule.js"
 
 }
 
@@ -354,7 +388,8 @@ $yadp --image="dialog-question" \
   --text "Found the rppmaker game $line!\nHow would you like to open it?" \
   --button="Linux mkxp-z:0" \
   --button="Windows mkxp-z (Requires Wine):1" \
-  --button="Exit:2"
+  --button="Script Control Panel:2" \
+  --button="Exit:3"
 rettyranoelectron=$?
 
 
@@ -364,18 +399,20 @@ mkxpopt=linux
 elif [[ $rettyranoelectron -eq 1 ]]; then
 mkxpopt=wine
 elif [[ $rettyranoelectron -eq 2 ]]; then
+export MKXPEDITLIST=true
+export KAWARIKI_MKXP_DUMP_SCRIPTS=mkxpscripts
+elif [[ $rettyranoelectron -eq 3 ]]; then
 exit;
 fi
 }
 
 godotdownloadsdk() {
-# if ! timeout 15s wget -q --spider "https://downloads.tuxfamily.org/godotengine/"; then
-# echo "Cannot connect to the godot server"
-# fi
+
 if [ -z "$execpath" ]; then
-exen=$(ls -p "$npath" | grep -v "/$" | grep "\.exe$" )
+exen=$(ls -p "$npath" | grep -v "/$" | grep "\.exe$" | bringtofront "$basegamef" )
 fi
 
+# kdialog --msgbox "$exen"
 
 while IFS= read -r line; do
 godotold=""
@@ -414,7 +451,6 @@ exit;
 fi
 fi
 echo $versiongodot
-# https://downloads.tuxfamily.org/godotengine/3.5.2/
 if [ "$godotold" = "true"  ]; then
 # echo "ccc $garch"
 garch=$(echo "$garch" | sed -e 's@x86_64@64@g' -e 's@x86_32@32@g')
@@ -423,10 +459,8 @@ echo "The Godot version don't have any arm versin";
 exit;
 fi
 
-# https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_linux.x86_64.zip
-# https://github.com/godotengine/godot/releases/download/4.1-stable/Godot_v4.1-stable_linux.x86_64.zip
+
 versinid="_x11.$garch.zip"
-# godotsdklink="https://downloads.tuxfamily.org/godotengine/$n1godot/Godot_v$n1godot-$n2godot$versinid"
 if [ "$n2godot" = "mono" ]; then
 stablepr="stable_"
 versinid="_x11_$garch.zip"
@@ -435,21 +469,9 @@ if [ "$n2godot" = "beta" ]; then
 $n2godot="stable"
 fi
 godotsdklink="https://github.com/godotengine/godot/releases/download/$n1godot-stable/Godot_v$n1godot-$stablepr$n2godot$versinid"
-# else
-# # if [ "$n2godot" = "stable" ]; then
-# # godotsdklink="https://downloads.tuxfamily.org/godotengine/$n1godot/Godot_v$n1godot-$n2godot$versinid"
-#
-# # godotsdklink="https://github.com/godotengine/godot/releases/download/$n1godot-stable/Godot_v$n1godot-$stablepr$n2godot$versinid"
-# # echo "https://downloads.tuxfamily.org/godotengine/$n1godot/Godot_v$n1godot-$n2godot$versinid"
-# # echo "https://downloads.tuxfamily.org/godotengine/$n1godot/$n2godot/Godot_v$n1godot-$n2godot$versinid"
-#
-# else
-# # godotsdklink="https://downloads.tuxfamily.org/godotengine/$n1godot/$n2godot/Godot_v$n1godot-$n2godot$versinid"
-# fi
-fi
-# echo "$n1godot-$stablepr$n2godot$versinid"
 
-# echo "$godotsdklink"
+fi
+
 if wget -q --spider "$godotsdklink"; then
 dglink="$godotdownloadsdk"
 fi
@@ -461,7 +483,6 @@ if wget -q --spider "$godotsdklink"; then
 echo "$godotsdklink"
 wget -c "$godotsdklink" -P "$npath"
 else
-# echo "$godotsdklink"
 echo "Can't connect to the godot server"
 exit;
 fi
@@ -494,7 +515,7 @@ usetyranoelectron=true
 
 searchforpackedexe() {
 # echo fffvvvv
-local gfexe=$(ls -p "$1" | grep -v "/$" | grep "\.exe$" | head -n 6)
+local gfexe=$(ls -p "$1" | grep -v "/$" | grep "\.exe$" | head -n 6 | bringtofront "$basegamef")
 # echo "$gfexe"
 npath="$1"
 if [ -n "$gfexe" ]; then
@@ -645,7 +666,7 @@ fi
 checkgamefilesfd() {
 npath=$(echo "$1" | sed -e 's@rpgmakermp:///@@g')
 # echo "$npath"
-if echo "$npath" | grep -q ".exe"; then
+if echo "$npath" | grep -q ".exe\|.dll"; then
 exenpath="$npath"
 npath=$(dirname "$npath" | sed -e "s@^'@@g");
 else
@@ -691,7 +712,10 @@ fi
 fi
 }
 
-
+if [ -n "$gamef" ]; then
+# kdialog --msgbox "$gamef"
+checkgamefilesfd "$gamef"
+fi
 
 checkgamepath() {
 # path="$1"
@@ -705,9 +729,12 @@ fi
 # kdialog --msbox "$path"
 checkgamefilesfd "$path"
 }
+if [ -z "$engine" ]; then
+
 searchforpackedexe "$PWD"
 
 if [ -z "$gamepath" ]; then
+
 if [ -d ./www ] && [ -f ./package.json ]; then
 mountpath="$PWD/www"
 found=true
@@ -747,12 +774,9 @@ fi
 fi
 # fi
 #
-if [ -z "$found" ]; then
-if [ -n "$gamef" ]; then
-# kdialog --msgbox "$gamef"
-checkgamefilesfd "$gamef"
 fi
-fi
+
+
 
 
 
@@ -803,14 +827,11 @@ enhancedprotection() {
 if [ "$1" = "false" ]; then
 echo '{
   "lastScript": null,
-  "uiVisibility": {
-    "scriptSelect": true,
-    "executeButton": true,
-    "disableexec": false,
-    "disablenet": false,
-    "resultDisplay": true
-  }
-}' > "$configfile"
+  "menuHidden": false,
+  "disableexec": false,
+  "disablenet": false
+}
+' > "$configfile"
 echo "Enhanced protection disabled."
 else
 if [ -e "$configfile" ]; then
@@ -818,14 +839,11 @@ sed -e 's@"disablenet":.*@"disablenet": true,@g' -e 's@"disableexec":.*@"disable
 else
 echo '{
   "lastScript": null,
-  "uiVisibility": {
-    "scriptSelect": true,
-    "executeButton": true,
-    "disableexec": true,
-    "disablenet": true,
-    "resultDisplay": true
-  }
-}' > "$configfile"
+  "menuHidden": false,
+  "disableexec": true,
+  "disablenet": true
+}
+' > "$configfile"
 fi
 echo "Enhanced protection enabled successfully."
 fi
@@ -1692,7 +1710,7 @@ fi
 
 
 plugins-autoinstall() {
-cpfd="$nwjsfm/plugins-autoinstall"
+cpfd="$nwjsfm/patchgame/plugins-autoinstall"
 pluginslistfile="$mountpath/js/plugins.js"
 # echo ggvv
 if [ -n "$(ls -A "$cpfd/js/plugins" )" ] && [ -s "$cpfd/pluginsconf.txt" ] && ! [ -f "$mountpath/pluginsconf.txt" ] ; then
@@ -1722,11 +1740,7 @@ fi
 # kdialog --msgbox "ggg $nwjstestpath"
 
 
-checkandunmount
 
-checkthebinaryarch "$cicpoffs"
-
-checkthebinaryarch "$nwjstestpath/nw"
 
 
 
@@ -1735,6 +1749,7 @@ if [ "$engine" = "tyrano" ]; then
 if [ "$usetyranoelectron" = "true" ]; then
 "$electronfd/electron"
 else
+
 ln -s "$ndmodulesfd" "$nwjstestpath"
 ln -s "$mainfd/nwjs/nwjs/packagefiles/tyranobuilder/tyranoeng" "$nwjstestpath"
 cat "$mainfd/nwjs/nwjs/packagefiles/tyranobuilder/package.json" > "$nwjstestpath/package.json"
@@ -1761,6 +1776,8 @@ checkreaddirSynfunc
 
 
 if [ "$CICPOFFSMOUNT" = "true" ]; then
+checkandunmount
+checkthebinaryarch "$cicpoffs"
 mountwww
 elif [ "$NOMOUNT" = "true" ]; then
 :
@@ -1783,6 +1800,8 @@ fi
 if [ -n "$ADDTOTHEMENU" ]; then
 makethemenushortcut
 fi
+
+checkthebinaryarch "$nwjstestpath/nw"
 startnw
 # sleep 60;
 checkandunmount
