@@ -1222,7 +1222,8 @@ unless defined? Audio::BGM
         r = @audio_vcplay_m.call(String.utf82ansi(filenames + '.ogg'),
                             WFRGSS_AudioEX::SE_PACKFILE,
                             volume,pitch,number)
-        return if r >= 0
+        return r = 0
+        # if r >= 0
       end
       @audio_vcplay.call(String.utf82ansi(filename + '.ogg'),volume,pitch,number)
     end

@@ -9,6 +9,29 @@ Real native libraries can still be accessed through MiniFII.new (e.g. in ports)
 Lambdas are used for implementations as they replicate Win32API's #call interface.
 =end
 
+ENV['TEMP'] = '/tmp' unless System.is_windows?
+
+class Thread
+    class << self
+        attr_accessor :critical
+    end
+end
+Thread.critical = false
+# Check if the method exists
+# if defined?(pbSameThread) == 'method'
+#     # patch code here
+#
+# module Input
+#     class << self
+#         alias_method :_spork_old_update, :update
+#         alias_method :_spork_old_raw_key_states, :raw_key_states
+#         def raw_key_states
+#             _spork_old_update
+#             _spork_old_raw_key_states
+#         end
+#     end
+# end
+# end
 
 module Scancodes
     SDL = { :UNKNOWN => 0x00,
@@ -220,6 +243,7 @@ end
 Object.remove_const :Win32API
 
 module Win32API
+
     module Kernel32
         GetPrivateProfileInt = GetPrivateProfileIntA = ->(appname, keyname, default, filename) do
             Preload.require "PreloadIni.rb"
@@ -250,18 +274,265 @@ module Win32API
             Preload.require "PreloadIni.rb"
             Preload::Ini.writeIniString filename, appname, keyname, value
         end
-        MultiByteToWideChar = MultiByteToWideCharA = ->(codepage, flags, input_str, input_len, buffer, buffer_size) do
-            puts codepage, flags, input_str, input_len, buffer, buffer_size
-
-            #Preload.require "PreloadIni.rb"
-            #Preload::Ini.writeIniString filename, appname, keyname, value
+        # Zero a memory buffer (dest is a Ruby String acting as a byte buffer)
+        RtlZeroMemory = ->(dest, length) do
+            length = length.to_i
+            return if length <= 0
+            dest[0, length] = "\x00" * length
         end
+
+        # Convert UTF-16LE (wide char) to a multibyte UTF-8 string and copy into buffer.
+        # Signature approximates Windows:
+        # (codepage, flags, wide_str, wide_len, buffer, buffer_size, default_char = nil, used_default_char = nil)
+        WideCharToMultiByte = WideCharToMultiByteA = ->(codepage, flags, wide_str, wide_len, buffer, buffer_size, default_char = nil, used_default_char = nil) do
+            # Handle nil/empty input
+            wide_bytes = wide_str || ""
+            # If wide_len is -1 (null-terminated) or nil, use entire string; otherwise take wide_len characters (2 bytes each)
+            if wide_len && wide_len != -1
+                byte_len = wide_len * 2
+                wide_bytes = wide_bytes[0, byte_len] || ""
+            else
+                # If null-terminated, truncate at first UTF-16 NUL (two zero bytes)
+                nul_pos = wide_bytes.index("\x00\x00")
+                wide_bytes = wide_bytes[0, nul_pos] || "" if nul_pos
+            end
+
+            # Convert from UTF-16LE to UTF-8; be permissive if encoding is already UTF-8
+            begin
+                utf8 = wide_bytes.force_encoding('UTF-16LE').encode('UTF-8')
+            rescue StandardError
+                # Fallback: try to interpret as UTF-8 already
+                utf8 = wide_bytes.to_s.force_encoding('UTF-8')
+            end
+
+            # If buffer is nil, return required size in bytes
+            if buffer.nil? || buffer_size.nil? || buffer_size == 0
+                return utf8.bytesize
+            end
+
+            # Copy up to buffer_size - 1 bytes and NUL-terminate
+            max_copy = [buffer_size - 1, 0].max
+            out = utf8.byteslice(0, max_copy) || ""
+            memcpy_string(buffer, out)
+            buffer[out.bytesize] = "\0"
+            out.bytesize
+        end
+        # Convert a multibyte string (assumed UTF-8) to UTF-16LE and copy into buffer.
+        # Signature: (codepage, flags, input_str, input_len, buffer, buffer_size) -> number_of_wide_chars_written
+        MultiByteToWideChar = MultiByteToWideCharA = ->(codepage, flags, input_str, input_len, buffer, buffer_size) do
+            # Normalize input
+            mb = input_str || ""
+            if input_len && input_len != -1
+                mb = mb[0, input_len] || ""
+            else
+                nul = mb.index("\0")
+                mb = nul ? mb[0, nul] : mb
+            end
+
+            # Convert to UTF-16LE; be permissive on encoding errors, then treat as raw bytes
+            begin
+                utf16 = mb.to_s.encode('UTF-16LE')
+            rescue StandardError
+                utf16 = mb.to_s.encode('UTF-16LE', invalid: :replace, undef: :replace, replace: '?')
+            end
+            # Treat UTF-16LE data as raw bytes to avoid encoding comparisons
+            utf16.force_encoding(Encoding::ASCII_8BIT)
+
+            # If input_len == -1, ensure terminating wide NUL present
+            if input_len == -1
+                utf16 += "\x00\x00".b unless utf16.bytesize >= 2 && utf16.byteslice(-2, 2) == "\x00\x00".b
+            end
+
+            # If caller asked for required size only (NULL buffer or zero size), return number of wide chars required
+            if buffer.nil? || buffer_size.nil? || buffer_size == 0
+                return (utf16.bytesize / 2)
+            end
+
+            # Copy up to buffer_size wide chars (2 bytes each)
+            max_bytes = buffer_size * 2
+            to_copy = utf16.byteslice(0, max_bytes) || "".b
+
+            # Ensure buffer is treated as binary for assignment
+            buffer.force_encoding(Encoding::ASCII_8BIT) if buffer.respond_to?(:force_encoding)
+
+            memcpy_string(buffer, to_copy)
+
+            # If we copied fewer than max_bytes and the source was not null-terminated, ensure NUL termination when space allows
+            if to_copy.bytesize < max_bytes
+                pos = to_copy.bytesize
+                # Ensure we don't exceed buffer length; assign two zero bytes
+                buffer[pos, 2] = "\x00\x00".b
+            end
+
+            # Return number of wide characters written
+            (to_copy.bytesize / 2)
+        end
+
+        # Signature: (hwnd, text, caption, uType) -> int
+        # Emulates MessageBoxA by printing to the preload log and returning a button ID.
+        MessageBox = MessageBoxA = ->(hwnd, text, caption, uType) do
+            # Normalize inputs
+            hwnd = hwnd || 0
+            text = text.to_s
+            caption = caption.to_s
+            uType = uType.to_i
+
+            # Log the call so scripts can see what was requested
+            Preload.print "MessageBoxA called: hwnd=#{hwnd} caption=#{caption.inspect} text=#{text.inspect} type=0x#{uType.to_s(16)}"
+
+            # Optionally update the current window title when a caption is provided
+            if caption && !caption.empty?
+                # Keep the same helper used elsewhere for title
+                User32.SetCurrentWindowTitle.call(caption) if User32.respond_to?(:SetCurrentWindowTitle)
+            end
+
+            # Determine a sensible default return value based on uType button flags
+            # Common return values: IDOK = 1, IDCANCEL = 2, IDABORT = 3, IDRETRY = 4, IDIGNORE = 5, IDYES = 6, IDNO = 7
+            # If the message box type requests Yes/No, return IDYES; if OK/Cancel, return IDOK.
+            buttons = uType & 0xF
+            case buttons
+            when 0x00000004 # MB_YESNO
+                return 6 # IDYES
+            when 0x00000001 # MB_OKCANCEL
+                return 1 # IDOK
+            when 0x00000002 # MB_ABORTRETRYIGNORE
+                return 3 # IDABORT
+            when 0x00000003 # MB_YESNOCANCEL
+                return 6 # IDYES
+            else
+                # Default to IDOK for unknown/other types
+                return 1
+            end
+        end
+
         RtlMoveMemory = ->(dest, src, length) do
             dest[0, length] = src[0, length]
         end
     end
 
     module User32
+        MapVirtualKeyEx = ->(code, map, layout) do
+            # If layout is non-zero we only support layout==0 in this emulation.
+            return 0 unless layout == 0 || layout.nil?
+            # map values: 0 = VK->SC, 1 = SC->VK, 2 = VK->CHAR (we'll be permissive)
+            case map
+            when 0
+                # Return the scan code equal to the code (simple identity mapping)
+                code
+            when 1
+                # Reverse mapping: identity
+                code
+            else
+                # Unknown mapping mode: return code unchanged
+                code
+            end
+        end
+
+# Stub for User32::MessageBoxA with UTF-16 decoding
+            MessageBoxA = ->(hwnd, text, caption, uType) do
+                hwnd    = hwnd || 0
+                uType   = uType.to_i
+
+                # Try to decode UTF-16LE text safely
+                decoded_text = begin
+                text.to_s.force_encoding('UTF-16LE').encode('UTF-8')
+                rescue
+                text.to_s
+                end
+
+                decoded_caption = begin
+                caption.to_s.force_encoding('UTF-16LE').encode('UTF-8')
+                rescue
+                caption.to_s
+                end
+
+                # Log the call in human-readable form
+                Preload.print "User32::MessageBoxA called: hwnd=#{hwnd} caption=#{decoded_caption.inspect} text=#{decoded_text.inspect} type=0x#{uType.to_s(16)}"
+
+                # Optionally update the window title
+                if decoded_caption && !decoded_caption.empty?
+                SetCurrentWindowTitle.call(decoded_caption) if User32.respond_to?(:SetCurrentWindowTitle)
+                end
+
+                # Return a safe default value based on button flags
+                buttons = uType & 0xF
+                case buttons
+                when 0x00000004 # MB_YESNO
+                6 # IDYES
+                when 0x00000001 # MB_OKCANCEL
+                1 # IDOK
+                when 0x00000002 # MB_ABORTRETRYIGNORE
+                3 # IDABORT
+                when 0x00000003 # MB_YESNOCANCEL
+                6 # IDYES
+                else
+                1 # Default to IDOK
+                end
+            end
+
+
+
+
+        # GetKeyboardState already exists in your file; ensure it accepts a buffer-like object.
+        # (Your file already sets bytes in the provided buffer.)
+
+        # ToUnicodeEx: translate virtual-key + scan code + key state -> UTF-16LE chars
+        # Signature approximation:
+        # (wVirtKey, wScanCode, lpKeyState, pwszBuff, cchBuff, wFlags, dwhkl) -> number_of_wide_chars_written
+        ToUnicodeEx = ->(wVirtKey, wScanCode, lpKeyState, pwszBuff, cchBuff, wFlags, dwhkl) do
+            # Normalize inputs
+            vk = (wVirtKey || 0).to_i
+            buf = pwszBuff
+            max_chars = (cchBuff || 0).to_i
+
+            # Helper: write UTF-16LE string into buffer (binary-safe)
+            write_utf16le = lambda do |out_buf, str|
+                # Ensure UTF-16LE bytes
+                utf16 = str.to_s.encode('UTF-16LE', invalid: :replace, undef: :replace, replace: '?')
+                # If caller asked only for required size (nil buffer or zero size), return number of wide chars
+                return utf16.bytesize / 2 if out_buf.nil? || max_chars == 0
+                # Copy up to max_chars wide chars (2 bytes each)
+                max_bytes = max_chars * 2
+                to_copy = utf16.byteslice(0, max_bytes) || "".b
+                memcpy_string(out_buf, to_copy)
+                # NUL-terminate if space remains
+                if to_copy.bytesize < max_bytes
+                    pos = to_copy.bytesize
+                    out_buf[pos, 2] = "\x00\x00".b
+                end
+                to_copy.bytesize / 2
+            end
+
+            # Basic mapping for ASCII letters and digits
+            char = nil
+            if vk >= 0x41 && vk <= 0x5A
+                # A-Z
+                # Check shift state if lpKeyState provided (simple check for high bit 0x80)
+                shift = false
+                if lpKeyState && lpKeyState.respond_to?(:getbyte)
+                    shift = (lpKeyState.getbyte(Scancodes::WIN32[:LSHIFT]) & 0x80) != 0 ||
+                            (lpKeyState.getbyte(Scancodes::WIN32[:RSHIFT]) & 0x80) != 0
+                end
+                base = vk - 0x41
+                char = (shift ? (65 + base).chr : (97 + base).chr)
+            elsif vk >= 0x30 && vk <= 0x39
+                # 0-9
+                char = (48 + (vk - 0x30)).chr
+            elsif vk == 0x20
+                char = " "
+            elsif vk == 0x0D
+                char = "\r"
+            else
+                # Unknown/unsupported VK: return 0 (no translation)
+                return 0
+            end
+
+            # If caller only asked for required size
+            return 1 if buf.nil? || max_chars == 0
+
+            # Write the UTF-16LE char into the provided buffer and return number of wide chars written
+            write_utf16le.call(buf, char)
+        end
         FindWindow = FindWindowA = ->(cls, wnd) do
             return 1
         end
@@ -294,16 +565,12 @@ module Win32API
             return common_keystate(vkey) == 1 ? pressed_bit : 0
         end
 
-
-        GetKeyboardState = ->(args) do
-            out_states = args
-            pressed_bit = 0x80
+        @state = "\x00" * 256
+        GetKeyboardState = ->(buf) do
             Scancodes::WIN32.each do |name, val|
-                pressed = common_keystate(val) == 1
-
-                out_states.setbyte(val, pressed ? pressed_bit : 0)
+                buf.setbyte(val, common_keystate(val) == 1 ? 0x80 : 0)
             end
-            return 1
+            1
         end
 
         GetKeyboardLayout = ->(thread) do
@@ -338,6 +605,45 @@ module Win32API
             Graphics.show_cursor = show == 1
             return show
         end
+        @__current_window_title = "RGSS Player"
+
+        # Helper to set the title from other scripts if needed
+        SetCurrentWindowTitle = ->(title) do
+            @__current_window_title = title.to_s
+            1
+        end
+
+        # Return a fake HWND for the foreground window (other stubs expect 1)
+        GetForegroundWindow = ->() do
+            1
+        end
+
+        # Return the length of the window text (number of characters)
+        GetWindowTextLength = ->(hwnd) do
+            return 0 unless hwnd == 1
+            @__current_window_title ? @__current_window_title.length : 0
+        end
+
+        # Copy the window title into the provided buffer (C-style)
+        # Signature: (hwnd, out_buffer, max_count) -> number_of_chars_written
+        GetWindowText = ->(hwnd, out_buf, max_count) do
+            return 0 unless hwnd == 1
+            title = @__current_window_title || ""
+            # Ensure we don't overflow: Windows GetWindowText copies up to max_count-1 chars and NUL terminates
+            max_copy = [max_count - 1, 0].max
+            copy_str = title[0, max_copy]
+            # Write bytes into the provided buffer
+            memcpy_string(out_buf, copy_str)
+            # NUL-terminate at position copy_str.length
+            out_buf[copy_str.length] = "\0"
+            copy_str.length
+        end
+
+        # Emulate bringing a window to foreground; accept hwnd and return success
+        SetForegroundWindow = ->(hwnd) do
+            # We accept 1 as the valid hwnd; if other values are passed, still return 1 to be permissive
+            1
+        end
     end
 
     module Xinput13
@@ -363,14 +669,19 @@ module Win32API
         "kernel32" => Kernel32,
         "XINPUT1_3" => Xinput13,
         "user32" => User32,
+        "user32.dll" => User32,
         "steam_api" => SteamAPI,
     }
 
     def self.new(dllname, func, *rest)
-        dllname = dllname[...-4] if dllname[...-4] == ".dll"
+        dllname = dllname[...-4] if dllname.end_with?(".dll")
         lib = Libraries[dllname]
-        return lib.const_get(func, false) if lib.const_defined?(func, false) unless lib.nil?
+        if lib
+            return lib.method(func).to_proc if lib.respond_to?(func)
+            return lib.const_get(func, false) if func =~ /^[A-Z]\w*/ && lib.const_defined?(func, false)
+        end
         Preload.print("Warning: Win32API not implemented: #{dllname}##{func}")
-        return ->(*args){Preload.print "(STUB) #{dllname}##{func}: #{args}"}
+        ->(*args){Preload.print "(STUB) #{dllname}##{func}: #{args}"}
     end
+
 end

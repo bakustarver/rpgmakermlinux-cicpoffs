@@ -1,5 +1,6 @@
 # Kawariki MKXP preload infrastructure
 
+
 module Preload
     # Kawariki mkxp resources location
     Path = File.dirname __FILE__
@@ -88,6 +89,14 @@ module Preload
                 @scripts.insert(insert_index, [name, "", nil, code])
             end
         end
+        def add_script2(name, code)
+            # Find the first empty slot (check for empty string) that is not the last slot
+
+                # No empty slot found, so insert the new script 5 positions before the end
+                insert_index = [@scripts.length - 5, 0].max  # Ensure the index is not negative
+                @scripts.insert(insert_index, [name, "", nil, code])
+            # end
+        end
         # def add_script(name, code)
         #     @scripts.pop
         #     @scripts.push [name, "", nil, code]
@@ -107,6 +116,49 @@ module Preload
             mark :no_font_effects if env_bool.("KAWARIKI_MKXP_NO_FONT_EFFECTS")
             @blacklist = env_list.("KAWARIKI_MKXP_FILTER_SCRIPTS", ",")
         end
+        # Read pluginsconfig.txt from a directory (game folder)
+        # Read pluginsconfig.txt from a directory (game folder)
+        def read_plugins_config(dir)
+            @disabled_indices ||= []
+            @replacement_paths ||= {}   # index => path
+            cfg = File.join(dir.to_s, "pluginsconfig.txt")
+            return unless File.exist?(cfg)
+            File.readlines(cfg, encoding: "ASCII-8BIT").each do |line|
+                line = line.strip
+                next if line.empty? || line.start_with?("#")
+                # Match "123" or "123-disable" or "123-/path/to/file"
+                if m = line.match(/^\s*(\d+)\s*(?:[-:]\s*(disable|(.+)))?\s*$/i)
+                    idx = m[1].to_i
+                    suffix = m[2]
+                    path_part = m[3]
+                    if suffix.nil? || suffix.downcase == "disable"
+                        @disabled_indices << idx
+                    elsif path_part && !path_part.strip.empty?
+                        @replacement_paths[idx] = path_part.strip
+                    end
+                end
+            end
+            @disabled_indices.uniq!
+            @replacement_paths = @replacement_paths.transform_keys(&:to_i)
+        end
+
+        def disabled_index?(script_or_index)
+            @disabled_indices ||= []
+            idx = script_or_index.is_a?(Integer) ? script_or_index : script_or_index.index
+            @disabled_indices.include?(idx)
+        end
+
+        def replacement_path_for(script_or_index)
+            @replacement_paths ||= {}
+            idx = script_or_index.is_a?(Integer) ? script_or_index : script_or_index.index
+            @replacement_paths[idx]
+        end
+
+        def disabled_indices; @disabled_indices || []; end
+            def replacement_paths; @replacement_paths || {}; end
+
+
+
 
         def read_system(system=System)
             # TODO: Non mkxp-z variants
@@ -242,84 +294,26 @@ module Preload
         # $imported[:Hello] = true
         # ($imported ||= {})["Hello"] = true
         # Type (String/Symbol) is preserved
-        ImportedKeyExpr = /^\s*(?:\$imported|\(\s*\$imported(?:\s*\|\|=\s*\{\s*\})?\s*\))\[(:\w+|'[^']+'|"[^"]+")\]\s*=\s*(.+)\s*$/
+        ImportedKeyExpr = /
+                (?:\$imported|\(\s*\$imported(?:\s*\|\|=\s*\{\s*\})?\s*\))\s*
+
+                \[\s*(:\w+|['"][^'"]+['"])\s*\]
+
+        \s*=\s*(.+)
+        /x.freeze
 
         def _extract_imported
-        if source.nil?
-            puts "Warning: 'source' is nil at the beginning of _extract_imported"
-            return
-        end
-
-        # Ensure 'source' is a string, and log the class type if it's not
-        unless source.is_a?(String)
-            puts "Warning: 'source' is not a string, it's a #{source.class}!"
-            return
-        end
-
-        # Log the encoding type for debugging purposes
-        # puts "Source encoding before: #{source.encoding.name}"
-
-        # Force early return if source is unexpectedly nil just before encoding
-        if source.nil?
-            puts "Warning: 'source' unexpectedly nil before encoding"
-            return
-        end
-
-        # Backup the original source value before encoding, to see if it changes unexpectedly
-        original_source = source.dup
-
-        # puts "Before encoding: source = #{source.inspect}"  # Debugging log for source
-
-        # Force encode to ASCII-8BIT (binary ASCII), replacing non-ASCII characters with '?'
-        if source.encoding.name != "ASCII-8BIT"
-            begin
-
-                # Ensure source is in UTF-8 first to avoid mix of encodings (UTF-8 and ASCII-8BIT)
-                # source = source.encode("UTF-8", invalid: :replace, undef: :replace, replace: "?")
-
-                # Now attempt to encode to ASCII-8BIT (ensure no mix of encodings)
-                # Force both source and encoded_source to be in the same encoding (UTF-8)
-                encoded_source = source.encode("ASCII-8BIT", invalid: :replace, undef: :replace, replace: "?")
-
-                # If encoding results in an empty string or nil, restore original source
-                if encoded_source.nil? || encoded_source.empty?
-                    source = original_source
-                    return
-                else
-                    # Otherwise, use the encoded result
-                    source = encoded_source
-                end
-
-            rescue Encoding::UndefinedConversionError, Encoding::InvalidByteSequenceError => e
-                puts "Encoding failed: #{e.message}"
-                return
-            rescue StandardError => e
-                # puts "Unexpected error during encoding: #{e.message}"
-                return
-            end
+            return unless source.is_a?(String) && !source.empty?
+            src = source.force_encoding("UTF-8").scrub('?') rescue source.to_s
+            m = ImportedKeyExpr.match(src) || src.each_line.lazy.map { |ln| ImportedKeyExpr.match(ln) }.find(&:itself)
+            return unless m
+            raw = m[1]
+            @imported_key = raw.start_with?(':') ? raw[1..-1].to_sym : raw[1...-1]
+            @imported_value = m[2].to_s.strip.sub(/\s*#.*$/, '')
+            @imported_entry = true
         end
 
 
-
-        # Check source after encoding to ensure it isn't nil
-        if source.nil?
-            # puts "Warning: 'source' is nil after encoding!"
-            return
-        end
-
-        # After encoding (or skipping), match the regex pattern
-        match = ImportedKeyExpr.match(source)
-
-        # Check if a match was found
-        @imported_entry = !match.nil?
-
-        return unless @imported_entry
-
-        # Extract the imported key and value from the match result
-        @imported_key = match[1][0] == ':' ? match[1][1..].to_sym : match[1][1...-1]
-        @imported_value = match[2]
-
-        end
 
         def imported_entry?
             _extract_imported if @imported_entry.nil?
@@ -369,21 +363,62 @@ module Preload
         end
 
         # Source code contains text
+        # Replace the existing include? method with this
         def include?(str)
-            # XXX: maybe should restrict this to the start of the script for performance?
-            if? {|script| script.source.include? str}
+            if? do |script|
+                # Ensure script.source is a UTF-8 string (non-destructive to original object)
+                src = script.source.dup.force_encoding("UTF-8").scrub
+
+                # Ensure the needle is UTF-8 too (handles literal or external input)
+                needle = str.to_s.dup.force_encoding("UTF-8").scrub
+
+                src.include?(needle)
+            end
+        end
+        def matchold?(*ps)
+            pattern = Regexp.union(*ps)
+            if? {|script| script.source.match? pattern}
         end
 
         # Source code matches (any) pattern
         def match?(*ps)
             pattern = Regexp.union(*ps)
-            if? {|script| script.source.match? pattern}
+            # lambda { |script| script.source.match?(pattern) }
+            if? do |script|
+                # Ensure script.source is a UTF-8 string (non-destructive to original object)
+                src = script.source.dup.force_encoding("UTF-8").scrub
+
+                # Ensure the needle is UTF-8 too (handles literal or external input)
+                needle = pattern.to_s.dup.force_encoding("UTF-8").scrub
+
+                src.match?(needle)
+            end
         end
 
+
         # Script sets $imported[key]
+        # Robust imported? condition for Patch
         def imported?(key)
-            if? {|script| script.imported_key == key}
+            needle = key.to_s
+            if? do |script|
+                begin
+                    if script.respond_to?(:imported_key)
+                        script.imported_key.to_s == needle
+                    elsif script.respond_to?(:imported) && (h = script.imported).respond_to?(:key?)
+                        h.key?(needle) || h.key?(key) || h.key?(key.to_sym)
+                    elsif defined?($imported) && $imported.is_a?(Hash)
+                        $imported.key?(needle) || $imported.key?(key) || $imported.key?(key.to_sym)
+                    else
+                        false
+                    end
+                rescue
+                    false
+                end
+            end
         end
+
+
+
 
         # Global flag set
         def flag?(flag)
@@ -404,10 +439,39 @@ module Preload
         end
 
         # Substitute text
-        def sub!(pattern, replacement)
-            @actions.push proc{|script| script.source.gsub! pattern, replacement}
-            self
+        # Replace the existing sub! definition with this:
+        def sub!(pattern, replacement = nil, &block)
+        if block_given?
+            @actions.push proc { |script|
+            # Use gsub! with block so callers can compute replacement dynamically
+            script.source.gsub! pattern, &block
+            }
+        else
+            # Two-arg form: pattern + replacement string
+            @actions.push proc { |script|
+            script.source.gsub! pattern, replacement
+            }
         end
+        self
+        end
+
+        # New helper: perform a scoped replacement only inside a single method body.
+        # Usage: .sub_method_body!(/def\s+name.*?end/m) { |method_src| method_src.gsub!(...) }
+        def sub_method_body!(method_header_regex, &block)
+        raise ArgumentError, "block required" unless block_given?
+        @actions.push proc { |script|
+            src = script.source
+            new_src = src.gsub(method_header_regex) do |method_src|
+            # yield the whole method source to the block and use its return value
+            result = block.call(method_src.dup)
+            # If block returns nil, keep original; otherwise use returned string
+            result.nil? ? method_src : result.to_s
+            end
+            script.source.replace(new_src)
+        }
+        self
+        end
+
 
         # Set a global flag for later reference
         def flag!(*flags)
@@ -519,11 +583,14 @@ module Preload
     def self.patch_scripts(ctx)
         ctx.each_script do |script|
             # Remove blacklisted scripts
-            if ctx.blacklisted? script then
-                print "Removed #{script.loc}: Blacklisted"
+            # Remove blacklisted scripts or those disabled by index
+            if ctx.blacklisted? script || ctx.disabled_index?(script)
+                print "Removed #{script.loc}: Blacklisted/Disabled"
                 script.remove
                 next
             end
+
+
             # Encodings are a mess in RGSS. Can break Regexp matching
             e = script.source.encoding
             script.source.force_encoding "ASCII-8BIT"
@@ -538,11 +605,13 @@ module Preload
             print "Patched #{script.loc}: #{script.log.join(', ')}" if script.log.size > 0
             # Warn if Win32API references in source
             if script.source.include? "Win32API.new" then
-
-                 print "Warning: Script #{script.loc} uses Win32API."
-                script.source.gsub!(/class\s+Win32API/, 'module Win32API')
-                 require "Win32API.rb"
+            # #
+            #     print "Warning: Script #{script.loc} uses Win32API."
+               script.source.gsub!(/class\s+Win32API/, 'module Win32API')
+                require "Win32API.rb"
             end
+
+
             # Restore encoding
             script.source.force_encoding e
         end
@@ -589,10 +658,19 @@ module Preload
         # Initialize
         @ctx = ctx = Context.new $RGSS_SCRIPTS
         # ctx.add_script("5555555555555555555555555555555555555555Script1", "puts 'Hello, world!'")
-        script_file = '/home/pasha/desktopapps/mkxp-z/cheats/cheat3.rb'
-        script_file2 = '/home/pasha/desktopapps/mkxp-z/Kawariki-patches/ports/wxexittest.rb'
+
         ctx.read_system
         ctx.read_env
+        # Read plugin config from the game's folder
+        game_folder = if defined?(CFG) && CFG.is_a?(Hash) && CFG["gameFolder"]
+        CFG["gameFolder"].to_s
+    else
+        Dir.pwd
+    end
+
+    ctx.read_plugins_config(game_folder)
+    Preload.print "Disabled script indices (from pluginsconfig.txt): #{ctx.disabled_indices.inspect}" if ctx.disabled_indices.any?
+    Preload.print "Replacement paths (from pluginsconfig.txt): #{ctx.replacement_paths.inspect}" if ctx.replacement_paths.any?
 
         # Preload[:vcode] = vcode
         # Preload.Context.set(:vscode, vcode)
@@ -605,19 +683,70 @@ module Preload
         print "MKXP mkxp-z #{ctx[:mkxp_version]} RGSS #{ctx[:rgss_version]} (#{RgssVersionNames[ctx[:rgss_version]]})\n"
         # Run preload hooks
         @on_preload.each{|p| p.call ctx}
+        # ctx.each_script do |script|
+        #     print "Script ##{script.index}: #{script.name}#{"\t[#{script.imported_key}]" if script.imported_key}"
+        # end
+        dump_scripts ctx, :dump_scripts_raw
+
+        replace_files = {}
+        Dir.glob(File.join(CFG["gameFolder"].to_s, 'scr-*.rb')).each do |full|
+            if m = File.basename(full).match(/\Ascr-(\d+)\.rb\z/i)
+                replace_files[m[1].to_i] ||= full
+            end
+        end
         ctx.each_script do |script|
+            idx = script.index
             print "Script ##{script.index}: #{script.name}#{"\t[#{script.imported_key}]" if script.imported_key}"
+              # Preload.print "rp = #{replace_files.inspect}"
+            if (rp = replace_files[idx])
+                script.load_file rp if File.file?(rp)
+                next
+            end
+            # Replacement takes precedence over disable if both present
+            if (rp = ctx.replacement_path_for(idx))
+                # Resolve relative paths against game_folder
+                rp_resolved = rp.start_with?("/") ? rp : File.expand_path(rp, game_folder)
+                if File.exist?(rp_resolved)
+                    Preload.print "Pre-replacing #{script.loc} with #{rp_resolved}"
+                    script.load_file rp_resolved
+                else
+                    Preload.print "Replacement file not found for #{script.loc}: #{rp_resolved}"
+                end
+                next
+            end
+
+            if ctx.disabled_index?(idx)
+                Preload.print "Pre-removed #{script.loc} (from pluginsconfig.txt)"
+                script.remove
+                next
+            end
         end
 
-
-
         # Patch Scripts
-        dump_scripts ctx, :dump_scripts_raw
         patch_scripts ctx
         overwrite_redefinitions ctx if ctx.flag? :redefinitions_overwrite_class
         dump_scripts ctx, :dump_scripts_patched
         # Try to inject hook after most (plugin) scripts are loaded but before game starts
-        ctx.last_script.source= "Preload._run_boot\n\n" + ctx.last_script.source
+
+        # begin
+        #     load script_file
+        #     ctx.last_script.source= "Preload._run_boot\n\n" + ctx.last_script.source
+        # rescue Errno::ENOENT
+        #    warn "Extra script file not found: #{script_file}"
+        # end
+        mainfd = ENV['mainfd'] || File.join(ENV['HOME'], "desktopapps")
+
+
+        if ENV['MKXPZMOUSE'] == 'true'
+            mousescriptpath = File.join(mainfd, "nwjs/nwjs/packagefiles/mkxpz-scripts/scripts/Mouse.rb")
+        ctx.add_script2('mousescript', File.read(mousescriptpath, encoding: 'ASCII-8BIT')) if File.exist?(mousescriptpath)
+        end
+        if ENV['MKXPZ999_CHEATRUBY'] == 'true'
+            cheatscriptpath = File.join(mainfd, "nwjs/nwjs/packagefiles/mkxpz-scripts/scripts/999_CheatRuby.rb")
+            ctx.add_script2('cheatscript', File.read(cheatscriptpath, encoding: 'ASCII-8BIT')) if File.exist?(cheatscriptpath)
+        end
+        # ctx.last_script.source= "Preload._run_boot\n\n" + ctx.last_script.source
+        # ctx.add_script('cheat2', File.read(script_file2)) if File.exist?(script_file2)
         # ctx.add_script('cheat1', File.read(script_file, encoding: 'ASCII-8BIT')) if File.exist?(script_file)
         # ctx.add_script('cheat2', File.read(script_file2)) if File.exist?(script_file2)
 
@@ -705,15 +834,15 @@ end
 vers = checkini(game_ini_path)
 
 rgssversioncodes = ["Unknown", ":xp", ":vx", ":vxace"]
+rgssversioncodeshr = ["Unknown", "XP", "VX", "VX Ace"]
 
 # vcode =
 # set :zeusrpgver, vcode
 ENV["vcode"] = rgssversioncodes[vers]
-puts ENV["vcode"]
+puts "Rpg Maker " + rgssversioncodeshr[vers] + " game"
 ENV["rpgvers"] = vers.to_s
 # puts "nbnn"+ENV["vcode"]
 # Ensure Zlib is loaded
-system("testecho.sh 55555")
 Kernel.require 'zlib' unless Kernel.const_defined? :Zlib
 # Load patch definitions
 Kernel.require File.join(Preload::Path, 'patches.rb')
@@ -723,7 +852,50 @@ Dir['*.kawariki.rb'].each do |filename|
     Preload.print "Loading user script #{filename}"
     Kernel.require filename
 end
+
+mainfd = ENV['mainfd'] || File.join(ENV['HOME'], "desktopapps")
+
+
+
+
+# Build newline-separated "index: name" list from $RGSS_SCRIPTS
+if ENV['MKXPEDITLIST'] == 'true'
+rgss_lines = $RGSS_SCRIPTS.each_with_index.map do |entry, i|
+    name = entry && entry[1] ? entry[1].to_s : ""
+    "#{i}: #{name}"
+end.join("\n")
+
+# Export into ENV and run the bash script, passing game folder as arg
+# env = { 'RGSS_SCRIPTS' => rgss_lines }
+game_dir = CFG["gameFolder"].to_s
+editscriptpath = File.join(mainfd, "nwjs/nwjs/packagefiles/mkxpz-scripts/editscripts.sh")
+
+env = {
+    'RGSS_SCRIPTS' => rgss_lines,
+    'GAME_DIR'     => game_dir
+}
+# Option A: simple blocking call, prints to stdout/stderr
+system(env, "bash", editscriptpath)
+end
+
+# puts output
 # Apply patches to scripts
 Preload._run_preload
 # Run load hooks just before control returns to MKXP to run the scripts
 Preload._run_load
+
+# Execute shell script synchronously and log result
+# require 'shellwords' unless defined?(Shellwords)
+
+# script = "/media/pasha/ec62e920-ab70-4488-8402-72c9b2728a12/mega/Flirt Quest rus/test.sh"
+# Put this inside preload.rb or a user script loaded by Preload
+# Use Preload.on_boot so it runs after RGSS boot and game objects exist
+# Hardened FIFO listener with per-user FIFO and TCP fallback
+# Put this at the very top of preload.rb (first lines)
+# Handle noclip on/off/toggle in one function
+# Kernel.require '/home/pasha/desktopapps/mkxp-z/Kawariki-patches/testfifo.rb'
+if ENV['MKXPZCHEAT1YAD'] == 'true'
+
+    fifoscriptpath = File.join(mainfd, "nwjs/nwjs/packagefiles/mkxpz-scripts/testfifo.rb")
+load fifoscriptpath  if File.exist?(fifoscriptpath)
+end

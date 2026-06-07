@@ -131,21 +131,45 @@ module Preload
                     nil
             end
 
-            def readLine(line)
-                if line.valid_encoding?
-                    line.strip!
-                else
-                    # Optionally, handle the invalid encoding here:
-                    # You can choose to skip the line, replace invalid characters, or log it.
-                    line = line.encode('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: '?')
+            # Replace the existing shift_jis? and readLine methods with these.
+
+            def shift_jis?(raw)
+                # raw is a binary string (force_encoding not yet applied)
+                # Try interpreting as Windows-31J (CP932) which is the common Windows SJIS variant.
+                s = raw.dup.force_encoding("Windows-31J")
+                return false unless s.valid_encoding?
+                begin
+                    utf = s.encode("UTF-8")
+                    # If the conversion introduced replacement characters, treat as not a clean match.
+                    return !utf.include?("\uFFFD")
+                rescue Encoding::UndefinedConversionError, Encoding::InvalidByteSequenceError
+                    return false
                 end
-                return [:empty] if line.empty?
-                return :comment, *readComment(line) if line[0] == ';'
-                return :section, *readSection(line) if line[0] == '['
-                return :key, *readKey(line) if line.include? '='
-                # Just pass it through as last resort
-                return :line, line
             end
+
+            def readLine(line)
+                # Ensure we treat the incoming data as binary first
+                raw = line.dup.force_encoding("BINARY")
+
+                if raw.valid_encoding? && raw.encoding.name == "UTF-8"
+                    # Already valid UTF-8 text
+                    text = raw.encode("UTF-8")
+                elsif shift_jis?(raw)
+                    # Convert from Windows-31J (CP932) to UTF-8, replacing any problematic bytes
+                    text = raw.encode("UTF-8", "Windows-31J", invalid: :replace, undef: :replace, replace: '?')
+                else
+                    # Last-resort: treat as binary and coerce to UTF-8 with replacement
+                    text = raw.encode("UTF-8", "binary", invalid: :replace, undef: :replace, replace: '?')
+                end
+
+                text.strip!
+                return [:empty] if text.empty?
+                return :comment, *readComment(text) if text[0] == ';'
+                return :section, *readSection(text) if text[0] == '['
+                return :key, *readKey(text) if text.include?('=')
+                return :line, text
+            end
+
 
             def read
                 raise "Must be called with block" unless block_given?

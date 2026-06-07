@@ -102,7 +102,8 @@
 # Mouse Sprite
 #============================================================================
 
-
+unless defined?(SUPER_SIMPLE_MOUSE_LOADED)
+  SUPER_SIMPLE_MOUSE_LOADED = true
 # Add/remove/change icon names here.  The icon name is what will be used in the
 # event <mouse ...> command to show a different mouse icon when hovering over
 # the event.  These MUST be in lower case here!
@@ -1049,4 +1050,5 @@ class Game_Player < Game_Character
     clear_path if $game_message.busy? || $game_message.visible
   end
  
+end
 end
