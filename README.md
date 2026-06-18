@@ -1,4 +1,4 @@
-#  RPG Maker MV / MZ for Linux [ cicpoffs mount]
+#  RPG Maker Launcher for Linux 
 The bash wrapper uses [native Linux libraries](DEPENDENCIES.md) to run Windows games. It creates a local port of the Linux version from the Windows port and then executes it.
 Initially, it supported only RPG Maker MV and MZ, but now it also supports RPG Maker XP, VX, VX Ace, MV, MZ, TyranoBuilder, Godot, Construct 2/3, and Nscripter.
 
