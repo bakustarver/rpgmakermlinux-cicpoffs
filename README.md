@@ -94,6 +94,9 @@ rpgmaker-linux --steamskipgui true
 - [RPGMaker MV/MZ Save Editor](https://www.appimagehub.com/p/2166407/) - This is a offile tool for editing RPGMaker save files. It currently supports save files written by RPG Maker MV (.rpgsave) & MZ (.rmmzsave).
 - [Kawariki](https://github.com/Orochimarufan/Kawariki) - An alternative tool for launching games focused on Steam.
 - [Game2Text](https://github.com/mathewthe2/Game2Text) -  Complete toolbox for gamifying language learning.
+##### If anyone is interested in the macOS version by [m5kro](https://github.com/m5kro)
+- [RPG Maker MacOS Launcher](https://github.com/m5kro/RPG-Maker-MacOS-Launcher)
+- [Xenolauncher macOS](https://github.com/m5kro/Xenolauncher)
 
 ### Professional version:
 <a href="https://bakurpg.itch.io/rpg-maker-mv-mz-for-linux"><img src="https://github.com/user-attachments/assets/ed684afc-9959-4eb1-892b-f48236bd091e" width="600"></a>
