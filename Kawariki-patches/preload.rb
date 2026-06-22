@@ -49,6 +49,10 @@ module Preload
             (0...@scripts.size).each {|i| yield script i}
         end
 
+
+        def last_script2
+            script (script_count - 6)
+        end
         def last_script
             script (script_count - 1)
         end
@@ -89,13 +93,86 @@ module Preload
                 @scripts.insert(insert_index, [name, "", nil, code])
             end
         end
-        def add_script2(name, code)
+        def add_script3(name, code)
             # Find the first empty slot (check for empty string) that is not the last slot
 
                 # No empty slot found, so insert the new script 5 positions before the end
                 insert_index = [@scripts.length - 5, 0].max  # Ensure the index is not negative
                 @scripts.insert(insert_index, [name, "", nil, code])
             # end
+        end
+        def add_script2(name, code)
+            empty_index = @scripts.each_index.find do |i|
+                slot = @scripts[i]
+                slot.is_a?(Array) &&
+                        slot[0].is_a?(String) &&
+                        slot[0].empty? &&
+                        i < @scripts.length - 1
+            end
+
+            if empty_index
+                @scripts[empty_index][0] = name
+                @scripts[empty_index][3] = code
+                Preload.print "inserted into empty slot ##{empty_index}"
+                return empty_index
+            end
+
+            # No empty slot: insert a new script a few positions before the end.
+            # Do NOT pop anything — that was deleting the real Main script.
+            insert_index = [@scripts.length - 5, 0].max
+            @scripts.insert(insert_index, [name, "", nil, code])
+            Preload.print "inserted at #{insert_index}"
+
+            return insert_index
+        end
+        def empty_slots_near_end(target_offset: 5, window: 15)
+            last = @scripts.length - 1
+            lo = [last - window, 0].max
+            target_index = @scripts.length - target_offset
+
+            (lo...last).select do |i|
+                slot = @scripts[i]
+                slot.is_a?(Array) &&
+                        slot[0].is_a?(String) && slot[0].strip.empty? &&
+                        slot[3].is_a?(String) && slot[3].strip.empty?
+            end.sort_by { |i| (i - target_index).abs }
+        end
+
+        def fill_slot_near_end(name, code, target_offset: 5, window: 15)
+            @claimed_empty ||= []
+            idx = empty_slots_near_end(target_offset: target_offset, window: window)
+            .find { |i| !@claimed_empty.include?(i) }
+            return nil unless idx
+            @claimed_empty.push idx
+            @scripts[idx][0] = name
+            @scripts[idx][3] = code
+            Preload.print "Filled empty slot ##{idx} (near end) with '#{name}'"
+            idx
+        end
+        # def add_script2(name, code)
+        #     empty_index = @scripts.each_index.find do |i|
+        #         slot = @scripts[i]
+        #         slot.is_a?(Array) &&
+        #                 slot[0].is_a?(String) &&
+        #                 slot[0].empty? &&
+        #                 i < @scripts.length - 1
+        #     end
+        #
+        #     if empty_index
+        #         @scripts[empty_index][0] = name
+        #         @scripts[empty_index][3] = code
+        #         Preload.print "inserted into empty slot ##{empty_index}"
+        #         return empty_index
+        #     end
+        #
+        #     insert_index = [@scripts.length - 5, 0].max
+        #     @scripts.insert(insert_index, [name, "", nil, code])
+        #     Preload.print "inserted at #{insert_index}"
+        #
+        #     return insert_index
+        # end
+        def self.script_at_offset(ctx, offset)
+            ctx.script(ctx.script_count - offset)
         end
         # def add_script(name, code)
         #     @scripts.pop
@@ -116,12 +193,12 @@ module Preload
             mark :no_font_effects if env_bool.("KAWARIKI_MKXP_NO_FONT_EFFECTS")
             @blacklist = env_list.("KAWARIKI_MKXP_FILTER_SCRIPTS", ",")
         end
-        # Read pluginsconfig.txt from a directory (game folder)
-        # Read pluginsconfig.txt from a directory (game folder)
+        # Read scrconf.txt from a directory (game folder)
+        # Read scrconf.txt from a directory (game folder)
         def read_plugins_config(dir)
             @disabled_indices ||= []
             @replacement_paths ||= {}   # index => path
-            cfg = File.join(dir.to_s, "pluginsconfig.txt")
+            cfg = File.join(dir.to_s, "scrconf.txt")
             return unless File.exist?(cfg)
             File.readlines(cfg, encoding: "ASCII-8BIT").each do |line|
                 line = line.strip
@@ -488,7 +565,7 @@ module Preload
 
         # Replace the whole script with a file from ports/ (terminal)
         def replace!(filename)
-            puts filename
+            # puts filename
             @actions.push proc{|script| script.load_file File.join(Path, "ports", filename)}
             @terminal = true
             self
@@ -669,8 +746,8 @@ module Preload
     end
 
     ctx.read_plugins_config(game_folder)
-    Preload.print "Disabled script indices (from pluginsconfig.txt): #{ctx.disabled_indices.inspect}" if ctx.disabled_indices.any?
-    Preload.print "Replacement paths (from pluginsconfig.txt): #{ctx.replacement_paths.inspect}" if ctx.replacement_paths.any?
+    Preload.print "Disabled script indices (from scrconf.txt): #{ctx.disabled_indices.inspect}" if ctx.disabled_indices.any?
+    Preload.print "Replacement paths (from scrconf.txt): #{ctx.replacement_paths.inspect}" if ctx.replacement_paths.any?
 
         # Preload[:vcode] = vcode
         # Preload.Context.set(:vscode, vcode)
@@ -716,7 +793,7 @@ module Preload
             end
 
             if ctx.disabled_index?(idx)
-                Preload.print "Pre-removed #{script.loc} (from pluginsconfig.txt)"
+                Preload.print "Pre-removed #{script.loc} (from scrconf.txt)"
                 script.remove
                 next
             end
@@ -737,13 +814,54 @@ module Preload
         mainfd = ENV['mainfd'] || File.join(ENV['HOME'], "desktopapps")
 
 
-        if ENV['MKXPZMOUSE'] == 'true'
-            mousescriptpath = File.join(mainfd, "nwjs/nwjs/packagefiles/mkxpz-scripts/scripts/Mouse.rb")
-        ctx.add_script2('mousescript', File.read(mousescriptpath, encoding: 'ASCII-8BIT')) if File.exist?(mousescriptpath)
+        # if ENV['MKXPZMOUSE'] == 'true'
+        #     mousescriptpath = File.join(mainfd, "nwjs/nwjs/packagefiles/mkxpz-scripts/scripts/Mouse.rb")
+        # ctx.add_script2('mousescript', File.read(mousescriptpath, encoding: 'ASCII-8BIT')) if File.exist?(mousescriptpath)
+        # end
+        if ENV['MKXPZ999_CHEATRUBYTEST'] == 'true'
+             cheatscriptpath = File.join(mainfd, "nwjs/nwjs/packagefiles/mkxpz-scripts/scripts/999_CheatRuby.rb")
+             ctx.add_script2('cheatscript', File.read(cheatscriptpath, encoding: 'ASCII-8BIT')) if File.exist?(cheatscriptpath)
         end
-        if ENV['MKXPZ999_CHEATRUBY'] == 'true'
-            cheatscriptpath = File.join(mainfd, "nwjs/nwjs/packagefiles/mkxpz-scripts/scripts/999_CheatRuby.rb")
-            ctx.add_script2('cheatscript', File.read(cheatscriptpath, encoding: 'ASCII-8BIT')) if File.exist?(cheatscriptpath)
+        # if ENV['MKXPZ500SLOTS'] == 'true'
+        #     # Preload.print "MKXPZ500SLOTS---------"
+        #     moreslots = File.join(mainfd, "nwjs/nwjs/packagefiles/mkxpz-scripts/scripts/500slots.rb")
+        #     # Preload.print "6666666666666666666666666"
+        #     # Preload.print "6666666666666666666666666" if File.exist?(moreslots)
+        #     ctx.add_script2('moreslots', File.read(moreslots, encoding: 'ASCII-8BIT')) if File.exist?(moreslots)
+        #     #
+        #     # ctx.last_script2.source= File.read(moreslots, encoding: 'ASCII-8BIT') + ctx.last_script2.source if File.exist?(moreslots)
+        # { env: 'MKXPZMOUSE', name: 'mousescript', file: 'Mouse.rb',          extra_cond: ->{ [2, 3].include?(ctx[:rgss_version]) } },
+        # end
+        # mainfd = ENV['mainfd'] || File.join(ENV['HOME'], "desktopapps")
+        scripts_dir = File.join(mainfd, "nwjs/nwjs/packagefiles/mkxpz-scripts/scripts")
+        #
+
+        injections = [
+            { env: 'MKXPZMOUSE',         name: 'mousescript', file: 'Mouse.rb',
+              extra_cond: ->{ ctx[:rgss_version] == 3 } },
+            { env: 'MKXPZ999_CHEATRUBY', name: 'cheatscript',  file: '999_CheatRuby.rb',
+              extra_cond: ->{ ctx[:rgss_version] == 3 } },
+            { env: 'MKXPZSKIPDIALOGS_HOSHIGATA_VXACE', name: 'skipdialogsvxace', file: 'skipdialogs_Hoshigata_vxace.rb',
+              extra_cond: ->{ ctx[:rgss_version] == 3 } },
+            { env: 'MKXPZ500SLOTS',      name: 'moreslots',    file: '500slots.rb' },
+            ]
+
+        injections.each do |inj|
+            next unless ENV[inj[:env]] == 'true'
+            next if inj[:extra_cond] && !inj[:extra_cond].call
+
+            path = File.join(scripts_dir, inj[:file])
+            next unless File.exist?(path)
+
+            code = File.read(path, encoding: 'ASCII-8BIT')
+            idx = ctx.fill_slot_near_end(inj[:name], code, target_offset: 5, window: 15)
+
+            if idx.nil?
+                target = ctx.script(ctx.script_count - 5)
+                target.source = code.dup.force_encoding("ASCII-8BIT") +
+                   target.source.dup.force_encoding("ASCII-8BIT")
+                Preload.print "No empty slot near -5 for '#{inj[:name]}'"
+            end
         end
         # ctx.last_script.source= "Preload._run_boot\n\n" + ctx.last_script.source
         # ctx.add_script('cheat2', File.read(script_file2)) if File.exist?(script_file2)
@@ -843,8 +961,10 @@ puts "Rpg Maker " + rgssversioncodeshr[vers] + " game"
 ENV["rpgvers"] = vers.to_s
 # puts "nbnn"+ENV["vcode"]
 # Ensure Zlib is loaded
+
 Kernel.require 'zlib' unless Kernel.const_defined? :Zlib
 # Load patch definitions
+
 Kernel.require File.join(Preload::Path, 'patches.rb')
 
 # Inject user scripts
@@ -884,16 +1004,7 @@ Preload._run_preload
 # Run load hooks just before control returns to MKXP to run the scripts
 Preload._run_load
 
-# Execute shell script synchronously and log result
-# require 'shellwords' unless defined?(Shellwords)
 
-# script = "/media/pasha/ec62e920-ab70-4488-8402-72c9b2728a12/mega/Flirt Quest rus/test.sh"
-# Put this inside preload.rb or a user script loaded by Preload
-# Use Preload.on_boot so it runs after RGSS boot and game objects exist
-# Hardened FIFO listener with per-user FIFO and TCP fallback
-# Put this at the very top of preload.rb (first lines)
-# Handle noclip on/off/toggle in one function
-# Kernel.require '/home/pasha/desktopapps/mkxp-z/Kawariki-patches/testfifo.rb'
 if ENV['MKXPZCHEAT1YAD'] == 'true'
 
     fifoscriptpath = File.join(mainfd, "nwjs/nwjs/packagefiles/mkxpz-scripts/testfifo.rb")

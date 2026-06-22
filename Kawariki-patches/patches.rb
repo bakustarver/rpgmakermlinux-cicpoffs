@@ -49,13 +49,6 @@ module Preload
             # .remove!,
             # .replace!("dummyAudioUtilities.rb")
              .sub!(/when (\d+):/, 'when \1'),
-        Patch.new("dummyPSystem_Utilities plugin fix")
-            .include?('pbNextComb')
-            # .include?('def pbIsJsonString')
-            # .remove!,
-             .replace!("dummyPSystem_Utilities.rb"),
-             # .sub!(/when (\d+):/, 'when \1'),
-
         Patch.new("XIV's Simple Reputation System (SRS) for RGSS3 fix") #XIV's Simple Reputation System (SRS) for RGSS3 Romance Level Version: 1.1
             .include?("Simple Reputation System (SRS)")
             .sub!("$scene1 = Scene_Menu.new(0)", "$scene1 = Scene_Menu.new"),
