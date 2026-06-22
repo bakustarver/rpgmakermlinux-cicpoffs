@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='1.1.8'
+version='1.1.7'
 
 default_dir="$HOME/desktopapps"
 mainfdtxt="$HOME/.config/defrpgmakerlinuxpath.txt"
@@ -29,6 +29,7 @@ stringsbin="$nwjsfm/packagefiles/strings"
 fi
 tyranounpacker="$nwjsfm/packagefiles/tyranodataextract"
 electronfd="$mainfd/electron-tyrano"
+krkr2fd="$mainfd/krkr2"
 mkxpzp="$mainfd/mkxp-z"
 evbunpack="$nwjsfm/packagefiles/evbunpack"
 ndmodulesfd="$nwjsfm/packagefiles/tyranobuilder/node_modules"
@@ -70,10 +71,10 @@ if [ -n "$githubscriptwget" ]; then
 
     if [ "$version" != "$githubversion" ]; then
         if { echo "$version"; echo "$githubversion"; } | sort --version-sort -C; then
-            # echo -e "${YELLOW}=== UPDATE ALERT ===${NC}"
             echo -e "${CYAN}A new RPGMaker-Linux update has been detected. To install the latest version, run:${NC}"
             # echo -e "${GREEN}New version detected.${NC}"
-            echo -e "Run: ${GREEN}rpgmaker-linux --fullupdate${NC}\n"
+            echo -e "Run one of the following:\n     ${GREEN}rpgmaker-linux --fullupdate${NC} (Update completely — replace all files.)\n     ${GREEN}rpgmaker-linux --minimalupdate${NC} (Update only files that have changed.)"
+
         fi
     fi
         if [ -d "$mainfd/mkxp-z" ]; then
@@ -106,9 +107,16 @@ armsys=true
 fi
 
 bringtofront() {
-    local target="$1"
-    grep -Fx "$target"
-    grep -Fxv "$target"
+  local target="$1"
+  if [ -z "$target" ]; then
+    # no target: just copy stdin to stdout
+    cat -
+    return 0
+  fi
+
+  # print lines exactly matching target first, then the rest
+  grep -Fx -- "$target" || true
+  grep -Fxv -- "$target" || true
 }
 
 
@@ -301,6 +309,19 @@ fi
 ln -fs "$npath/data" "$mainfd/nwjs/nwjs/packagefiles/tyranobuilder/tyranoeng"
 }
 
+krkrdownload() {
+
+if [ "$arch" = "x86_64" ]; then
+
+link="https://github.com/bakustarver/rpgmakermlinux-cicpoffs/releases/download/libraries/krkr2-sdk-$arch.zip"
+wget -O /tmp/krkr2-sdk.zip "$link"
+unzip -d "$krkr2fd" /tmp/krkr2-sdk.zip
+rm /tmp/krkr2-sdk.zip
+else
+echo For this release, only x86_64 supported
+
+fi
+}
 
 mkxpzdownload() {
 
@@ -336,6 +357,21 @@ fi
 
 }
 
+krkrinstalldialog() {
+$yadp --image="dialog-question" \
+  --title "Krkrdroid linux edition: $line" \
+  --text "Krkrdroid module is not installed\nWould you like to download it?\n+84 mb" \
+  --button="Yes:0" \
+  --button="No:1" \
+retmkxpz=$?
+
+if [[ $retmkxpz -eq 1 ]]; then
+exit;
+elif [[ $retmkxpz -eq 0 ]]; then
+krkrdownload;
+fi
+
+}
 
 
 electron-tyrano-downloader() {
@@ -385,10 +421,10 @@ fi
 mkxpzdialogoptions() {
 $yadp --image="dialog-question" \
   --title "Mkxp-z Options: $line" \
-  --text "Found the rppmaker game $line!\nHow would you like to open it?" \
-  --button="Linux mkxp-z:0" \
-  --button="Windows mkxp-z (Requires Wine):1" \
-  --button="Script Control Panel:2" \
+  --text "RPG Maker XP/VX/VX Ace game detected: $line\n\nSelect how you’d like to open it:" \
+  --button="Run with Linux mkxp-z:0" \
+  --button="Run with Windows mkxp-z (via Wine):1" \
+  --button="Open Script Control Panel:2" \
   --button="Exit:3"
 rettyranoelectron=$?
 
@@ -469,12 +505,14 @@ if [ "$n2godot" = "beta" ]; then
 $n2godot="stable"
 fi
 godotsdklink="https://github.com/godotengine/godot/releases/download/$n1godot-stable/Godot_v$n1godot-$stablepr$n2godot$versinid"
-
+else
+    # new version handling
+    godotsdklink="https://github.com/godotengine/godot/releases/download/$n1godot-stable/Godot_v$n1godot-$n2godot$versinid"
 fi
-
 if wget -q --spider "$godotsdklink"; then
 dglink="$godotdownloadsdk"
 fi
+echo "sdk link - $godotsdklink"
 
 archivngodot=$(basename "$godotsdklink")
 binname=$(echo "$archivngodot" | sed -e 's@.zip@@g')
@@ -512,6 +550,49 @@ ln -fs "$npath/resources/app" "$electronfd/resources/"
 usetyranoelectron=true
 }
 
+extract_installshield() {
+    base=$(basename "$1")
+    name="${base%.*}"
+    ext="${base##*.}"
+    dir="./$name"
+
+    # If folder exists, append (n)
+    if [ -d "$dir" ]; then
+        i=1
+        while [ -d "./$name ($i)" ]; do
+            i=$((i+1))
+        done
+        dir="./$name ($i)"
+    fi
+
+    # Ask user with yad
+    $yadp --image="dialog-question" \
+        --title "RPG Maker linux: $name" \
+        --text "Detected InstallShield archive (Windows EXE) $name!\nWould you like to unpack it?" \
+        --button="Yes:0" \
+        --button="No:1"
+    ret=$?
+
+    if [ "$ret" -eq 0 ]; then
+        if ! command -v 7z >/dev/null 2>&1; then
+            $yadp --image="dialog-error" \
+                --title "Error: 7z not found" \
+                --text "System cannot find '7z'.\nPlease install p7zip-full to unpack InstallShield archives." \
+                --button="OK:0"
+            return 1
+        fi
+        mkdir -p "$dir"
+        7z x "$1" -o"$dir"
+        # cd "$dir" &&
+        # echo "$dir"
+        npath=$(readlink -f "$dir")
+        echo "Extracted to $dir"
+    else
+        echo "Skipped extraction."
+    fi
+}
+
+
 
 searchforpackedexe() {
 # echo fffvvvv
@@ -524,6 +605,9 @@ while IFS= read -r line; do
 # echo "$npath/$line"
 #check 1 kb of the binary
 allstrings=$(head -c 5120 "$npath/$line" | "$stringsbin")
+if file "$npath/$line" | grep -q "InstallShield self-extracting archive"; then
+extract_installshield "$npath/$line"
+fi
 if echo "$allstrings" | grep -q "8MZu" && echo "$allstrings" | grep -q "pck"; then
 # echo vvv
 # "$pckextract" "$npath/$line"
@@ -601,14 +685,29 @@ sed -e "s@.*.gameFolder.*@    \"gameFolder\": \"$npath\",@g" -i "$mkxpzp/mkxp.js
 if [ "$mkxpopt" = "wine" ]; then
 wine "$mkxpzp/mkxp-z.exe"
 else
+export SDL_VIDEODRIVER=x11
+. $HOME/desktopapps/debugging/mkxpz1.sh #REMOVEDEBUG
 "$mkxpzp/mkxp-z.$arch"
+. $HOME/desktopapps/debugging/mkxpz2.sh #REMOVEDEBUG
+
 fi
 mkxpfound=true
 
 fi
 }
 
+krkrlaunchfunc() {
+if [ -z "$dataxpfound" ]; then
 
+if ! [ -f "$krkr2fd/krkr2" ]; then
+krkrinstalldialog
+fi
+export krkrdatapath="$npath/data.xp3"
+"$krkr2fd/krkr2"
+dataxpfound=true
+
+fi
+}
 
 
 
@@ -694,6 +793,8 @@ engine=construct-nwjs
 elif [ -e "$npath/nscript.dat" ]; then
 # mkxpfunc
 engine=nscripter
+elif [ -e "$npath/data.xp3" ]; then
+engine=krkr
 elif [ -e "$npath/ffmpegsumo.dll" ] && [ -e "$npath/nw.pak" ] && [ -e "$npath/d3dcompiler_47.dll" ] && [ -e "$npath/nw.pak" ]; then
 tyranofuncv4
 elif [ -d "$npath/resources" ] && [ -d "$npath/locales" ] && [ -e "$npath/chrome_100_percent.pak" ] && [ -e "$npath/natives_blob.bin" ] && [ -e "$npath/chrome_200_percent.pak" ]; then
@@ -734,7 +835,6 @@ if [ -z "$engine" ]; then
 searchforpackedexe "$PWD"
 
 if [ -z "$gamepath" ]; then
-
 if [ -d ./www ] && [ -f ./package.json ]; then
 mountpath="$PWD/www"
 found=true
@@ -760,6 +860,8 @@ engine=construct-nwjs
 elif [ -e "./nscript.dat" ]; then
 # mkxpfunc
 engine=nscripter
+elif [ -e "./data.xp3" ]; then
+engine=krkr
 else
 npath="$PWD"
 checkpck=$(ls "$npath" | grep "\.pck")
@@ -775,8 +877,6 @@ fi
 # fi
 #
 fi
-
-
 
 
 
@@ -948,6 +1048,10 @@ do
             updatenwjs
             ;;
         --fullupdate)
+            fullupdatereinstall
+            ;;
+        --minimalupdate)
+            export RPGMSELECTIVEUPDATE=true
             fullupdatereinstall
             ;;
         --updatescripts)
@@ -1758,6 +1862,9 @@ fi
 elif [ "$engine" = "mkxpz" ]; then
 
 mkxpfunc
+elif [ "$engine" = "krkr" ]; then
+
+krkrlaunchfunc
 elif [ "$engine" = "nscripter" ]; then
 "$nwjsfm/packagefiles/onsyuri/onsyuri" --root "$npath" --font "$nwjsfm/packagefiles/onsyuri/umeplus-gothic.ttf"
 elif [ "$engine" = "construct-nwjs" ]; then
