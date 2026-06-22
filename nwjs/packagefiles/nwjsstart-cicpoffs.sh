@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version='1.1.7'
+version='1.1.9'
 
 default_dir="$HOME/desktopapps"
 mainfdtxt="$HOME/.config/defrpgmakerlinuxpath.txt"
