@@ -1,0 +1,50 @@
+#!/bin/bash
+set -euo pipefail
+
+SELF_DIR="$(dirname "$(readlink -f "$0")")"
+engpath=$(echo "$PWD" | md5sum | cut -d' ' -f1)
+TMPDIR="/tmp/$engpath"
+
+# Ensure cleanup on exit or interruption
+cleanup() {
+  rm -rf "$TMPDIR"
+}
+trap cleanup EXIT INT TERM
+
+mkdir -p "$TMPDIR"
+cp "$SELF_DIR/mkxp.json" "$TMPDIR/"
+
+if [[ -f /sys/devices/virtual/dmi/id/product_name ]]; then
+  if [[ "$(cat /sys/devices/virtual/dmi/id/product_name)" == "crosvm" ]]; then
+    if DISPLAY=:1 xset q &>/dev/null; then
+      export DISPLAY=:1
+    fi
+  fi
+fi
+
+export SRCDIR="$TMPDIR/"
+
+# Patch mkxp.json paths
+sed -i \
+  -e "s@\"RGSS@\"$SELF_DIR/RGSS@g" \
+  -e "s@\"Kawariki-patches@\"$SELF_DIR/Kawariki-patches@g" \
+  "$TMPDIR/mkxp.json"
+
+if [[ -d "$PWD/PBS" || -f "$PWD/x64-msvcrt-ruby310.dll" ]]; then
+  if [[ -f "$PWD/RGSS102E.dll" || -f "$PWD/RGSS102J.dll" ]]; then
+    sed -i 's@.*"syntaxTransform".*@    "syntaxTransform": 2,@g' "$TMPDIR/mkxp.json"
+  else
+    sed -i 's@.*"syntaxTransform".*@    "syntaxTransform": 0,@g' "$TMPDIR/mkxp.json"
+  fi
+else
+  if ! grep -q '^ *"syntaxTransform": 2,' "$TMPDIR/mkxp.json"; then
+    sed -i 's@.*"syntaxTransform".*@    "syntaxTransform": 2,@g' "$TMPDIR/mkxp.json"
+  fi
+fi
+
+# Update gameFolder path safely
+npath=$(printf '%s\n' "$PWD" | sed -e 's@\&@\\&@g')
+sed -i "s@.*\"gameFolder\".*@    \"gameFolder\": \"$npath\",@g" "$TMPDIR/mkxp.json"
+
+# Run mkxp-z
+"$SELF_DIR/mkxp-z.x86_64" "$@"
