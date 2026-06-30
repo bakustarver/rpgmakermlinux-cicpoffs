@@ -2,13 +2,13 @@
 # INPUT_FILE="${1:-/tmp/testd.txt}"
 TITLE="Script Control Panel"
 TMP_OUT="$(mktemp)"
-OUTPUT_FILE="pluginsconfig.txt"
+OUTPUT_FILE="scrconf.txt"
 INPUT_FILE="$(mktemp)"
 trap 'rm -f "$TMPFILE"' EXIT
 
 # Read script list from env or from a file if provided
 if [[ -z "${RGSS_SCRIPTS:-}" ]]; then
-  yad --info --text="Environment variable RGSS_SCRIPTS not set. Export it as lines 'index: name' and retry." --title="Error"
+  "$yadp" --info --text="Environment variable RGSS_SCRIPTS not set. Export it as lines 'index: name' and retry." --title="Error"
   exit 1
 fi
 
@@ -51,7 +51,7 @@ idx=$((i+1))
   YAD_ARGS+=(--field=" " "$cmd_val")
 done
 
-if yad "${YAD_ARGS[@]}" >"$TMP_OUT"; then
+if "$yadp" "${YAD_ARGS[@]}" >"$TMP_OUT"; then
   IFS='|' read -r -a VALUES < "$TMP_OUT"
   : > "$OUTPUT_FILE"
 
