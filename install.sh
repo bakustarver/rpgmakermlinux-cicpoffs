@@ -121,6 +121,19 @@ chmod +x "$localapplicationsfd/nwjsoptions.desktop"
 lnnew "$mainfd/nwjs/packagefiles/nwjsstart-cicpoffs.sh" "$localbin/rpgmaker-linux"
 chmod +x "$localbin/rpgmaker-linux"
 update-desktop-database -q ~/.local/share/applications
+
+# xdg-utils 1.2.x still runs `qtpaths` (Qt5 name) on KDE 6, where only `qtpaths6` exists
+if ! command -v qtpaths >/dev/null 2>&1; then
+for qtp in qtpaths6 /usr/lib/qt6/bin/qtpaths6; do
+if command -v "$qtp" >/dev/null 2>&1; then
+qtpshim=$(mktemp -d) || break
+ln -s "$(command -v "$qtp")" "$qtpshim/qtpaths"
+PATH="$qtpshim:$PATH"
+break
+fi
+done
+fi
+
 xdg-mime default nwjsoptions.desktop x-scheme-handler/rpgmakermp
 echo "Installation Done"
 
